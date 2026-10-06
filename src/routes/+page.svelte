@@ -1,17 +1,21 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import PixiOverlay from "#lib/PixiOverlay.svelte";
-	import { connectChat } from "#lib/twitch.js";
+	import { TwurpleChatAdapter } from "#lib/chat/twurple-adapter.js";
+	import type { ChatPort } from "#lib/chat/port.js";
+
+	const CHANNEL = "Ku6epXBOCTuK";
 
 	onMount(() => {
-		const channel = new URLSearchParams(window.location.search).get("channel");
-		if (!channel) return;
+		const chat: ChatPort = new TwurpleChatAdapter();
 
-		const disconnect = connectChat(channel, (_channel, user, text) => {
+		chat.onMessage(({ user, text }) => {
 			console.log(`[chat] ${user}: ${text}`);
 		});
 
-		return disconnect;
+		chat.connect(CHANNEL);
+
+		return () => chat.disconnect();
 	});
 </script>
 
