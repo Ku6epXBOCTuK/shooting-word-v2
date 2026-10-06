@@ -23,3 +23,5 @@ export const WALK_MIN_TURN_TIME = 1;
 export const WALK_MAX_TURN_TIME = 4;
 
 export const VIEWER_TIMEOUT_MS = 30 * 60 * 1000;
+
+export const ENEMY_BOTTOM_MARGIN = PLATFORM_HEIGHT + VIEWER_HEIGHT + 40;

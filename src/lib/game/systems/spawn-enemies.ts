@@ -1,4 +1,5 @@
 import {
+	ENEMY_BOTTOM_MARGIN,
 	ENEMY_SPAWN_MAX_INTERVAL,
 	ENEMY_SPAWN_MIN_INTERVAL,
 	MAX_ENEMIES,
@@ -29,6 +30,7 @@ export const createEnemySpawnSystem: SystemFactory = (ctx) => {
 			screen,
 			size,
 			collectTakenRects(enemies, screen),
+			ENEMY_BOTTOM_MARGIN,
 		);
 
 		if (!offset) return;
