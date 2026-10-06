@@ -1,8 +1,15 @@
 import { defineConfig } from "vitest/config";
-import adapter from "@sveltejs/adapter-static";
+import adapterStatic from "@sveltejs/adapter-static";
+import adapterNode from "@sveltejs/adapter-node";
 import { sveltekit } from "@sveltejs/kit/vite";
 
 const base = (process.env.BASE_PATH ?? "") as "" | `/${string}`;
+const variant = process.env.APP_VARIANT === "node" ? "node" : "static";
+
+const adapter =
+	variant === "node"
+		? adapterNode({ out: "build-node" })
+		: adapterStatic({ fallback: "404.html" });
 
 export default defineConfig({
 	plugins: [
@@ -14,7 +21,7 @@ export default defineConfig({
 					filename.split(/[/\\]/).includes("node_modules") ? undefined : true,
 				experimental: { async: true },
 			},
-			adapter: adapter({ fallback: "404.html" }),
+			adapter,
 			experimental: { remoteFunctions: true },
 		}),
 	],

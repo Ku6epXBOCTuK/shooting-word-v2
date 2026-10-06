@@ -1,56 +1,62 @@
-# sv
+# shooting-word-v2
 
-Everything you need to build a Svelte project, powered by
-[`sv`](https://github.com/sveltejs/cli).
+OBS-оверлей для стрима: слова-враги прилетают на экран, зрители отстреливают их
+командами в чате, за убийства начисляется опыт. Зрители отображаются
+космическими корабликами внизу экрана.
 
-## Creating a project
+## Чат-команды
 
-If you're seeing this, you've probably already done this step. Congrats!
+| Команда   | Действие                                  |
+| --------- | ----------------------------------------- |
+| `<слово>` | выстрел по врагу с таким словом (по всем) |
+| `!скин`   | случайный корабль                         |
+| `!скин 7` | корабль номер 7 (1–20)                    |
 
-```sh
-# create a new project
-npx sv create my-app
-```
+## Варианты сборки
 
-To recreate this project with the same configuration:
+Проект собирается в двух вариантах (`APP_VARIANT`):
 
-```sh
-# recreate this project
-pnpm dlx sv@1.1.0 create --template minimal --types ts --add prettier eslint vitest="usages:unit" sveltekit-adapter="adapter:node" experimental="features:async,remoteFunctions" --install pnpm ./
-```
+| Вариант  | Адаптер        | Фичи                              | Куда         |
+| -------- | -------------- | --------------------------------- | ------------ |
+| `static` | adapter-static | без наград за баллы канала        | GitHub Pages |
+| `node`   | adapter-node   | все фичи + Twitch OAuth + награды | свой сервер  |
 
-## Adding features
+Отличия реализованы через порты/адаптеры в `src/lib/features/` — на статике
+используются null-адаптеры, типизация в обоих вариантах одинаковая.
 
-Add features to your project with `sv add`:
-
-```sh
-npx sv add
-```
-
-For example, to add Tailwind CSS:
+## Разработка
 
 ```sh
-npx sv add tailwindcss
+pnpm install
+pnpm dev          # static-вариант, http://localhost:5173
+pnpm dev:node     # node-вариант, http://localhost:5173
 ```
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or
-`pnpm install` or `yarn`), start a development server:
+## Сборка и запуск
 
 ```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+pnpm build:static   # в ./build (деплоится на GitHub Pages)
+pnpm build:node     # в ./build-node
+pnpm start          # запуск node-версии, http://localhost:3000
 ```
 
-## Building
+## Настройка Twitch (node-вариант)
 
-To create a production version of your app:
+1. Создай приложение в
+   [Twitch Developer Console](https://dev.twitch.tv/console).
+2. В **OAuth Redirect URLs** добавь:
+   - `http://localhost:5173/auth/twitch/callback` — для разработки
+   - `http://localhost:3000/auth/twitch/callback` — для прода
+3. Скопируй `.env.example` в `.env` и заполни:
+   - `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET` — из консоли
+   - `TWITCH_BROADCASTER_ID` — числовой id канала
+4. Открой `/auth/twitch/login` и подтверди скоуп `channel:read:redemptions`.
+5. Токен сохранится в `twitch-token.json` и будет автоматически обновляться —
+   повторная авторизация не нужна.
 
-```sh
-npm run build
-```
+Награды за баллы канала доступны по `GET /api/rewards`.
 
-You can preview the production build with `npm run preview`.
+## OBS
+
+Добавь Browser Source с URL страницы. Фон страницы прозрачный, в браузере
+отображается тёмным (`color-scheme: dark`) только для удобства отладки.

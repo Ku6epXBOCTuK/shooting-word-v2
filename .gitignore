@@ -7,6 +7,7 @@ node_modules
 .wrangler
 /.svelte-kit
 /build
+/build-node
 
 # OS
 .DS_Store
@@ -17,6 +18,7 @@ Thumbs.db
 .env.*
 !.env.example
 !.env.test
+twitch-token.json
 
 # Vite
 vite.config.js.timestamp-*
