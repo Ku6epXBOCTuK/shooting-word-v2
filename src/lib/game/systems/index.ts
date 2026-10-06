@@ -10,6 +10,8 @@ import { createStarSystem } from "./star.js";
 import { createStarRenderSystem } from "./star-render.js";
 import { createExplosionSystem } from "./explosion.js";
 import { createExplosionRenderSystem } from "./explosion-render.js";
+import { createEnemyShotSystem } from "./enemy-shot.js";
+import { createEnemyShotRenderSystem } from "./enemy-shot-render.js";
 import { createViewerTimeoutSystem } from "./viewer-timeout.js";
 import { createViewerPersistenceSystem } from "./viewer-persistence.js";
 import { createRenderSystem } from "./render.js";
@@ -35,7 +37,12 @@ export function systemGroups(): SystemGroup[] {
 		},
 		{
 			name: "combat",
-			factories: [createBulletSystem, createStarSystem, createExplosionSystem],
+			factories: [
+				createBulletSystem,
+				createEnemyShotSystem,
+				createStarSystem,
+				createExplosionSystem,
+			],
 		},
 		{
 			name: "viewers",
@@ -51,6 +58,7 @@ export function systemGroups(): SystemGroup[] {
 				createRenderSystem,
 				createViewerRenderSystem,
 				createBulletRenderSystem,
+				createEnemyShotRenderSystem,
 				createStarRenderSystem,
 				createExplosionRenderSystem,
 			],

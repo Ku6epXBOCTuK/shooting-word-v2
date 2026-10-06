@@ -58,6 +58,12 @@ export interface Explosion {
 	age: number;
 }
 
+export interface EnemyShot {
+	target: Entity;
+	speed: number;
+	damage: number;
+}
+
 export interface Hitpoints {
 	current: number;
 	max: number;
@@ -82,6 +88,7 @@ export interface EntityComponents {
 	bullet: Bullet;
 	star: Star;
 	explosion: Explosion;
+	enemyShot: EnemyShot;
 	hp: Hitpoints;
 	xp: number;
 	view: Text;

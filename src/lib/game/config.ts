@@ -40,3 +40,6 @@ export const STAR_SPIN = Math.PI * 3;
 export const EXPLOSION_FRAME_DURATION = 0.08;
 export const EXPLOSION_SCALE = 2;
 export const BULLET_SCALE = 2;
+
+export const ENEMY_SHOT_SPEED = 400;
+export const ENEMY_SHOT_DAMAGE = 1;
