@@ -80,6 +80,7 @@ export interface EntityComponents {
 	xp: number;
 	view: Text;
 	bar: Graphics;
+	plate: Graphics;
 	body: Graphics | Sprite;
 	sprite: Sprite;
 }
