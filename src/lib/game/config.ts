@@ -14,9 +14,9 @@ export const ENEMY_SPAWN_MIN_INTERVAL = 1;
 export const ENEMY_SPAWN_MAX_INTERVAL = 2.5;
 export const MAX_ENEMIES = 30;
 
-export const PLATFORM_HEIGHT = 24;
 export const VIEWER_WIDTH = 24;
 export const VIEWER_HEIGHT = 32;
+export const VIEWER_GROUND_MARGIN = 16;
 export const WALK_MIN_SPEED = 20;
 export const WALK_MAX_SPEED = 70;
 export const WALK_MIN_TURN_TIME = 1;
@@ -24,7 +24,7 @@ export const WALK_MAX_TURN_TIME = 4;
 
 export const VIEWER_TIMEOUT_MS = 30 * 60 * 1000;
 
-export const ENEMY_BOTTOM_MARGIN = PLATFORM_HEIGHT + VIEWER_HEIGHT + 40;
+export const ENEMY_BOTTOM_MARGIN = 90;
 
 export const BULLET_SPEED = 700;
 export const BULLET_RADIUS = 4;

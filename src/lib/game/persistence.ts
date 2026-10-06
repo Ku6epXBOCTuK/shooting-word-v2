@@ -12,7 +12,8 @@ function isStoredViewer(value: unknown): value is StoredViewer {
 		typeof viewer.userId === "string" &&
 		typeof viewer.user === "string" &&
 		typeof viewer.lastSeen === "number" &&
-		(viewer.xp === undefined || typeof viewer.xp === "number")
+		(viewer.xp === undefined || typeof viewer.xp === "number") &&
+		(viewer.skin === undefined || typeof viewer.skin === "number")
 	);
 }
 
@@ -27,6 +28,7 @@ export function loadViewers(): StoredViewer[] {
 		return parsed.filter(isStoredViewer).map((viewer) => ({
 			...viewer,
 			xp: viewer.xp ?? 0,
+			skin: viewer.skin ?? 0,
 		}));
 	} catch {
 		return [];

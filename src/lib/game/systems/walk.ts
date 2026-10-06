@@ -1,5 +1,5 @@
 import {
-	PLATFORM_HEIGHT,
+	VIEWER_GROUND_MARGIN,
 	VIEWER_HEIGHT,
 	VIEWER_WIDTH,
 	WALK_MAX_SPEED,
@@ -38,7 +38,7 @@ export const createWalkSystem: SystemFactory = (ctx) => {
 				entity.walker.direction = -1;
 			}
 
-			entity.position.y = height - PLATFORM_HEIGHT - VIEWER_HEIGHT / 2;
+			entity.position.y = height - VIEWER_GROUND_MARGIN - VIEWER_HEIGHT / 2;
 		}
 	};
 };

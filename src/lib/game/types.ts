@@ -37,6 +37,7 @@ export interface Viewer {
 	userId: string;
 	user: string;
 	lastSeen: number;
+	skin: number;
 }
 
 export type ViewerIdentity = Pick<Viewer, "userId" | "user">;

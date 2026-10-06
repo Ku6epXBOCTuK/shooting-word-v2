@@ -12,7 +12,6 @@ import { createExplosionSystem } from "./explosion.js";
 import { createExplosionRenderSystem } from "./explosion-render.js";
 import { createViewerTimeoutSystem } from "./viewer-timeout.js";
 import { createViewerPersistenceSystem } from "./viewer-persistence.js";
-import { createPlatformSystem } from "./platform.js";
 import { createRenderSystem } from "./render.js";
 import { createViewerRenderSystem } from "./viewer-render.js";
 
@@ -49,7 +48,6 @@ export function systemGroups(): SystemGroup[] {
 		{
 			name: "render",
 			factories: [
-				createPlatformSystem,
 				createRenderSystem,
 				createViewerRenderSystem,
 				createBulletRenderSystem,

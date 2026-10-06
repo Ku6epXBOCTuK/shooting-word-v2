@@ -14,6 +14,15 @@
 
 		chat.onMessage((message) => {
 			game?.joinViewer({ userId: message.userId, user: message.user });
+
+			const text = message.text.trim();
+			if (text.startsWith("!скин")) {
+				const argument = text.slice("!скин".length).trim();
+				const skin = Number.parseInt(argument, 10);
+				game?.changeSkin(message.userId, Number.isNaN(skin) ? undefined : skin);
+				return;
+			}
+
 			game?.shoot(message);
 		});
 		chat.connect(CHANNEL);

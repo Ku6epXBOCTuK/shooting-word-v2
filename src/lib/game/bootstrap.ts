@@ -6,8 +6,8 @@ import type { GameContext } from "./context.js";
 import { systemGroups } from "./systems/index.js";
 import { persistViewers } from "./persistence.js";
 import { spawnViewer } from "./spawn.js";
-import { loadAssets } from "./assets.js";
-import { BULLET_SPEED, PLATFORM_HEIGHT, VIEWER_HEIGHT } from "./config.js";
+import { loadAssets, SHIP_COUNT } from "./assets.js";
+import { BULLET_SPEED, VIEWER_GROUND_MARGIN, VIEWER_HEIGHT } from "./config.js";
 
 const MAX_FRAME_MS = 50;
 
@@ -51,8 +51,29 @@ export async function bootstrapGame(app: Application) {
 				}
 			}
 
-			spawnViewer(world, { ...identity, lastSeen: Date.now() }, app.screen);
+			spawnViewer(
+				world,
+				{
+					...identity,
+					lastSeen: Date.now(),
+					skin: Math.floor(Math.random() * SHIP_COUNT),
+				},
+				app.screen,
+			);
 			persistViewers(world);
+		},
+
+		changeSkin: (userId: string, skin?: number) => {
+			for (const entity of world.with("viewer")) {
+				if (entity.viewer.userId !== userId) continue;
+
+				const valid = skin !== undefined && skin >= 1 && skin <= SHIP_COUNT;
+				entity.viewer.skin = valid
+					? skin - 1
+					: Math.floor(Math.random() * SHIP_COUNT);
+				persistViewers(world);
+				return;
+			}
 		},
 
 		shoot: (message: ChatMessage) => {
@@ -80,7 +101,7 @@ export async function bootstrapGame(app: Application) {
 			}
 			from ??= {
 				x: app.screen.width / 2,
-				y: app.screen.height - PLATFORM_HEIGHT,
+				y: app.screen.height - VIEWER_GROUND_MARGIN,
 			};
 
 			world.add({
