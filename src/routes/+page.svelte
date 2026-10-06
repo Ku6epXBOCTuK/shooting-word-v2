@@ -12,7 +12,9 @@
 	onMount(() => {
 		const chat: ChatPort = new TwurpleChatAdapter();
 
-		chat.onMessage((message) => game?.spawnWord(message));
+		chat.onMessage((message) => {
+			game?.joinViewer({ userId: message.userId, user: message.user });
+		});
 		chat.connect(CHANNEL);
 
 		return () => {

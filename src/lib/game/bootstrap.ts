@@ -1,16 +1,20 @@
 import type { Application, Ticker } from "pixi.js";
 import { World } from "miniplex";
-import type { ChatMessage } from "#lib/chat/port.js";
-import type { Entity } from "./types.js";
+import type { Entity, Viewer } from "./types.js";
 import type { GameContext } from "./context.js";
 import { systemGroups } from "./systems/index.js";
+import {
+	VIEWER_WIDTH,
+	WALK_MAX_SPEED,
+	WALK_MAX_TURN_TIME,
+	WALK_MIN_SPEED,
+} from "./config.js";
 
 const MAX_FRAME_MS = 50;
 
 export function bootstrapGame(app: Application) {
 	const world = new World<Entity>();
-	const spawnQueue: ChatMessage[] = [];
-	const ctx: GameContext = { world, app, spawnQueue };
+	const ctx: GameContext = { world, app };
 
 	const createGroups = () =>
 		systemGroups().map((group) =>
@@ -36,8 +40,26 @@ export function bootstrapGame(app: Application) {
 	return {
 		world,
 
-		spawnWord: (message: ChatMessage) => {
-			spawnQueue.push(message);
+		joinViewer: (viewer: Viewer) => {
+			for (const entity of world.with("viewer")) {
+				if (entity.viewer.userId === viewer.userId) return;
+			}
+
+			const halfWidth = VIEWER_WIDTH / 2;
+			const x =
+				halfWidth +
+				Math.random() * Math.max(1, app.screen.width - VIEWER_WIDTH);
+
+			world.add({
+				viewer,
+				position: { x, y: 0 },
+				walker: {
+					direction: Math.random() < 0.5 ? -1 : 1,
+					speed:
+						WALK_MIN_SPEED + Math.random() * (WALK_MAX_SPEED - WALK_MIN_SPEED),
+					timer: Math.random() * WALK_MAX_TURN_TIME,
+				},
+			});
 		},
 
 		start() {
@@ -59,7 +81,6 @@ export function bootstrapGame(app: Application) {
 
 		reset() {
 			world.clear();
-			spawnQueue.length = 0;
 
 			for (const group of groups) {
 				for (const system of group) {

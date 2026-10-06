@@ -33,6 +33,17 @@ export interface Word {
 	user: string;
 }
 
+export interface Viewer {
+	userId: string;
+	user: string;
+}
+
+export interface Walker {
+	direction: 1 | -1;
+	speed: number;
+	timer: number;
+}
+
 export interface EntityComponents {
 	position: Position;
 	position3: Position3;
@@ -41,8 +52,11 @@ export interface EntityComponents {
 	scale: number;
 	lifetime: Lifetime;
 	word: Word;
+	viewer: Viewer;
+	walker: Walker;
 	view: Text;
 	bar: Graphics;
+	body: Graphics;
 }
 
 export type Entity = Partial<EntityComponents>;

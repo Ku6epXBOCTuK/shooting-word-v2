@@ -1,16 +1,18 @@
 import type { SystemGroup } from "./types.js";
 import { createEnemySpawnSystem } from "./spawn-enemies.js";
-import { createChatSpawnSystem } from "./spawn-chat.js";
 import { createFlightSystem } from "./flight.js";
 import { createPerspectiveSystem } from "./perspective.js";
 import { createLifetimeSystem } from "./lifetime.js";
+import { createWalkSystem } from "./walk.js";
+import { createPlatformSystem } from "./platform.js";
 import { createRenderSystem } from "./render.js";
+import { createViewerRenderSystem } from "./viewer-render.js";
 
 export function systemGroups(): SystemGroup[] {
 	return [
 		{
 			name: "spawn",
-			factories: [createEnemySpawnSystem, createChatSpawnSystem],
+			factories: [createEnemySpawnSystem],
 		},
 		{
 			name: "flight",
@@ -25,8 +27,16 @@ export function systemGroups(): SystemGroup[] {
 			factories: [createLifetimeSystem],
 		},
 		{
+			name: "walk",
+			factories: [createWalkSystem],
+		},
+		{
 			name: "render",
-			factories: [createRenderSystem],
+			factories: [
+				createPlatformSystem,
+				createRenderSystem,
+				createViewerRenderSystem,
+			],
 		},
 	];
 }
