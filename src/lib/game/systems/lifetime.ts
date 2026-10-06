@@ -8,11 +8,21 @@ export const createLifetimeSystem: SystemFactory = (ctx) => {
 	const viewers = ctx.world.with("viewer", "position", "hp");
 
 	const pickTarget = (): Entity | null => {
+		if (viewers.size === 0) return null;
+
 		let total = 0;
 		for (const viewer of viewers) {
 			total += Math.max(0, viewer.hp.current);
 		}
-		if (total === 0) return null;
+
+		if (total === 0) {
+			let index = Math.floor(Math.random() * viewers.size);
+			for (const viewer of viewers) {
+				if (index === 0) return viewer;
+				index--;
+			}
+			return null;
+		}
 
 		let roll = Math.random() * total;
 		for (const viewer of viewers) {
