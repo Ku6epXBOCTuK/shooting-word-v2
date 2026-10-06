@@ -29,3 +29,8 @@ export const ENEMY_BOTTOM_MARGIN = PLATFORM_HEIGHT + VIEWER_HEIGHT + 40;
 export const BULLET_SPEED = 700;
 export const BULLET_RADIUS = 4;
 export const BULLET_HIT_DISTANCE = 30;
+
+export const STAR_TTL = 0.8;
+export const STAR_RISE = 40;
+export const STAR_RADIUS = 10;
+export const STAR_SPIN = Math.PI * 3;

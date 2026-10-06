@@ -6,6 +6,8 @@ import { createLifetimeSystem } from "./lifetime.js";
 import { createWalkSystem } from "./walk.js";
 import { createBulletSystem } from "./bullet.js";
 import { createBulletRenderSystem } from "./bullet-render.js";
+import { createStarSystem } from "./star.js";
+import { createStarRenderSystem } from "./star-render.js";
 import { createViewerTimeoutSystem } from "./viewer-timeout.js";
 import { createViewerPersistenceSystem } from "./viewer-persistence.js";
 import { createPlatformSystem } from "./platform.js";
@@ -32,7 +34,7 @@ export function systemGroups(): SystemGroup[] {
 		},
 		{
 			name: "combat",
-			factories: [createBulletSystem],
+			factories: [createBulletSystem, createStarSystem],
 		},
 		{
 			name: "viewers",
@@ -49,6 +51,7 @@ export function systemGroups(): SystemGroup[] {
 				createRenderSystem,
 				createViewerRenderSystem,
 				createBulletRenderSystem,
+				createStarRenderSystem,
 			],
 		},
 	];

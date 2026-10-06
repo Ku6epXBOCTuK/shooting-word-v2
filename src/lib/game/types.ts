@@ -53,6 +53,12 @@ export interface Bullet {
 	shooterId: string;
 }
 
+export interface Star {
+	age: number;
+	ttl: number;
+	startY: number;
+}
+
 export interface EntityComponents {
 	position: Position;
 	position3: Position3;
@@ -64,6 +70,7 @@ export interface EntityComponents {
 	viewer: Viewer;
 	walker: Walker;
 	bullet: Bullet;
+	star: Star;
 	xp: number;
 	view: Text;
 	bar: Graphics;
