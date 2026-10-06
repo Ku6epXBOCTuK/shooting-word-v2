@@ -58,6 +58,11 @@ export interface Explosion {
 	age: number;
 }
 
+export interface Hitpoints {
+	current: number;
+	max: number;
+}
+
 export interface Star {
 	age: number;
 	ttl: number;
@@ -77,6 +82,7 @@ export interface EntityComponents {
 	bullet: Bullet;
 	star: Star;
 	explosion: Explosion;
+	hp: Hitpoints;
 	xp: number;
 	view: Text;
 	bar: Graphics;

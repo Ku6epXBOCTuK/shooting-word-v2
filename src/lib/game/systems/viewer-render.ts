@@ -7,6 +7,8 @@ const SHIP_ANIMATION_SPEED = 0.2;
 const PLATE_PADDING = 6;
 const PLATE_RADIUS = 6;
 const PLATE_ALPHA = 0.7;
+const HP_BAR_HEIGHT = 3;
+const HP_BAR_GAP = 3;
 
 export const createViewerRenderSystem: SystemFactory = (ctx) => {
 	const viewers = ctx.world.with("viewer", "position");
@@ -22,6 +24,9 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 		const plate = new Graphics();
 		entity.plate = plate;
 
+		const bar = new Graphics();
+		entity.bar = bar;
+
 		const ship = new AnimatedSprite(shipFrames(entity.viewer.skin));
 		ship.anchor.set(0.5);
 		ship.animationSpeed = SHIP_ANIMATION_SPEED;
@@ -33,7 +38,7 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 		label.anchor.set(0.5, 1);
 		entity.view = label;
 
-		ctx.app.stage.addChild(plate, ship, label);
+		ctx.app.stage.addChild(plate, ship, label, bar);
 	});
 
 	const unsubscribeRemoved = viewers.onEntityRemoved.subscribe((entity) => {
@@ -42,6 +47,8 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 		appliedSkin.delete(entity);
 		entity.plate?.destroy();
 		entity.plate = undefined;
+		entity.bar?.destroy();
+		entity.bar = undefined;
 		entity.view?.destroy();
 		entity.view = undefined;
 	});
@@ -77,7 +84,12 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 					(entity.view?.y ?? entity.position.y) - (entity.view?.height ?? 0);
 				const width = Math.max(ship.width, labelWidth) + PLATE_PADDING * 2;
 				const top = labelTop - PLATE_PADDING;
-				const bottom = entity.position.y + ship.height / 2 + PLATE_PADDING;
+				const bottom =
+					entity.position.y +
+					ship.height / 2 +
+					HP_BAR_GAP +
+					HP_BAR_HEIGHT +
+					PLATE_PADDING;
 
 				entity.plate
 					.clear()
@@ -89,6 +101,20 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 						PLATE_RADIUS,
 					)
 					.fill({ color: 0x000000, alpha: PLATE_ALPHA });
+			}
+
+			if (entity.bar && entity.hp) {
+				const barWidth = ship.width;
+				const filled = barWidth * (entity.hp.current / entity.hp.max);
+				entity.bar
+					.clear()
+					.rect(
+						entity.position.x - barWidth / 2,
+						entity.position.y + ship.height / 2 + HP_BAR_GAP,
+						filled,
+						HP_BAR_HEIGHT,
+					)
+					.fill("#2ecc40");
 			}
 		}
 	};
@@ -104,6 +130,8 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 		for (const entity of viewers) {
 			entity.plate?.destroy();
 			entity.plate = undefined;
+			entity.bar?.destroy();
+			entity.bar = undefined;
 			entity.view?.destroy();
 			entity.view = undefined;
 		}

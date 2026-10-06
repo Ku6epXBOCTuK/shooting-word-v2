@@ -45,7 +45,7 @@ export const createRenderSystem: SystemFactory = (ctx) => {
 			view.y = entity.position.y;
 			view.scale.set(entity.scale ?? 1);
 
-			const barZone = entity.lifetime ? BAR_GAP + BAR_HEIGHT : 0;
+			const barZone = entity.lifetime ? BAR_GAP + BAR_HEIGHT + PLATE_PAD_Y : 0;
 			plate
 				.clear()
 				.roundRect(
