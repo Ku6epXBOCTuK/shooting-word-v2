@@ -7,11 +7,11 @@ export class TwurpleChatAdapter implements ChatPort {
 
 	connect(channel: string): void {
 		this.client = new ChatClient({ channels: [channel] });
-		this.client.onMessage((chan, user, text, msg) => {
+		this.client.onMessage((chan, _user, text, msg) => {
 			const message = {
 				channel: chan,
 				userId: msg.userInfo.userId,
-				user,
+				user: msg.userInfo.displayName,
 				text,
 			};
 			for (const handler of this.handlers) {
