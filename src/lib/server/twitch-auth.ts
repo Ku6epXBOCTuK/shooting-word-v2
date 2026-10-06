@@ -4,7 +4,7 @@ import { TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET } from "$app/env/private";
 
 const TOKEN_FILE = "twitch-token.json";
 
-export const TWITCH_SCOPES = ["channel:read:redemptions"];
+export const TWITCH_SCOPES = ["channel:manage:redemptions", "user:write:chat"];
 
 interface StoredAuth {
 	userId: string;

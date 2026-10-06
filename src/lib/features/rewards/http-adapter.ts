@@ -1,5 +1,10 @@
 import { resolve } from "$app/paths";
-import type { ChannelReward, RewardsPort, RewardsStatus } from "./port.js";
+import type {
+	ChannelReward,
+	RewardsManageResult,
+	RewardsPort,
+	RewardsStatus,
+} from "./port.js";
 
 interface RewardsResponse {
 	available: boolean;
@@ -14,6 +19,17 @@ export class HttpRewardsAdapter implements RewardsPort {
 		return body;
 	}
 
+	private async manage(
+		action: "create" | "delete",
+	): Promise<RewardsManageResult> {
+		const response = await fetch(resolve("/api/rewards"), {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ action }),
+		});
+		return (await response.json()) as RewardsManageResult;
+	}
+
 	async status(): Promise<RewardsStatus> {
 		const { available, reason } = await this.request();
 		return { available, reason };
@@ -22,5 +38,13 @@ export class HttpRewardsAdapter implements RewardsPort {
 	async listRewards(): Promise<ChannelReward[]> {
 		const { rewards } = await this.request();
 		return rewards;
+	}
+
+	async createRewards(): Promise<RewardsManageResult> {
+		return this.manage("create");
+	}
+
+	async deleteAllRewards(): Promise<RewardsManageResult> {
+		return this.manage("delete");
 	}
 }

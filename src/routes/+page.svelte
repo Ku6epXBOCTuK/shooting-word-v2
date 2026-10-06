@@ -7,6 +7,32 @@
 	let channel = $state("");
 	let rewardsStatus = $state<string | null>(null);
 	let authorized = $state(false);
+	let manageResult = $state<string | null>(null);
+	let managing = $state(false);
+
+	const manage = async (action: "create" | "delete") => {
+		managing = true;
+		manageResult = null;
+
+		const result =
+			action === "create"
+				? await rewards.createRewards()
+				: await rewards.deleteAllRewards();
+
+		managing = false;
+
+		if (!result.ok) {
+			manageResult = result.reason ?? "ошибка";
+			return;
+		}
+
+		manageResult =
+			action === "create"
+				? result.created.length > 0
+					? `Созданы: ${result.created.join(", ")}`
+					: "Все награды уже существуют"
+				: `Удалено наград: ${result.deleted}`;
+	};
 
 	const gameLink = $derived(
 		channel.trim()
@@ -39,6 +65,19 @@
 			</p>
 			{#if rewardsStatus}
 				<p class="status">{rewardsStatus}</p>
+			{/if}
+			{#if authorized}
+				<p class="actions">
+					<button disabled={managing} onclick={() => manage("create")}>
+						Создать награды
+					</button>
+					<button disabled={managing} onclick={() => manage("delete")}>
+						Удалить награды
+					</button>
+				</p>
+				{#if manageResult}
+					<p class="status">{manageResult}</p>
+				{/if}
 			{/if}
 		</section>
 	{:else}
@@ -98,5 +137,24 @@
 	.status {
 		color: #9a9aa5;
 		font-size: 0.9rem;
+	}
+
+	.actions {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	button {
+		padding: 0.4rem 0.8rem;
+		border: 1px solid #3a3a44;
+		border-radius: 6px;
+		background: #1c1c22;
+		color: inherit;
+		cursor: pointer;
+	}
+
+	button:disabled {
+		opacity: 0.5;
+		cursor: default;
 	}
 </style>
