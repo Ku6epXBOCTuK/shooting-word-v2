@@ -4,9 +4,13 @@ import {
 	FONT_SIZE,
 	MAX_FLY_SPEED,
 	MIN_FLY_SPEED,
+	VIEWER_WIDTH,
+	WALK_MAX_SPEED,
+	WALK_MAX_TURN_TIME,
+	WALK_MIN_SPEED,
 	Z_FAR,
 } from "./config.js";
-import type { Entity, Size, Word } from "./types.js";
+import type { Entity, Size, Viewer, Word } from "./types.js";
 
 export function estimateWordSize(text: string): Size {
 	return {
@@ -31,5 +35,25 @@ export function spawnEnemy(
 		scale: FOCAL / Z_FAR,
 		size,
 		word,
+	});
+}
+
+export function spawnViewer(
+	world: World<Entity>,
+	viewer: Viewer,
+	screen: Size,
+) {
+	const halfWidth = VIEWER_WIDTH / 2;
+	const x =
+		halfWidth + Math.random() * Math.max(1, screen.width - VIEWER_WIDTH);
+
+	world.add({
+		viewer,
+		position: { x, y: 0 },
+		walker: {
+			direction: Math.random() < 0.5 ? -1 : 1,
+			speed: WALK_MIN_SPEED + Math.random() * (WALK_MAX_SPEED - WALK_MIN_SPEED),
+			timer: Math.random() * WALK_MAX_TURN_TIME,
+		},
 	});
 }

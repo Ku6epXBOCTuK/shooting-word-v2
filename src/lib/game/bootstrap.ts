@@ -1,14 +1,10 @@
 import type { Application, Ticker } from "pixi.js";
 import { World } from "miniplex";
-import type { Entity, Viewer } from "./types.js";
+import type { Entity, ViewerIdentity } from "./types.js";
 import type { GameContext } from "./context.js";
 import { systemGroups } from "./systems/index.js";
-import {
-	VIEWER_WIDTH,
-	WALK_MAX_SPEED,
-	WALK_MAX_TURN_TIME,
-	WALK_MIN_SPEED,
-} from "./config.js";
+import { persistViewers } from "./persistence.js";
+import { spawnViewer } from "./spawn.js";
 
 const MAX_FRAME_MS = 50;
 
@@ -40,26 +36,18 @@ export function bootstrapGame(app: Application) {
 	return {
 		world,
 
-		joinViewer: (viewer: Viewer) => {
+		joinViewer: (identity: ViewerIdentity) => {
 			for (const entity of world.with("viewer")) {
-				if (entity.viewer.userId === viewer.userId) return;
+				if (entity.viewer.userId === identity.userId) {
+					entity.viewer.user = identity.user;
+					entity.viewer.lastSeen = Date.now();
+					persistViewers(world);
+					return;
+				}
 			}
 
-			const halfWidth = VIEWER_WIDTH / 2;
-			const x =
-				halfWidth +
-				Math.random() * Math.max(1, app.screen.width - VIEWER_WIDTH);
-
-			world.add({
-				viewer,
-				position: { x, y: 0 },
-				walker: {
-					direction: Math.random() < 0.5 ? -1 : 1,
-					speed:
-						WALK_MIN_SPEED + Math.random() * (WALK_MAX_SPEED - WALK_MIN_SPEED),
-					timer: Math.random() * WALK_MAX_TURN_TIME,
-				},
-			});
+			spawnViewer(world, { ...identity, lastSeen: Date.now() }, app.screen);
+			persistViewers(world);
 		},
 
 		start() {

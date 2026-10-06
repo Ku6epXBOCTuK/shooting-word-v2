@@ -21,3 +21,5 @@ export const WALK_MIN_SPEED = 20;
 export const WALK_MAX_SPEED = 70;
 export const WALK_MIN_TURN_TIME = 1;
 export const WALK_MAX_TURN_TIME = 4;
+
+export const VIEWER_TIMEOUT_MS = 30 * 60 * 1000;
