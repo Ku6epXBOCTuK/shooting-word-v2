@@ -1,5 +1,5 @@
 import { Graphics, Text, TextStyle } from "pixi.js";
-import { WORD_FADE_OUT } from "../config.js";
+import { FONT_SIZE, WORD_FADE_OUT } from "../config.js";
 import type { System, SystemFactory } from "./types.js";
 
 const BAR_HEIGHT = 4;
@@ -7,7 +7,7 @@ const BAR_GAP = 6;
 
 export const createRenderSystem: SystemFactory = (ctx) => {
 	const words = ctx.world.with("word", "position");
-	const style = new TextStyle({ fill: "#ffffff", fontSize: 28 });
+	const style = new TextStyle({ fill: "#ffffff", fontSize: FONT_SIZE });
 
 	const unsubscribeAdded = words.onEntityAdded.subscribe((entity) => {
 		const view = new Text({ text: entity.word.text, style });

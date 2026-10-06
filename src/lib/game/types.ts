@@ -17,6 +17,11 @@ export interface Velocity3 {
 	z: number;
 }
 
+export interface Size {
+	width: number;
+	height: number;
+}
+
 export interface Lifetime {
 	age: number;
 	ttl: number;
@@ -28,13 +33,16 @@ export interface Word {
 	user: string;
 }
 
-export type Entity = Partial<{
+export interface EntityComponents {
 	position: Position;
 	position3: Position3;
 	velocity3: Velocity3;
+	size: Size;
 	scale: number;
 	lifetime: Lifetime;
 	word: Word;
 	view: Text;
 	bar: Graphics;
-}>;
+}
+
+export type Entity = Partial<EntityComponents>;

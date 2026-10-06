@@ -4,13 +4,13 @@ import type { ChatMessage } from "#lib/chat/port.js";
 import type { Entity } from "./types.js";
 import type { GameContext } from "./context.js";
 import { systemGroups } from "./systems/index.js";
-import { spawnWord } from "./spawn.js";
 
 const MAX_FRAME_MS = 50;
 
 export function bootstrapGame(app: Application) {
 	const world = new World<Entity>();
-	const ctx: GameContext = { world, app };
+	const spawnQueue: ChatMessage[] = [];
+	const ctx: GameContext = { world, app, spawnQueue };
 
 	const createGroups = () =>
 		systemGroups().map((group) =>
@@ -36,7 +36,9 @@ export function bootstrapGame(app: Application) {
 	return {
 		world,
 
-		spawnWord: (message: ChatMessage) => spawnWord(world, message, app.screen),
+		spawnWord: (message: ChatMessage) => {
+			spawnQueue.push(message);
+		},
 
 		start() {
 			if (isDestroyed) return;
@@ -57,6 +59,7 @@ export function bootstrapGame(app: Application) {
 
 		reset() {
 			world.clear();
+			spawnQueue.length = 0;
 
 			for (const group of groups) {
 				for (const system of group) {

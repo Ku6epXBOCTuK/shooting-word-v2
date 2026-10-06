@@ -5,6 +5,7 @@ export type {
 	Lifetime,
 	Position,
 	Position3,
+	Size,
 	Velocity3,
 	Word,
 } from "./types.js";
