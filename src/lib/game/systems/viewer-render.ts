@@ -57,6 +57,12 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 				appliedSkin.set(entity, entity.viewer.skin);
 			}
 
+			entity.size = {
+				width:
+					Math.max(ship.width, entity.view?.width ?? 0) + PLATE_PADDING * 2,
+				height: ship.height,
+			};
+
 			ship.x = entity.position.x;
 			ship.y = entity.position.y;
 

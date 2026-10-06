@@ -17,6 +17,7 @@ export const MAX_ENEMIES = 30;
 export const VIEWER_WIDTH = 24;
 export const VIEWER_HEIGHT = 32;
 export const VIEWER_GROUND_MARGIN = 16;
+export const WALK_EDGE_MARGIN = 8;
 export const WALK_MIN_SPEED = 20;
 export const WALK_MAX_SPEED = 70;
 export const WALK_MIN_TURN_TIME = 1;
