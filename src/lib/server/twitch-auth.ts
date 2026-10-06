@@ -6,16 +6,28 @@ const TOKEN_FILE = "twitch-token.json";
 
 export const TWITCH_SCOPES = ["channel:read:redemptions"];
 
-let provider: RefreshingAuthProvider | null = null;
-
-export async function saveToken(token: AccessToken): Promise<void> {
-	await writeFile(TOKEN_FILE, JSON.stringify(token, null, 2));
+interface StoredAuth {
+	userId: string;
+	token: AccessToken;
 }
 
-async function loadInitialToken(): Promise<AccessToken | null> {
+let provider: RefreshingAuthProvider | null = null;
+let storedUserId: string | null = null;
+
+export async function saveToken(
+	userId: string,
+	token: AccessToken,
+): Promise<void> {
+	storedUserId = userId;
+
+	const stored: StoredAuth = { userId, token };
+	await writeFile(TOKEN_FILE, JSON.stringify(stored, null, 2));
+}
+
+async function loadStored(): Promise<StoredAuth | null> {
 	try {
 		const raw = await readFile(TOKEN_FILE, "utf-8");
-		return JSON.parse(raw) as AccessToken;
+		return JSON.parse(raw) as StoredAuth;
 	} catch {
 		return null;
 	}
@@ -31,20 +43,33 @@ export async function getAuthProvider(): Promise<RefreshingAuthProvider | null> 
 		clientSecret: TWITCH_CLIENT_SECRET,
 	});
 
-	provider.onRefresh((_userId, token) => {
-		void saveToken(token).catch(() => {});
+	provider.onRefresh((userId, token) => {
+		void saveToken(userId, token).catch(() => {});
 	});
 
-	const token = await loadInitialToken();
-	if (token) {
-		await provider.addUserForToken(token, []);
+	const stored = await loadStored();
+	if (stored) {
+		storedUserId = stored.userId;
+		await provider.addUserForToken(stored.token, []);
 	}
 
 	return provider;
 }
 
+export function getStoredUserId(): string | null {
+	return storedUserId;
+}
+
 export function resetAuthProvider(): void {
 	provider = null;
+}
+
+export async function clearStoredAuth(): Promise<void> {
+	provider = null;
+	storedUserId = null;
+
+	const { unlink } = await import("node:fs/promises");
+	await unlink(TOKEN_FILE).catch(() => {});
 }
 
 export function isConfigured(): boolean {

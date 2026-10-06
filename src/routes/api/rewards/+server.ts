@@ -1,5 +1,9 @@
 import { ApiClient } from "@twurple/api";
-import { getAuthProvider, isConfigured } from "#lib/server/twitch-auth.js";
+import {
+	getAuthProvider,
+	getStoredUserId,
+	isConfigured,
+} from "#lib/server/twitch-auth.js";
 import type { RequestHandler } from "./$types";
 import type { ChannelReward } from "#lib/features/rewards/port.js";
 
@@ -30,15 +34,23 @@ export const GET: RequestHandler = async () => {
 		);
 	}
 
+	const userId = getStoredUserId();
+
+	if (!userId) {
+		return Response.json(
+			{
+				available: false,
+				reason: "not authorized, visit /auth/twitch/login",
+				rewards: [],
+			},
+			{ status: 503 },
+		);
+	}
+
 	const api = new ApiClient({ authProvider });
 
 	try {
-		const tokenInfo = await api.getTokenInfo();
-		if (!tokenInfo.userId) {
-			throw new Error("no user token");
-		}
-
-		const data = await api.channelPoints.getCustomRewards(tokenInfo.userId);
+		const data = await api.channelPoints.getCustomRewards(userId);
 		const rewards: ChannelReward[] = data.map(({ id, title, cost }) => ({
 			id,
 			title,
@@ -50,7 +62,7 @@ export const GET: RequestHandler = async () => {
 		return Response.json(
 			{
 				available: false,
-				reason: "not authorized, visit /auth/twitch/login",
+				reason: "failed to load rewards, check scope and affiliate status",
 				rewards: [],
 			},
 			{ status: 502 },

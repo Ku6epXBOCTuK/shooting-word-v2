@@ -6,6 +6,7 @@
 
 	let channel = $state("");
 	let rewardsStatus = $state<string | null>(null);
+	let authorized = $state(false);
 
 	const gameLink = $derived(
 		channel.trim()
@@ -17,6 +18,7 @@
 		if (!features.rewards) return;
 
 		const status = await rewards.status();
+		authorized = status.available;
 		rewardsStatus = status.available
 			? "Twitch авторизован, награды доступны"
 			: (status.reason ?? "награды недоступны");
@@ -31,6 +33,9 @@
 			<h2>Авторизация Twitch</h2>
 			<p>
 				<a href={resolve("/auth/twitch/login")}>Войти через Twitch</a>
+				{#if authorized}
+					· <a href={resolve("/auth/twitch/logout")}>Выйти</a>
+				{/if}
 			</p>
 			{#if rewardsStatus}
 				<p class="status">{rewardsStatus}</p>
