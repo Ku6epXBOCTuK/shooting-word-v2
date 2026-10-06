@@ -47,9 +47,8 @@ pnpm start          # запуск node-версии, http://localhost:3000
 2. В **OAuth Redirect URLs** добавь:
    - `http://localhost:5173/auth/twitch/callback` — для разработки
    - `http://localhost:3000/auth/twitch/callback` — для прода
-3. Скопируй `.env.example` в `.env` и заполни:
-   - `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET` — из консоли
-   - `TWITCH_BROADCASTER_ID` — числовой id канала
+3. Скопируй `.env.example` в `.env` и заполни `TWITCH_CLIENT_ID` и
+   `TWITCH_CLIENT_SECRET` из консоли.
 4. Открой `/auth/twitch/login` и подтверди скоуп `channel:read:redemptions`.
 5. Токен сохранится в `twitch-token.json` и будет автоматически обновляться —
    повторная авторизация не нужна.

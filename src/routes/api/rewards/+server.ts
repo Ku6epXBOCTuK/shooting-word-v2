@@ -1,5 +1,4 @@
 import { ApiClient } from "@twurple/api";
-import { TWITCH_BROADCASTER_ID } from "$app/env/private";
 import { getAuthProvider, isConfigured } from "#lib/server/twitch-auth.js";
 import type { RequestHandler } from "./$types";
 import type { ChannelReward } from "#lib/features/rewards/port.js";
@@ -34,9 +33,12 @@ export const GET: RequestHandler = async () => {
 	const api = new ApiClient({ authProvider });
 
 	try {
-		const data = await api.channelPoints.getCustomRewards(
-			TWITCH_BROADCASTER_ID ?? "",
-		);
+		const tokenInfo = await api.getTokenInfo();
+		if (!tokenInfo.userId) {
+			throw new Error("no user token");
+		}
+
+		const data = await api.channelPoints.getCustomRewards(tokenInfo.userId);
 		const rewards: ChannelReward[] = data.map(({ id, title, cost }) => ({
 			id,
 			title,

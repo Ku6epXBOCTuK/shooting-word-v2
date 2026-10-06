@@ -13,7 +13,4 @@ export const variables = defineEnvVars({
 	TWITCH_CLIENT_SECRET: {
 		schema: (value) => value,
 	},
-	TWITCH_BROADCASTER_ID: {
-		schema: (value) => value,
-	},
 });

@@ -1,10 +1,6 @@
 import { RefreshingAuthProvider, type AccessToken } from "@twurple/auth";
 import { readFile, writeFile } from "node:fs/promises";
-import {
-	TWITCH_BROADCASTER_ID,
-	TWITCH_CLIENT_ID,
-	TWITCH_CLIENT_SECRET,
-} from "$app/env/private";
+import { TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET } from "$app/env/private";
 
 const TOKEN_FILE = "twitch-token.json";
 
@@ -52,7 +48,5 @@ export function resetAuthProvider(): void {
 }
 
 export function isConfigured(): boolean {
-	return Boolean(
-		TWITCH_CLIENT_ID && TWITCH_CLIENT_SECRET && TWITCH_BROADCASTER_ID,
-	);
+	return Boolean(TWITCH_CLIENT_ID && TWITCH_CLIENT_SECRET);
 }

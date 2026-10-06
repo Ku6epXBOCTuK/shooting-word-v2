@@ -1,4 +1,28 @@
 import { Assets, Rectangle, Texture } from "pixi.js";
+import { asset } from "$app/paths";
+
+const SHIP_PATHS = [
+	"ships/tinyShip1.png",
+	"ships/tinyShip2.png",
+	"ships/tinyShip3.png",
+	"ships/tinyShip4.png",
+	"ships/tinyShip5.png",
+	"ships/tinyShip6.png",
+	"ships/tinyShip7.png",
+	"ships/tinyShip8.png",
+	"ships/tinyShip9.png",
+	"ships/tinyShip10.png",
+	"ships/tinyShip11.png",
+	"ships/tinyShip12.png",
+	"ships/tinyShip13.png",
+	"ships/tinyShip14.png",
+	"ships/tinyShip15.png",
+	"ships/tinyShip16.png",
+	"ships/tinyShip17.png",
+	"ships/tinyShip18.png",
+	"ships/tinyShip19.png",
+	"ships/tinyShip20.png",
+] as const;
 
 const EXPLOSION_FRAMES = [
 	[164, 84, 9, 9],
@@ -56,7 +80,7 @@ function cut(source: Texture["source"], [x, y, w, h]: number[]) {
 async function loadShips(): Promise<Texture[][]> {
 	return Promise.all(
 		SHIP_SHEETS.map(async ({ cols, rows, frames }, index) => {
-			const base = await Assets.load<Texture>(`ships/tinyShip${index + 1}.png`);
+			const base = await Assets.load<Texture>(asset(SHIP_PATHS[index]));
 			base.source.scaleMode = "nearest";
 
 			const frameWidth = Math.floor(base.width / cols);
@@ -77,7 +101,7 @@ async function loadShips(): Promise<Texture[][]> {
 }
 
 export async function loadAssets(): Promise<GameAssets> {
-	const base = await Assets.load<Texture>("fx/fire.png");
+	const base = await Assets.load<Texture>(asset("fx/fire.png"));
 	base.source.scaleMode = "nearest";
 
 	return {
