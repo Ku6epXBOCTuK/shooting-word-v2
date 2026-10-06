@@ -1,12 +1,14 @@
-import { Graphics } from "pixi.js";
-import { BULLET_RADIUS } from "../config.js";
+import { Sprite } from "pixi.js";
+import { BULLET_SCALE } from "../config.js";
 import type { System, SystemFactory } from "./types.js";
 
 export const createBulletRenderSystem: SystemFactory = (ctx) => {
 	const bullets = ctx.world.with("bullet", "position");
 
 	const unsubscribeAdded = bullets.onEntityAdded.subscribe((entity) => {
-		const body = new Graphics().circle(0, 0, BULLET_RADIUS).fill("#ffd166");
+		const body = new Sprite(ctx.assets.bullet);
+		body.anchor.set(0.5);
+		body.scale.set(BULLET_SCALE);
 		entity.body = body;
 		ctx.app.stage.addChild(body);
 	});

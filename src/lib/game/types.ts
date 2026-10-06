@@ -1,4 +1,4 @@
-import type { Graphics, Text } from "pixi.js";
+import type { Graphics, Sprite, Text } from "pixi.js";
 
 export interface Position {
 	x: number;
@@ -53,6 +53,10 @@ export interface Bullet {
 	shooterId: string;
 }
 
+export interface Explosion {
+	age: number;
+}
+
 export interface Star {
 	age: number;
 	ttl: number;
@@ -71,10 +75,12 @@ export interface EntityComponents {
 	walker: Walker;
 	bullet: Bullet;
 	star: Star;
+	explosion: Explosion;
 	xp: number;
 	view: Text;
 	bar: Graphics;
-	body: Graphics;
+	body: Graphics | Sprite;
+	sprite: Sprite;
 }
 
 export type Entity = Partial<EntityComponents>;

@@ -26,6 +26,11 @@ export const createBulletSystem: SystemFactory = (ctx) => {
 			const step = entity.bullet.speed * dt;
 
 			if (distance <= Math.max(step, BULLET_HIT_DISTANCE)) {
+				ctx.world.add({
+					position: { x: target.position.x, y: target.position.y },
+					explosion: { age: 0 },
+				});
+
 				for (const viewer of viewers) {
 					if (viewer.viewer.userId === entity.bullet.shooterId) {
 						viewer.xp = (viewer.xp ?? 0) + 1;

@@ -7,7 +7,7 @@
 
 	const CHANNEL = "Ku6epXBOCTuK";
 
-	let game: ReturnType<typeof bootstrapGame> | null = null;
+	let game: Awaited<ReturnType<typeof bootstrapGame>> | null = null;
 
 	onMount(() => {
 		const chat: ChatPort = new TwurpleChatAdapter();
@@ -28,6 +28,8 @@
 
 <PixiOverlay
 	onReady={(app) => {
-		game = bootstrapGame(app);
+		void bootstrapGame(app).then((instance) => {
+			game = instance;
+		});
 	}}
 />

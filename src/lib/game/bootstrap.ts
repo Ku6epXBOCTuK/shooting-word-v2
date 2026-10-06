@@ -6,13 +6,16 @@ import type { GameContext } from "./context.js";
 import { systemGroups } from "./systems/index.js";
 import { persistViewers } from "./persistence.js";
 import { spawnViewer } from "./spawn.js";
+import { loadAssets } from "./assets.js";
 import { BULLET_SPEED, PLATFORM_HEIGHT, VIEWER_HEIGHT } from "./config.js";
 
 const MAX_FRAME_MS = 50;
 
-export function bootstrapGame(app: Application) {
+export async function bootstrapGame(app: Application) {
+	const assets = await loadAssets();
+
 	const world = new World<Entity>();
-	const ctx: GameContext = { world, app };
+	const ctx: GameContext = { world, app, assets };
 
 	const createGroups = () =>
 		systemGroups().map((group) =>
