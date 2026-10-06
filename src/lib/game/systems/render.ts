@@ -59,10 +59,11 @@ export const createRenderSystem: SystemFactory = (ctx) => {
 
 			if (entity.lifetime) {
 				const remaining = entity.lifetime.ttl - entity.lifetime.age;
-				const progress = Math.max(0, remaining / entity.lifetime.ttl);
+				const progress = Math.min(1, entity.lifetime.age / entity.lifetime.ttl);
 
 				view.alpha = Math.min(1, remaining / WORD_FADE_OUT);
 
+				const hue = 120 * (1 - progress);
 				const width = view.width * progress;
 				bar
 					.clear()
@@ -72,7 +73,7 @@ export const createRenderSystem: SystemFactory = (ctx) => {
 						width,
 						BAR_HEIGHT,
 					)
-					.fill("#ffffff");
+					.fill(`hsl(${hue}, 90%, 50%)`);
 				bar.alpha = view.alpha;
 			} else {
 				view.alpha = 1;
