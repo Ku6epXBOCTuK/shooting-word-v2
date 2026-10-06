@@ -1,17 +1,22 @@
 import type { SystemGroup } from "./types.js";
-import { createMovementSystem } from "./movement.js";
-import { createCleanupSystem } from "./cleanup.js";
+import { createFlightSystem } from "./flight.js";
+import { createPerspectiveSystem } from "./perspective.js";
+import { createLifetimeSystem } from "./lifetime.js";
 import { createRenderSystem } from "./render.js";
 
 export function systemGroups(): SystemGroup[] {
 	return [
 		{
-			name: "physics",
-			factories: [createMovementSystem],
+			name: "flight",
+			factories: [createFlightSystem],
 		},
 		{
-			name: "lifecycle",
-			factories: [createCleanupSystem],
+			name: "perspective",
+			factories: [createPerspectiveSystem],
+		},
+		{
+			name: "lifetime",
+			factories: [createLifetimeSystem],
 		},
 		{
 			name: "render",
