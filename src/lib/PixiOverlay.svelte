@@ -2,8 +2,10 @@
 	import { Application } from "pixi.js";
 	import { onMount } from "svelte";
 
+	let { onReady }: { onReady?: (app: Application) => void } = $props();
+
 	let canvas: HTMLCanvasElement;
-	export const app: Application = new Application();
+	const app: Application = new Application();
 
 	onMount(() => {
 		let destroyed = false;
@@ -15,7 +17,11 @@
 				resizeTo: window,
 				antialias: true,
 			});
-			if (destroyed) app.destroy(true);
+			if (destroyed) {
+				app.destroy(true);
+				return;
+			}
+			onReady?.(app);
 		})();
 
 		return () => {

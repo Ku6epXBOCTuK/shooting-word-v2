@@ -3,20 +3,28 @@
 	import PixiOverlay from "#lib/PixiOverlay.svelte";
 	import { TwurpleChatAdapter } from "#lib/chat/twurple-adapter.js";
 	import type { ChatPort } from "#lib/chat/port.js";
+	import { bootstrapGame } from "#lib/game/index.js";
 
 	const CHANNEL = "Ku6epXBOCTuK";
+
+	let game: ReturnType<typeof bootstrapGame> | null = null;
 
 	onMount(() => {
 		const chat: ChatPort = new TwurpleChatAdapter();
 
-		chat.onMessage(({ user, text }) => {
-			console.log(`[chat] ${user}: ${text}`);
-		});
-
+		chat.onMessage((message) => game?.spawnWord(message));
 		chat.connect(CHANNEL);
 
-		return () => chat.disconnect();
+		return () => {
+			chat.disconnect();
+			game?.destroy();
+			game = null;
+		};
 	});
 </script>
 
-<PixiOverlay />
+<PixiOverlay
+	onReady={(app) => {
+		game = bootstrapGame(app);
+	}}
+/>

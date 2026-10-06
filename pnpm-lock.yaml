@@ -172,6 +172,9 @@ importers:
       '@twurple/chat':
         specifier: ^8.2.0
         version: 8.2.0(@twurple/auth@8.2.0)
+      miniplex:
+        specifier: ^2.0.0
+        version: 2.0.0
       pixi.js:
         specifier: ^8.22.0
         version: 8.22.0
@@ -308,6 +311,12 @@ packages:
     resolution: {integrity: sha512-IkO+/KEUvwbVpiURZg+P7zF74z5Jxe0UgJxVni+RtoHQ6IZieXaO02kmadomap/q+l6bc/jdPGGqTjhuZnuz1Q==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
+  '@hmans/id@0.0.1':
+    resolution: {integrity: sha512-2BxHxZziST8F0P5Dt+UuttF2lwCaKK7QFR814PwEp708l6dm86pjWJAFr7BKyAGu27mRpYcghvCAUAucNdsCdw==}
+
+  '@hmans/queue@0.0.1':
+    resolution: {integrity: sha512-Mm8oQRFRoiEYQ3QD9CD14DTaShd21nzNrUFyBhFxy+TduKf2PdMRfHHx7lDvEpbODGNlj+e8mcWGj/YjWmC3Bw==}
+
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
     engines: {node: '>=18.18.0'}
@@ -352,6 +361,9 @@ packages:
 
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
+
+  '@miniplex/bucket@2.0.0':
+    resolution: {integrity: sha512-jdAW0vG0tLel0dD0lyQqkQ4g4G9CscbVtenu35jB48fnVK3zmfFmQKIxXHsUvFs4KAN44UESAgaVOroTetFSRw==}
 
   '@oxc-project/types@0.152.0':
     resolution: {integrity: sha512-oM/5rLBm2tPkg0iBgkH/FOeR3PCDpY19GTgAZjMFM8h9WI9VW7cLgzp6nwtarYKmovavIQZ+Fe/RKX/8C8O/Rw==}
@@ -821,6 +833,9 @@ packages:
   eventemitter3@5.0.4:
     resolution: {integrity: sha512-mlsTRyGaPBjPedk6Bvw+aqbsXDtoAyAzm5MO7JgU+yVRyMQ5O8bD4Kcci7BS85f93veegeCPkL8R4GLClnjLFw==}
 
+  eventery@0.0.4:
+    resolution: {integrity: sha512-rQbXJG8WX9z2cm3IJadkSUZLWFXuwGMIJ40oWyB23DhVb1e92T7Jx3qF0UwtgHI7D4VZzVswbZ7MXfW88cFF4Q==}
+
   expect-type@1.4.0:
     resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==}
     engines: {node: '>=12.0.0'}
@@ -1035,6 +1050,9 @@ packages:
   minimatch@10.2.6:
     resolution: {integrity: sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==}
     engines: {node: 18 || 20 || >=22}
+
+  miniplex@2.0.0:
+    resolution: {integrity: sha512-pJlxmlPf5Qyx12amgOCyRE6Lzw28ct2G0lF9xn7/xudLtA/xDOUnCIU2xOxCk8GkjePYctcNpjmFshJp/Ht66A==}
 
   mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
@@ -1501,6 +1519,10 @@ snapshots:
       '@eslint/core': 1.2.1
       levn: 0.4.1
 
+  '@hmans/id@0.0.1': {}
+
+  '@hmans/queue@0.0.1': {}
+
   '@humanfs/core@0.19.2':
     dependencies:
       '@humanfs/types': 0.15.0
@@ -1543,6 +1565,10 @@ snapshots:
       keyv: 5.6.0
 
   '@keyv/serialize@1.1.1': {}
+
+  '@miniplex/bucket@2.0.0':
+    dependencies:
+      eventery: 0.0.4
 
   '@oxc-project/types@0.152.0': {}
 
@@ -2018,6 +2044,8 @@ snapshots:
 
   eventemitter3@5.0.4: {}
 
+  eventery@0.0.4: {}
+
   expect-type@1.4.0: {}
 
   fast-deep-equal@3.1.3: {}
@@ -2190,6 +2218,12 @@ snapshots:
   minimatch@10.2.6:
     dependencies:
       brace-expansion: 5.0.12
+
+  miniplex@2.0.0:
+    dependencies:
+      '@hmans/id': 0.0.1
+      '@hmans/queue': 0.0.1
+      '@miniplex/bucket': 2.0.0
 
   mri@1.2.0: {}
 

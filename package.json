@@ -48,6 +48,7 @@
 	"dependencies": {
 		"@twurple/auth": "^8.2.0",
 		"@twurple/chat": "^8.2.0",
+		"miniplex": "^2.0.0",
 		"pixi.js": "^8.22.0"
 	}
 }
