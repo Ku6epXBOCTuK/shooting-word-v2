@@ -2,6 +2,23 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.2.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/a04bfd611948359b45ed2418f00fe0b710aac2b2..0.2.0) - 2026-10-06
+#### Features
+- add xp star - ([05dc074](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/05dc074eaa1c71033d356b3f94dc6c730d3f60ab)) - Ku6epXBOCTuK
+- add expirience to viewer - ([65933c0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/65933c09d7a21f8f64f036120d10aa44c37a0430)) - Ku6epXBOCTuK
+- add shoot ability, bullets - ([1a4f824](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/1a4f82430f9d70cbffdd91652658e03111ceba97)) - Ku6epXBOCTuK
+- players persistence and timeout - ([41ad099](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/41ad09954571e81f88eebf2318671884f8b04af5)) - Ku6epXBOCTuK
+- box walking players, field - ([37b0993](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/37b0993d77e9df9bb5f1631119db51a981340248)) - Ku6epXBOCTuK
+- add enemy spawner - ([ab3c461](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/ab3c461ef6886a81603aebb424af3ac04379657e)) - Ku6epXBOCTuK
+- add perspective flight and lifetime - ([ebea6c0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/ebea6c0ceee4ac8cb0f55f27651c16b08662998d)) - Ku6epXBOCTuK
+- add miniplex, base ecs components and systems - ([befc3e4](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/befc3e4f69a834d0dc9546b5ba32855de852ee8d)) - Ku6epXBOCTuK
+- add twitch port and adapter - ([b037f73](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/b037f73d812851abc65274912a8c25c0f69b85fa)) - Ku6epXBOCTuK
+#### Bug Fixes
+- hmr 500 error, pixi destroy flow - ([566b5c9](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/566b5c9b641bdbc2e9cf591248fb65f579f057cd)) - Ku6epXBOCTuK
+- enemies dont appear at players areas - ([9a81c7d](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/9a81c7d63955a23b97a16716476e87faecd5076d)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.1.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/4c14837817055a52121e202015bac9d678891545..0.1.0) - 2026-10-06
 #### Features
 - scaffold - ([4c14837](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/4c14837817055a52121e202015bac9d678891545)) - Ku6epXBOCTuK
