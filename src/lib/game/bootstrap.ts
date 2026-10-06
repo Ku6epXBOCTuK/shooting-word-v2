@@ -81,7 +81,7 @@ export function bootstrapGame(app: Application) {
 			};
 
 			world.add({
-				bullet: { target, speed: BULLET_SPEED },
+				bullet: { target, speed: BULLET_SPEED, shooterId: message.userId },
 				position: { x: from.x, y: from.y },
 			});
 		},

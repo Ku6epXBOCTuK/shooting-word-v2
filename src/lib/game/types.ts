@@ -50,6 +50,7 @@ export interface Walker {
 export interface Bullet {
 	target: Entity;
 	speed: number;
+	shooterId: string;
 }
 
 export interface EntityComponents {
@@ -63,6 +64,7 @@ export interface EntityComponents {
 	viewer: Viewer;
 	walker: Walker;
 	bullet: Bullet;
+	xp: number;
 	view: Text;
 	bar: Graphics;
 	body: Graphics;

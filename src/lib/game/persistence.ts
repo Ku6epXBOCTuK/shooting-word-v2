@@ -3,17 +3,20 @@ import type { Entity, Viewer } from "./types.js";
 
 const STORAGE_KEY = "shooting-word:viewers";
 
-function isViewer(value: unknown): value is Viewer {
+export type StoredViewer = Viewer & { xp: number };
+
+function isStoredViewer(value: unknown): value is StoredViewer {
 	if (typeof value !== "object" || value === null) return false;
 	const viewer = value as Record<string, unknown>;
 	return (
 		typeof viewer.userId === "string" &&
 		typeof viewer.user === "string" &&
-		typeof viewer.lastSeen === "number"
+		typeof viewer.lastSeen === "number" &&
+		(viewer.xp === undefined || typeof viewer.xp === "number")
 	);
 }
 
-export function loadViewers(): Viewer[] {
+export function loadViewers(): StoredViewer[] {
 	try {
 		const raw = localStorage.getItem(STORAGE_KEY);
 		if (!raw) return [];
@@ -21,16 +24,19 @@ export function loadViewers(): Viewer[] {
 		const parsed: unknown = JSON.parse(raw);
 		if (!Array.isArray(parsed)) return [];
 
-		return parsed.filter(isViewer);
+		return parsed.filter(isStoredViewer).map((viewer) => ({
+			...viewer,
+			xp: viewer.xp ?? 0,
+		}));
 	} catch {
 		return [];
 	}
 }
 
 export function persistViewers(world: World<Entity>): void {
-	const viewers: Viewer[] = [];
+	const viewers: StoredViewer[] = [];
 	for (const entity of world.with("viewer")) {
-		viewers.push(entity.viewer);
+		viewers.push({ ...entity.viewer, xp: entity.xp ?? 0 });
 	}
 
 	try {

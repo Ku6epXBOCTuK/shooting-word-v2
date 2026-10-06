@@ -42,6 +42,7 @@ export function spawnViewer(
 	world: World<Entity>,
 	viewer: Viewer,
 	screen: Size,
+	xp = 0,
 ) {
 	const halfWidth = VIEWER_WIDTH / 2;
 	const x =
@@ -49,6 +50,7 @@ export function spawnViewer(
 
 	world.add({
 		viewer,
+		xp,
 		position: { x, y: 0 },
 		walker: {
 			direction: Math.random() < 0.5 ? -1 : 1,

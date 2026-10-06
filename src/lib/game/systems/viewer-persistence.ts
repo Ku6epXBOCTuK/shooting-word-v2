@@ -10,7 +10,7 @@ export const createViewerPersistenceSystem: SystemFactory = (ctx) => {
 
 	for (const viewer of loadViewers()) {
 		if (now - viewer.lastSeen < VIEWER_TIMEOUT_MS) {
-			spawnViewer(ctx.world, viewer, ctx.app.screen);
+			spawnViewer(ctx.world, viewer, ctx.app.screen, viewer.xp);
 		}
 	}
 
