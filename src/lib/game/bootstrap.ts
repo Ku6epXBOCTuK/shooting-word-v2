@@ -80,14 +80,13 @@ export async function bootstrapGame(app: Application) {
 			const text = message.text.trim().toLowerCase();
 			if (!text) return;
 
-			let target: Entity | undefined;
+			const targets: Entity[] = [];
 			for (const entity of world.with("word", "position")) {
 				if (entity.word.text.toLowerCase() === text) {
-					target = entity;
-					break;
+					targets.push(entity);
 				}
 			}
-			if (!target) return;
+			if (targets.length === 0) return;
 
 			let from: { x: number; y: number } | undefined;
 			for (const entity of world.with("viewer", "position")) {
@@ -104,10 +103,12 @@ export async function bootstrapGame(app: Application) {
 				y: app.screen.height - VIEWER_GROUND_MARGIN,
 			};
 
-			world.add({
-				bullet: { target, speed: BULLET_SPEED, shooterId: message.userId },
-				position: { x: from.x, y: from.y },
-			});
+			for (const target of targets) {
+				world.add({
+					bullet: { target, speed: BULLET_SPEED, shooterId: message.userId },
+					position: { x: from.x, y: from.y },
+				});
+			}
 		},
 
 		start() {
