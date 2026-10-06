@@ -1,0 +1,75 @@
+name: Bump version
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run-checks:
+    uses: ./.github/workflows/checks.yml
+  bump:
+    needs: run-checks
+    runs-on: ubuntu-latest
+    outputs:
+      bumped: ${{ steps.check-bump.outputs.bumped }}
+      new_version: ${{ steps.get-tag.outputs.version }}
+
+    steps:
+      - name: Generate Token
+        id: generate_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.XBOCT_BOT_ID }}
+          private-key: ${{ secrets.XBOCT_BOT_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
+          fetch-depth: 0
+
+      - name: Setup Cocogitto
+        uses: ./.github/actions/setup-cocogitto
+
+      - name: Check if bump is needed
+        id: check-bump
+        run: |
+          BUMP_OUTPUT=$(cog bump --auto --dry-run 2>&1)
+
+          if [[ "$BUMP_OUTPUT" == *"No conventional commits"* ]]; then
+            echo "No bump needed."
+            echo "bumped=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected, proceeding..."
+            echo "bumped=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Actual Bump and Push
+        if: steps.check-bump.outputs.bumped == 'true'
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          cog bump --auto --skip-ci
+          git push origin main --tags
+
+      - name: Get New Version
+        id: get-tag
+        if: steps.check-bump.outputs.bumped == 'true'
+        run: |
+          VERSION=$(git describe --tags --abbrev=0)
+          echo "Detected version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+  github-release:
+    needs: bump
+    if: needs.bump.outputs.bumped == 'true'
+    uses: ./.github/workflows/release.yml
+    with:
+      version: ${{ needs.bump.outputs.new_version }}
+    secrets: inherit

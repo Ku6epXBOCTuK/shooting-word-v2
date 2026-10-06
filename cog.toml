@@ -1,0 +1,19 @@
+branch_whitelist = ["main"]
+ignore_merge_commits = true
+tag_prefix = ""
+
+pre_bump_hooks = ["npm version {{version}} --no-git-tag-version"]
+
+[changelog]
+path = "CHANGELOG.md"
+template = "remote"
+remote = "github.com"
+repository = "shooting-word-v2"
+owner = "Ku6epXBOCTuK"
+
+[commit_types]
+build = { omit_from_changelog = true }
+chore = { omit_from_changelog = true }
+ci = { omit_from_changelog = true }
+docs = { omit_from_changelog = true }
+test = { omit_from_changelog = true }

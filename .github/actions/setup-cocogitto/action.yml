@@ -1,0 +1,24 @@
+name: "Setup Cocogitto"
+description:
+  "Installs a specific version of Cocogitto and cleans up the workspace"
+inputs:
+  version:
+    description: "Cocogitto version to install"
+    required: true
+    default: "7.0.0"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Cocogitto
+      shell: bash
+      run: |
+        VERSION="${{ inputs.version }}"
+        URL="https://github.com/cocogitto/cocogitto/releases/download/${VERSION}/cocogitto-${VERSION}-x86_64-unknown-linux-musl.tar.gz"
+
+        curl -LOf "$URL"
+        tar -xzf "cocogitto-${VERSION}-x86_64-unknown-linux-musl.tar.gz"
+
+        sudo mv $(find . -name cog -type f -executable) /usr/local/bin/
+        git clean -fd
+        cog --version
