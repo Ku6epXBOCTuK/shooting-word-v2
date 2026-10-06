@@ -10,13 +10,3 @@
       удаление врага и т.д.
 - [ ] оптимизация, вроде world.with("word", "position") должен быть реактивным и
       можно обходить цикл на одной переменной во внешнем скоупе
-- [ ] hmr выдает ошибку
-
-      ```
-      client-warnings.js?v=120a47e0:136 [sveltekit] hmr_reload_after_error
-      The next HMR update will cause the page to reload
-      [https://svelte.dev/e/kit/hmr_reload_after_error](https://svelte.dev/e/kit/hmr_reload_after_error)
-      app.js:16 TypeError: Cannot read properties of null (reading 'remove')
-      at Object.destroy (bootstrap.ts:87:15)
-      at +page.svelte:22:10
-      ```

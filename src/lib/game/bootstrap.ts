@@ -120,7 +120,7 @@ export function bootstrapGame(app: Application) {
 			if (isDestroyed) return;
 			isDestroyed = true;
 
-			app.ticker.remove(update);
+			app.ticker?.remove(update);
 			world.clear();
 
 			for (const group of groups) {
