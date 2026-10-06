@@ -47,6 +47,11 @@ export interface Walker {
 	timer: number;
 }
 
+export interface Bullet {
+	target: Entity;
+	speed: number;
+}
+
 export interface EntityComponents {
 	position: Position;
 	position3: Position3;
@@ -57,6 +62,7 @@ export interface EntityComponents {
 	word: Word;
 	viewer: Viewer;
 	walker: Walker;
+	bullet: Bullet;
 	view: Text;
 	bar: Graphics;
 	body: Graphics;

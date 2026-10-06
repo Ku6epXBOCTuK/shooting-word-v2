@@ -1,10 +1,12 @@
 import type { Application, Ticker } from "pixi.js";
 import { World } from "miniplex";
+import type { ChatMessage } from "#lib/chat/port.js";
 import type { Entity, ViewerIdentity } from "./types.js";
 import type { GameContext } from "./context.js";
 import { systemGroups } from "./systems/index.js";
 import { persistViewers } from "./persistence.js";
 import { spawnViewer } from "./spawn.js";
+import { BULLET_SPEED, PLATFORM_HEIGHT, VIEWER_HEIGHT } from "./config.js";
 
 const MAX_FRAME_MS = 50;
 
@@ -48,6 +50,40 @@ export function bootstrapGame(app: Application) {
 
 			spawnViewer(world, { ...identity, lastSeen: Date.now() }, app.screen);
 			persistViewers(world);
+		},
+
+		shoot: (message: ChatMessage) => {
+			const text = message.text.trim().toLowerCase();
+			if (!text) return;
+
+			let target: Entity | undefined;
+			for (const entity of world.with("word", "position")) {
+				if (entity.word.text.toLowerCase() === text) {
+					target = entity;
+					break;
+				}
+			}
+			if (!target) return;
+
+			let from: { x: number; y: number } | undefined;
+			for (const entity of world.with("viewer", "position")) {
+				if (entity.viewer.userId === message.userId) {
+					from = {
+						x: entity.position.x,
+						y: entity.position.y - VIEWER_HEIGHT / 2,
+					};
+					break;
+				}
+			}
+			from ??= {
+				x: app.screen.width / 2,
+				y: app.screen.height - PLATFORM_HEIGHT,
+			};
+
+			world.add({
+				bullet: { target, speed: BULLET_SPEED },
+				position: { x: from.x, y: from.y },
+			});
 		},
 
 		start() {

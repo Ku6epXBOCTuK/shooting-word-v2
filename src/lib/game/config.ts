@@ -25,3 +25,7 @@ export const WALK_MAX_TURN_TIME = 4;
 export const VIEWER_TIMEOUT_MS = 30 * 60 * 1000;
 
 export const ENEMY_BOTTOM_MARGIN = PLATFORM_HEIGHT + VIEWER_HEIGHT + 40;
+
+export const BULLET_SPEED = 700;
+export const BULLET_RADIUS = 4;
+export const BULLET_HIT_DISTANCE = 30;

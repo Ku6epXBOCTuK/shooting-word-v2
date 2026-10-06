@@ -14,6 +14,7 @@
 
 		chat.onMessage((message) => {
 			game?.joinViewer({ userId: message.userId, user: message.user });
+			game?.shoot(message);
 		});
 		chat.connect(CHANNEL);
 
