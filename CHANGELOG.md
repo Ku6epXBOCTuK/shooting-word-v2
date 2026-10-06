@@ -2,6 +2,26 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.3.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/e9f823145d860cd8a7df8303442d8142bc39c652..0.3.0) - 2026-10-06
+#### Features
+- add regen hp system - ([cad7c5a](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/cad7c5a2662d6010678b728dc2e7123a9568dc2a)) - Ku6epXBOCTuK
+- enemies shoot to viewers - ([178bc14](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/178bc14241b54e3cf1c43c34544ac2a8f7aa7e99)) - Ku6epXBOCTuK
+- move obs overlay to game, add index page - ([1df81ae](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/1df81aee3d84684fce1400dcf753c97333755a77)) - Ku6epXBOCTuK
+- static and server versions with different features - ([f3dd8fc](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/f3dd8fc64af6f8a5e9535692ae0f4e82f2638d5a)) - Ku6epXBOCTuK
+- add hp to ships - ([6a78b52](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/6a78b52ce1d868830dec5685cf97ac069211724f)) - Ku6epXBOCTuK
+- add backplate to use as obs overlay - ([e38dcb1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/e38dcb1dd104b1627c4bcbfeb3b44aa446b50682)) - Ku6epXBOCTuK
+- shoot to all enemies with corresponding word - ([6ffe529](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/6ffe529fcb30749008999c799f186afb471cd1b2)) - Ku6epXBOCTuK
+- add spaceship skins - ([0aa0fc2](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/0aa0fc2b378228f4995b928916d4587d0bbf6d73)) - Ku6epXBOCTuK
+- explosion enemies on hit - ([e9f8231](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/e9f823145d860cd8a7df8303442d8142bc39c652)) - Ku6epXBOCTuK
+#### Bug Fixes
+- enemies shoot to random viewer if all viewers has 0 hp - ([803700f](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/803700ffe6d6b23bc6d48b9dbd6a3dff584f147e)) - Ku6epXBOCTuK
+- enemies progress bar color - ([2458b97](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/2458b978007934cdd9f55478499e9c6f3e755445)) - Ku6epXBOCTuK
+- viewers timeout increase - ([f7bc383](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/f7bc383b865a9afa738f1c2abce6624d8897d2f0)) - Ku6epXBOCTuK
+- viewers walks in screen range - ([0d7ea3a](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/0d7ea3a19f42d71abf3b41a069e861d0617441a0)) - Ku6epXBOCTuK
+- use displayname instead of username - ([1236b19](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/1236b19a3e6c4e53898e6fda07b2b334c790cb74)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.2.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/a04bfd611948359b45ed2418f00fe0b710aac2b2..0.2.0) - 2026-10-06
 #### Features
 - add xp star - ([05dc074](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/05dc074eaa1c71033d356b3f94dc6c730d3f60ab)) - Ku6epXBOCTuK
