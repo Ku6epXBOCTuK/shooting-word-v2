@@ -4,6 +4,7 @@ import { createFlightSystem } from "./flight.js";
 import { createPerspectiveSystem } from "./perspective.js";
 import { createLifetimeSystem } from "./lifetime.js";
 import { createWalkSystem } from "./walk.js";
+import { createRegenSystem } from "./regen.js";
 import { createBulletSystem } from "./bullet.js";
 import { createBulletRenderSystem } from "./bullet-render.js";
 import { createStarSystem } from "./star.js";
@@ -48,6 +49,7 @@ export function systemGroups(): SystemGroup[] {
 			name: "viewers",
 			factories: [
 				createWalkSystem,
+				createRegenSystem,
 				createViewerTimeoutSystem,
 				createViewerPersistenceSystem,
 			],
