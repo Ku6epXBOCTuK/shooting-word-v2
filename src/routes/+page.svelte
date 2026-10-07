@@ -1,5 +1,6 @@
 <script lang="ts">
 	import CommanderCard from "#lib/landing/CommanderCard.svelte";
+	import BackdropWords from "#lib/landing/BackdropWords.svelte";
 	import Hero from "#lib/landing/Hero.svelte";
 	import ScoutCard from "#lib/landing/ScoutCard.svelte";
 </script>
@@ -8,6 +9,7 @@
 	<main class="site-shell">
 		<div class="noise" aria-hidden="true"></div>
 		<div class="star-field" aria-hidden="true"></div>
+		<BackdropWords />
 
 		<Hero />
 
