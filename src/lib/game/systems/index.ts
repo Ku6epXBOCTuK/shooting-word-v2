@@ -1,4 +1,5 @@
 import type { SystemGroup } from "./types.js";
+import { createSessionSystem } from "./session.js";
 import { createEnemySpawnSystem } from "./spawn-enemies.js";
 import { createFlightSystem } from "./flight.js";
 import { createPerspectiveSystem } from "./perspective.js";
@@ -27,6 +28,10 @@ import { createCleanupSystem } from "./cleanup.js";
 
 export function systemGroups(): SystemGroup[] {
 	return [
+		{
+			name: "session",
+			factories: [createSessionSystem],
+		},
 		{
 			name: "spawn",
 			factories: [createEnemySpawnSystem],
