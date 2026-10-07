@@ -25,7 +25,7 @@ export default defineConfig(
 		},
 	},
 	{
-		files: ["src/lib/logger.ts"],
+		files: ["src/lib/logger.ts", "scripts/**"],
 		rules: {
 			"no-console": "off",
 		},
