@@ -2,6 +2,30 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.5.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/07dc5eecce47545668c0c45670116fa0dfe13a80..0.5.0) - 2026-10-07
+#### Features
+- add server storage - ([fc7732c](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/fc7732c96580d23b0a86840a99d2d67ee7cfdb87)) - Ku6epXBOCTuK
+- add new widget/[uuid] link for node variant - ([84da5b2](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/84da5b2c4d5db542a518398b7070c2e042950637)) - Ku6epXBOCTuK
+- map data to broadcaster - ([ca2ac61](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/ca2ac61bd5f3f06ca187685d734949fdca7a97d6)) - Ku6epXBOCTuK
+- add sqlite support, initial tables - ([0141323](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/01413230d98b0627a7990bb1a6f1247ba81972bb)) - Ku6epXBOCTuK
+- move fx frames to grid labels - ([8fe172b](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/8fe172bdf6fb22280a5f2af64348d0249e7ad157)) - Ku6epXBOCTuK
+- add respawning portal render - ([8531622](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/8531622bf2ed5880953912fe997babaeacbb05ac)) - Ku6epXBOCTuK
+- add respawn system - ([f9e2f66](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/f9e2f66255897e031a9b38a6268f6133a8b3db03)) - Ku6epXBOCTuK
+- add respawn scheduler system - ([3585eb2](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/3585eb2fc4e8a6d2f77b416e1acc7d26b46bdc26)) - Ku6epXBOCTuK
+- game over banner component - ([c148b0c](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/c148b0c9172457992b4f201fd8865e622ff6eb22)) - Ku6epXBOCTuK
+- add dead component, viewers blast - ([90e20de](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/90e20de2a14436e5338822567988e664c52ca730)) - Ku6epXBOCTuK
+- add start game into session - ([ef579d4](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/ef579d40e11562f16abe98d54c925695171f2a21)) - Ku6epXBOCTuK
+- add session singletone component - ([ff48f58](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/ff48f5838e3933cf5bcde0f5a00b1ac5734c5a70)) - Ku6epXBOCTuK
+- add viewers scale - ([f875bf1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/f875bf1f2f48df6f277b1a20073ac98e49c4a8e9)) - Ku6epXBOCTuK
+- logger, cut logging on prod - ([6d797d3](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/6d797d3f7d55001f69b09c9bde617f0286642314)) - Ku6epXBOCTuK
+- add shield regen and hp - ([07dc5ee](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/07dc5eecce47545668c0c45670116fa0dfe13a80)) - Ku6epXBOCTuK
+#### Bug Fixes
+- remove hp clamp in idle mode - ([68c23eb](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/68c23eb2c70a0d3389e33ce173ece9e14e9aa235)) - Ku6epXBOCTuK
+- destroyed ship dont shoot - ([5e36b99](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/5e36b99220917b260de5abdf82296ba665cf552b)) - Ku6epXBOCTuK
+- viewers revive after game over, add test bots - ([e6f39b2](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/e6f39b2b03aeb4b90eb64eb8665baf65a0ce95a1)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.4.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/2fbd3302e23264948c341df1eb5c0a03b38ca0be..0.4.0) - 2026-10-07
 #### Features
 - separate persistance storage, add viewer storage layer - ([37acb89](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/37acb89e64ef80e4d31e1a2f9805df46dec5ef47)) - Ku6epXBOCTuK
