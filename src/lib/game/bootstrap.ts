@@ -24,7 +24,7 @@ import {
 
 const MAX_FRAME_MS = 50;
 
-export async function bootstrapGame(app: Application) {
+export async function bootstrapGame(app: Application, uuid?: string) {
 	const assets = await loadAssets();
 
 	const world = new World<Entity>();
@@ -35,7 +35,7 @@ export async function bootstrapGame(app: Application) {
 		world,
 		app,
 		assets,
-		viewerStore: createViewerStore(),
+		viewerStore: createViewerStore(uuid),
 		viewersDirty: false,
 	};
 

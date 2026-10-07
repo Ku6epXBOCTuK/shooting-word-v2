@@ -2,12 +2,12 @@
 
 ## Технические задачи
 
-- [ ] изменить persistance - static - localstorage, node - server
-- [ ] node sqlite - вместо json файлов
+- [x] изменить persistance - static - localstorage, node - server
+- [x] node sqlite - вместо json файлов
 - [ ] списание баллов (fullfilment) должно настраиваться в конфиге
 - [ ] проверить статик билд - чтобы в билде вообще не было недоступных систем,
       ошибок, попыток авторизации и т.д.
-- [ ] persistence: добавить http-адаптер StoragePort + серверный endpoint
+- [x] persistence: добавить http-адаптер StoragePort + серверный endpoint
       /api/storage/:key для node-билда (порт и localStorage-адаптер уже есть в
       src/lib/features/persistence)
 - [ ] писать в чат от имени бот-аккаунта (отдельный токен бота, не основного
@@ -52,7 +52,7 @@ eventsub-листенер.
             понадобилась - uuid в URL и есть доступ
       - [x] 3.2. переезд виджета на роут /widget/[uuid] (сейчас /game?channel&uuid)
 
-- [ ] 4. persistence: http-адаптер StoragePort -> /api/storage/[uuid]/[key],
+- [x] 4. persistence: http-адаптер StoragePort -> /api/storage/[uuid]/[key],
       viewer-store в sqlite (есть в беклоге технических задач), localStorage
       остаётся для статик-билда. Записи принимать только по валидному uuid (uuid
       = секрет), при невалидном - 404

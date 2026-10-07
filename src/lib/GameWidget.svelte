@@ -78,7 +78,7 @@
 
 <PixiOverlay
 	onReady={(app) => {
-		void bootstrapGame(app).then((instance) => {
+		void bootstrapGame(app, uuid).then((instance) => {
 			game = instance;
 		});
 	}}
