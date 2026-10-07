@@ -36,7 +36,7 @@
 глобальный provider, плоский reward-ids.json, глобальные map щитов и один
 eventsub-листенер.
 
-- [ ] 1. sqlite (встроенный node:sqlite, без зависимостей; на шаге bun -
+- [x] 1. sqlite (встроенный node:sqlite, без зависимостей; на шаге bun -
       переключение на bun:sqlite через тонкую обёртку драйвера): таблицы
       broadcasters (user_id, login, widget uuid, token json), reward_ids
       (broadcaster_id, key, reward_id), viewers (broadcaster_id, user_id, data
