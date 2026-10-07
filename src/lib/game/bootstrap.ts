@@ -37,7 +37,6 @@ export async function bootstrapGame(app: Application) {
 		assets,
 		viewerStore: createViewerStore(),
 		viewersDirty: false,
-		restoreViewers: () => {},
 	};
 
 	const createGroups = () =>
@@ -61,7 +60,6 @@ export async function bootstrapGame(app: Application) {
 			}
 		}
 	};
-	ctx.restoreViewers = () => void restoreViewers();
 	void restoreViewers();
 
 	let timeScale = 1;

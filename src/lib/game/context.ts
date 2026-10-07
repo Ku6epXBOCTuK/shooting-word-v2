@@ -10,5 +10,4 @@ export interface GameContext {
 	assets: GameAssets;
 	viewerStore: ViewerStore;
 	viewersDirty: boolean;
-	restoreViewers: () => void;
 }

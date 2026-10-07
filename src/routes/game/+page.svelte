@@ -27,6 +27,13 @@
 				game?.startGame();
 				return;
 			}
+			if (text === "!боты") {
+				for (let i = 0; i < 5; i++) {
+					const id = Math.random().toString(36).slice(2, 8);
+					game?.joinViewer({ userId: `bot-${id}`, user: `бот-${id}` });
+				}
+				return;
+			}
 			if (text.startsWith("!скин")) {
 				const argument = text.slice("!скин".length).trim();
 				const skin = Number.parseInt(argument, 10);

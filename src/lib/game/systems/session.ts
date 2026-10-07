@@ -60,6 +60,18 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 		setPhase(entity, SESSIONPHASE.GAMEOVER);
 	};
 
+	const revivePlayers = () => {
+		for (const entity of viewers) {
+			if (!entity.dead) continue;
+			ctx.world.removeComponent(entity, "dead");
+			if (entity.hp) {
+				entity.hp.current = entity.hp.max;
+				entity.hp.regenIn = undefined;
+			}
+		}
+		ctx.viewersDirty = true;
+	};
+
 	return (dt) => {
 		for (const entity of sessions) {
 			const session = entity.session;
@@ -88,7 +100,7 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 				for (const banner of banners) {
 					ctx.world.remove(banner);
 				}
-				ctx.restoreViewers();
+				revivePlayers();
 				setPhase(entity, SESSIONPHASE.IDLE);
 			}
 		}
