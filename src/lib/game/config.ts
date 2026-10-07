@@ -45,3 +45,4 @@ export const BULLET_SCALE = 2;
 
 export const ENEMY_SHOT_SPEED = 400;
 export const ENEMY_SHOT_DAMAGE = 1;
+export const ENEMY_SHOT_HIT_DISTANCE = 20;

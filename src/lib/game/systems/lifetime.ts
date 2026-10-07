@@ -1,5 +1,9 @@
 import type { With } from "miniplex";
-import { ENEMY_SHOT_DAMAGE, ENEMY_SHOT_SPEED } from "../config.js";
+import {
+	ENEMY_SHOT_DAMAGE,
+	ENEMY_SHOT_HIT_DISTANCE,
+	ENEMY_SHOT_SPEED,
+} from "../config.js";
 import type { Entity } from "../types.js";
 import type { SystemFactory } from "./types.js";
 
@@ -48,10 +52,11 @@ export const createLifetimeSystem: SystemFactory = (ctx) => {
 			if (target) {
 				ctx.world.add({
 					position: { x: entity.position.x, y: entity.position.y },
-					enemyShot: {
+					enemyShot: { damage: ENEMY_SHOT_DAMAGE },
+					homing: {
 						target,
 						speed: ENEMY_SHOT_SPEED,
-						damage: ENEMY_SHOT_DAMAGE,
+						hitDistance: ENEMY_SHOT_HIT_DISTANCE,
 					},
 				});
 			}

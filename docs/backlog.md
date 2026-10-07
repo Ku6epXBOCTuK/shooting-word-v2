@@ -13,7 +13,7 @@
 - [x] ecs: разделить bullet.ts (4 ответственности: homing, коллизия, взрыв,
       награда xp+звезда+persist) - homing отдельно, реакции на попадание
       отдельно
-- [ ] ecs: объединить homing-движение bullet.ts и enemy-shot.ts - общий
+- [x] ecs: объединить homing-движение bullet.ts и enemy-shot.ts - общий
       компонент homing { target, speed } + одна homingSystem, bullet/enemyShot
       остаются данными для своих hit-систем
 - [ ] ecs: разделить lifetime.ts - система только старит и помечает expired,

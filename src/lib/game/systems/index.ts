@@ -6,14 +6,15 @@ import { createLifetimeSystem } from "./lifetime.js";
 import { createWalkSystem } from "./walk.js";
 import { createRegenSystem } from "./regen.js";
 import { createShieldSystem } from "./shield.js";
-import { createBulletSystem } from "./bullet.js";
+import { createHomingSystem } from "./homing.js";
+import { createBulletHitSystem } from "./bullet-hit.js";
 import { createWordKillSystem } from "./word-kill.js";
 import { createBulletRenderSystem } from "./bullet-render.js";
 import { createStarSystem } from "./star.js";
 import { createStarRenderSystem } from "./star-render.js";
 import { createExplosionSystem } from "./explosion.js";
 import { createExplosionRenderSystem } from "./explosion-render.js";
-import { createEnemyShotSystem } from "./enemy-shot.js";
+import { createEnemyShotHitSystem } from "./enemy-shot-hit.js";
 import { createEnemyShotRenderSystem } from "./enemy-shot-render.js";
 import { createViewerTimeoutSystem } from "./viewer-timeout.js";
 import { createViewerPersistenceSystem } from "./viewer-persistence.js";
@@ -42,9 +43,10 @@ export function systemGroups(): SystemGroup[] {
 		{
 			name: "combat",
 			factories: [
-				createBulletSystem,
+				createHomingSystem,
+				createBulletHitSystem,
 				createWordKillSystem,
-				createEnemyShotSystem,
+				createEnemyShotHitSystem,
 				createStarSystem,
 				createExplosionSystem,
 			],

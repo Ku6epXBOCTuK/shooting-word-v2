@@ -7,7 +7,12 @@ import { systemGroups } from "./systems/index.js";
 import { persistViewers } from "./persistence.js";
 import { spawnViewer } from "./spawn.js";
 import { loadAssets, SHIP_COUNT } from "./assets.js";
-import { BULLET_SPEED, VIEWER_GROUND_MARGIN, VIEWER_HEIGHT } from "./config.js";
+import {
+	BULLET_HIT_DISTANCE,
+	BULLET_SPEED,
+	VIEWER_GROUND_MARGIN,
+	VIEWER_HEIGHT,
+} from "./config.js";
 
 const MAX_FRAME_MS = 50;
 
@@ -120,7 +125,12 @@ export async function bootstrapGame(app: Application) {
 
 			for (const target of targets) {
 				world.add({
-					bullet: { target, speed: BULLET_SPEED, shooterId: message.userId },
+					bullet: { shooterId: message.userId },
+					homing: {
+						target,
+						speed: BULLET_SPEED,
+						hitDistance: BULLET_HIT_DISTANCE,
+					},
 					position: { x: from.x, y: from.y },
 				});
 			}

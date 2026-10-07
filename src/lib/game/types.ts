@@ -48,9 +48,13 @@ export interface Walker {
 	timer: number;
 }
 
-export interface Bullet {
+export interface Homing {
 	target: Entity;
 	speed: number;
+	hitDistance: number;
+}
+
+export interface Bullet {
 	shooterId: string;
 }
 
@@ -59,8 +63,6 @@ export interface Explosion {
 }
 
 export interface EnemyShot {
-	target: Entity;
-	speed: number;
 	damage: number;
 }
 
@@ -93,6 +95,8 @@ export interface EntityComponents {
 	word: Word;
 	viewer: Viewer;
 	walker: Walker;
+	homing: Homing;
+	arrived: boolean;
 	bullet: Bullet;
 	star: Star;
 	explosion: Explosion;
