@@ -1,15 +1,17 @@
-import { persistViewers } from "../persistence.js";
+import type { StoredViewer } from "#lib/features/persistence/index.js";
 import type { SystemFactory } from "./types.js";
 
-const SYNC_INTERVAL = 2;
-
 export const createViewerPersistenceSystem: SystemFactory = (ctx) => {
-	let timer = SYNC_INTERVAL;
+	const viewers = ctx.world.with("viewer");
 
-	return (dt) => {
-		timer -= dt;
-		if (timer > 0) return;
-		timer = SYNC_INTERVAL;
-		persistViewers(ctx.world);
+	return () => {
+		if (!ctx.viewersDirty) return;
+		ctx.viewersDirty = false;
+
+		const stored: StoredViewer[] = [];
+		for (const entity of viewers) {
+			stored.push({ ...entity.viewer, xp: entity.xp ?? 0 });
+		}
+		void ctx.viewerStore.save(stored);
 	};
 };

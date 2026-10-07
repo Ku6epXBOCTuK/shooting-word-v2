@@ -1,10 +1,10 @@
 import type { Application, Ticker } from "pixi.js";
 import { World } from "miniplex";
 import type { ChatMessage } from "#lib/chat/port.js";
+import { createViewerStore } from "#lib/features/persistence/index.js";
 import type { Entity, ViewerIdentity } from "./types.js";
 import type { GameContext } from "./context.js";
 import { systemGroups } from "./systems/index.js";
-import { loadViewers, persistViewers } from "./persistence.js";
 import { spawnViewer } from "./spawn.js";
 import { loadAssets, SHIP_COUNT } from "./assets.js";
 import {
@@ -21,7 +21,13 @@ export async function bootstrapGame(app: Application) {
 	const assets = await loadAssets();
 
 	const world = new World<Entity>();
-	const ctx: GameContext = { world, app, assets };
+	const ctx: GameContext = {
+		world,
+		app,
+		assets,
+		viewerStore: createViewerStore(),
+		viewersDirty: false,
+	};
 
 	const createGroups = () =>
 		systemGroups().map((group) =>
@@ -30,15 +36,15 @@ export async function bootstrapGame(app: Application) {
 
 	let groups = createGroups();
 
-	const restoreViewers = () => {
+	const restoreViewers = async () => {
 		const now = Date.now();
-		for (const viewer of loadViewers()) {
+		for (const viewer of await ctx.viewerStore.load()) {
 			if (now - viewer.lastSeen < VIEWER_TIMEOUT_MS) {
 				spawnViewer(world, viewer, app.screen, viewer.xp);
 			}
 		}
 	};
-	restoreViewers();
+	void restoreViewers();
 
 	let timeScale = 1;
 	let isDestroyed = false;
@@ -62,7 +68,7 @@ export async function bootstrapGame(app: Application) {
 				if (entity.viewer.userId === identity.userId) {
 					entity.viewer.user = identity.user;
 					entity.viewer.lastSeen = Date.now();
-					persistViewers(world);
+					ctx.viewersDirty = true;
 					return;
 				}
 			}
@@ -76,7 +82,7 @@ export async function bootstrapGame(app: Application) {
 				},
 				app.screen,
 			);
-			persistViewers(world);
+			ctx.viewersDirty = true;
 		},
 
 		applyShields: (shields: { userId: string; expiresAt: number }[]) => {
@@ -102,7 +108,7 @@ export async function bootstrapGame(app: Application) {
 				entity.viewer.skin = valid
 					? skin - 1
 					: Math.floor(Math.random() * SHIP_COUNT);
-				persistViewers(world);
+				ctx.viewersDirty = true;
 				return;
 			}
 		},
@@ -174,7 +180,7 @@ export async function bootstrapGame(app: Application) {
 			}
 
 			groups = createGroups();
-			restoreViewers();
+			void restoreViewers();
 			timeScale = 1;
 		},
 

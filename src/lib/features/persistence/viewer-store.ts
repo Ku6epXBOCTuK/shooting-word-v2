@@ -1,7 +1,7 @@
-import type { World } from "miniplex";
-import type { Entity, Viewer } from "./types.js";
+import type { Viewer } from "../../game/types.js";
+import type { StoragePort } from "./port.js";
 
-const STORAGE_KEY = "shooting-word:viewers";
+const KEY = "viewers";
 
 export type StoredViewer = Viewer & { xp: number };
 
@@ -17,12 +17,11 @@ function isStoredViewer(value: unknown): value is StoredViewer {
 	);
 }
 
-export function loadViewers(): StoredViewer[] {
-	try {
-		const raw = localStorage.getItem(STORAGE_KEY);
-		if (!raw) return [];
+export class ViewerStore {
+	constructor(private readonly storage: StoragePort) {}
 
-		const parsed: unknown = JSON.parse(raw);
+	async load(): Promise<StoredViewer[]> {
+		const parsed = await this.storage.load(KEY);
 		if (!Array.isArray(parsed)) return [];
 
 		return parsed.filter(isStoredViewer).map((viewer) => ({
@@ -30,20 +29,9 @@ export function loadViewers(): StoredViewer[] {
 			xp: viewer.xp ?? 0,
 			skin: viewer.skin ?? 0,
 		}));
-	} catch {
-		return [];
-	}
-}
-
-export function persistViewers(world: World<Entity>): void {
-	const viewers: StoredViewer[] = [];
-	for (const entity of world.with("viewer")) {
-		viewers.push({ ...entity.viewer, xp: entity.xp ?? 0 });
 	}
 
-	try {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(viewers));
-	} catch {
-		// storage full or unavailable — ignore
+	async save(viewers: StoredViewer[]): Promise<void> {
+		await this.storage.save(KEY, viewers);
 	}
 }

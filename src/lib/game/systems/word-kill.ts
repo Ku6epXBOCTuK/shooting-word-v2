@@ -1,5 +1,4 @@
 import { STAR_TTL, VIEWER_HEIGHT } from "../config.js";
-import { persistViewers } from "../persistence.js";
 import type { SystemFactory } from "./types.js";
 
 const STAR_HEAD_OFFSET = 20;
@@ -18,7 +17,7 @@ export const createWordKillSystem: SystemFactory = (ctx) => {
 			for (const viewer of viewers) {
 				if (viewer.viewer.userId === entity.hitBy.shooterId) {
 					viewer.xp = (viewer.xp ?? 0) + 1;
-					persistViewers(ctx.world);
+					ctx.viewersDirty = true;
 
 					const startY =
 						viewer.position.y - VIEWER_HEIGHT / 2 - STAR_HEAD_OFFSET;

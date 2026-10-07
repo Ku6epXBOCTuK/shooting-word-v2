@@ -25,9 +25,12 @@
 - [x] ecs: вынести спавн зрителей из конструктора viewer-persistence.ts:9-15 в
       bootstrap - side effect в фабрике системы, невидим и неуправляем по
       порядку
-- [ ] ecs: persistViewers вызывается из 5 мест (bullet, viewer-timeout,
+- [x] ecs: persistViewers вызывается из 5 мест (bullet, viewer-timeout,
       bootstrap x3, viewer-persistence) - заменить на dirty-флаг/событие
       "viewers changed" + один подписчик
+- [ ] persistence: добавить http-адаптер StoragePort + серверный endpoint
+      /api/storage/:key для node-билда (порт и localStorage-адаптер уже есть в
+      src/lib/features/persistence)
 - [ ] оптимизация, вроде world.with("word", "position") должен быть реактивным и
       можно обходить цикл на одной переменной во внешнем скоупе
 - [ ] подумать над дружественными словами - по темам или цветам выбирать

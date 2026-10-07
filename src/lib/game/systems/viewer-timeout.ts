@@ -1,5 +1,4 @@
 import { VIEWER_TIMEOUT_MS } from "../config.js";
-import { persistViewers } from "../persistence.js";
 import type { Entity } from "../types.js";
 import type { SystemFactory } from "./types.js";
 
@@ -28,6 +27,6 @@ export const createViewerTimeoutSystem: SystemFactory = (ctx) => {
 		for (const entity of expired) {
 			ctx.world.remove(entity);
 		}
-		persistViewers(ctx.world);
+		ctx.viewersDirty = true;
 	};
 };
