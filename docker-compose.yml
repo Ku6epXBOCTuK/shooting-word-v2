@@ -1,0 +1,13 @@
+services:
+  app:
+    image: ghcr.io/ku6epxboctuk/shooting-word-v2:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${APP_PORT:-3000}:3000"
+    environment:
+      TWITCH_CLIENT_ID: ${TWITCH_CLIENT_ID}
+      TWITCH_CLIENT_SECRET: ${TWITCH_CLIENT_SECRET}
+      TWITCH_REDIRECT_URI: ${TWITCH_REDIRECT_URI}
+      ORIGIN: ${ORIGIN}
+    volumes:
+      - ./data:/data
