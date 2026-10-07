@@ -21,6 +21,9 @@ export async function bootstrapGame(app: Application) {
 	const assets = await loadAssets();
 
 	const world = new World<Entity>();
+	const viewers = world.with("viewer");
+	const viewersWithPosition = world.with("viewer", "position");
+	const wordsWithPosition = world.with("word", "position");
 	const ctx: GameContext = {
 		world,
 		app,
@@ -64,7 +67,7 @@ export async function bootstrapGame(app: Application) {
 		world,
 
 		joinViewer: (identity: ViewerIdentity) => {
-			for (const entity of world.with("viewer")) {
+			for (const entity of viewers) {
 				if (entity.viewer.userId === identity.userId) {
 					entity.viewer.user = identity.user;
 					entity.viewer.lastSeen = Date.now();
@@ -90,7 +93,7 @@ export async function bootstrapGame(app: Application) {
 				shields.map((shield) => [shield.userId, shield.expiresAt]),
 			);
 
-			for (const entity of world.with("viewer")) {
+			for (const entity of viewers) {
 				const expiresAt = map.get(entity.viewer.userId);
 				if (expiresAt === undefined) continue;
 
@@ -101,7 +104,7 @@ export async function bootstrapGame(app: Application) {
 		},
 
 		changeSkin: (userId: string, skin?: number) => {
-			for (const entity of world.with("viewer")) {
+			for (const entity of viewers) {
 				if (entity.viewer.userId !== userId) continue;
 
 				const valid = skin !== undefined && skin >= 1 && skin <= SHIP_COUNT;
@@ -118,7 +121,7 @@ export async function bootstrapGame(app: Application) {
 			if (!text) return;
 
 			const targets: Entity[] = [];
-			for (const entity of world.with("word", "position")) {
+			for (const entity of wordsWithPosition) {
 				if (entity.word.text.toLowerCase() === text) {
 					targets.push(entity);
 				}
@@ -126,7 +129,7 @@ export async function bootstrapGame(app: Application) {
 			if (targets.length === 0) return;
 
 			let from: { x: number; y: number } | undefined;
-			for (const entity of world.with("viewer", "position")) {
+			for (const entity of viewersWithPosition) {
 				if (entity.viewer.userId === message.userId) {
 					from = {
 						x: entity.position.x,
