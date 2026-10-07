@@ -3,6 +3,7 @@ import {
 	SHIELD_REWARD,
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
+import { logger } from "#lib/logger.js";
 import { subscribeRedemptions } from "./redemptions.js";
 
 interface ShieldsState {
@@ -44,7 +45,7 @@ export function ensureShieldFeature(): void {
 
 	subscribeRedemptions(SHIELD_REWARD.key, (event) => {
 		activateShield(event.userId);
-		console.log(
+		logger.info(
 			`[shields] ${event.userName} got shield for ${SHIELD_DURATION_MS / 60_000} min`,
 		);
 	})
@@ -53,7 +54,7 @@ export function ensureShieldFeature(): void {
 		})
 		.catch((error: unknown) => {
 			state.registered = false;
-			console.error(
+			logger.error(
 				`[shields] registration failed: ${error instanceof Error ? error.message : String(error)}`,
 			);
 		});

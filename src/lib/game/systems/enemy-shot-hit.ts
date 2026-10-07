@@ -1,4 +1,5 @@
 import { HP_REGEN_INTERVAL, SHIELD_REGEN_INTERVAL } from "../config.js";
+import { logger } from "#lib/logger.js";
 import type { SystemFactory } from "./types.js";
 
 export const createEnemyShotHitSystem: SystemFactory = (ctx) => {
@@ -15,7 +16,7 @@ export const createEnemyShotHitSystem: SystemFactory = (ctx) => {
 						target.shield.hp - entity.enemyShot.damage,
 					);
 					target.shield.regenIn ??= SHIELD_REGEN_INTERVAL;
-					console.log(
+					logger.debug(
 						`[shield] hit: ${target.viewer?.user ?? "?"} hp=${target.shield.hp}`,
 					);
 				} else if (target.hp) {

@@ -1,6 +1,7 @@
 import { exchangeCode, getTokenInfo } from "@twurple/auth";
 import { TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET } from "$app/env/private";
 import { resetAuthProvider, saveToken } from "#lib/server/twitch-auth.js";
+import { logger } from "#lib/logger.js";
 import type { RequestHandler } from "./$types";
 
 export const prerender = false;
@@ -55,7 +56,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			err instanceof Error && "statusCode" in err
 				? (err as { statusCode: number }).statusCode
 				: undefined;
-		console.error(
+		logger.error(
 			`[auth] code exchange failed with status ${status ?? "unknown"}`,
 		);
 

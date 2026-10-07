@@ -1,6 +1,7 @@
 import { ApiClient } from "@twurple/api";
 import { EventSubWsListener } from "@twurple/eventsub-ws";
 import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
+import { logger } from "#lib/logger.js";
 import { getRewardId, setRewardId } from "./reward-store.js";
 import {
 	getAuthProvider,
@@ -55,7 +56,7 @@ async function resolveRewardId(
 	if (!reward) return null;
 
 	await setRewardId(key, reward.id);
-	console.log(`[redemptions] reward id for "${key}" stored: ${reward.id}`);
+	logger.info(`[redemptions] reward id for "${key}" stored: ${reward.id}`);
 	return reward.id;
 }
 
@@ -67,10 +68,10 @@ function ensureListener(apiClient: ApiClient): EventSubWsListener {
 	listener.start();
 
 	listener.onSubscriptionCreateFailure((_subscription, error) => {
-		console.error(`[redemptions] subscription failed: ${error.message}`);
+		logger.error(`[redemptions] subscription failed: ${error.message}`);
 	});
 
-	console.log("[redemptions] eventsub listener started");
+	logger.info("[redemptions] eventsub listener started");
 	return listener;
 }
 
@@ -81,7 +82,7 @@ export async function subscribeRedemptions(
 	const context = await resolveContext();
 
 	if (!context) {
-		console.log("[redemptions] not authorized yet, will retry later");
+		logger.info("[redemptions] not authorized yet, will retry later");
 		return false;
 	}
 
@@ -92,7 +93,7 @@ export async function subscribeRedemptions(
 	);
 
 	if (!rewardId) {
-		console.warn(`[redemptions] reward "${key}" not found`);
+		logger.warn(`[redemptions] reward "${key}" not found`);
 		return false;
 	}
 
@@ -104,7 +105,7 @@ export async function subscribeRedemptions(
 		context.userId,
 		rewardId,
 		(event) => {
-			console.log(
+			logger.info(
 				`[redemptions] ${event.userName} redeemed "${event.rewardTitle}"`,
 			);
 
@@ -116,7 +117,7 @@ export async function subscribeRedemptions(
 					"FULFILLED",
 				)
 				.catch((error: unknown) => {
-					console.error(
+					logger.error(
 						`[redemptions] failed to fulfill ${event.id}: ${error instanceof Error ? error.message : String(error)}`,
 					);
 				});
@@ -131,6 +132,6 @@ export async function subscribeRedemptions(
 	);
 
 	state.subscribed.add(rewardId);
-	console.log(`[redemptions] subscribed to reward ${rewardId}`);
+	logger.info(`[redemptions] subscribed to reward ${rewardId}`);
 	return true;
 }

@@ -10,6 +10,7 @@ import type {
 	RewardsManageResult,
 } from "#lib/features/rewards/port.js";
 import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
+import { logger } from "#lib/logger.js";
 import { clearRewardIds, setRewardId } from "#lib/server/reward-store.js";
 
 export const prerender = false;
@@ -138,7 +139,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				? (error as { statusCode: number }).statusCode
 				: undefined;
 		const message = error instanceof Error ? error.message : String(error);
-		console.error(
+		logger.error(
 			`[rewards] ${action} failed: ${status ?? "unknown"} ${message}`,
 		);
 
