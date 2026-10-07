@@ -16,7 +16,7 @@
 - [x] ecs: объединить homing-движение bullet.ts и enemy-shot.ts - общий
       компонент homing { target, speed } + одна homingSystem, bullet/enemyShot
       остаются данными для своих hit-систем
-- [ ] ecs: разделить lifetime.ts - система только старит и помечает expired,
+- [x] ecs: разделить lifetime.ts - система только старит и помечает expired,
       отдельная enemyAttackSystem реагирует на expired + word (pickTarget, спавн
       enemyShot)
 - [ ] ecs: вынести запись entity.size из viewer-render.ts:70 в отдельную

@@ -7,6 +7,7 @@ import { createWalkSystem } from "./walk.js";
 import { createRegenSystem } from "./regen.js";
 import { createShieldSystem } from "./shield.js";
 import { createHomingSystem } from "./homing.js";
+import { createEnemyAttackSystem } from "./enemy-attack.js";
 import { createBulletHitSystem } from "./bullet-hit.js";
 import { createWordKillSystem } from "./word-kill.js";
 import { createBulletRenderSystem } from "./bullet-render.js";
@@ -43,6 +44,7 @@ export function systemGroups(): SystemGroup[] {
 		{
 			name: "combat",
 			factories: [
+				createEnemyAttackSystem,
 				createHomingSystem,
 				createBulletHitSystem,
 				createWordKillSystem,
