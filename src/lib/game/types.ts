@@ -95,6 +95,7 @@ export interface EntityComponents {
 	enemyShot: EnemyShot;
 	hp: Hitpoints;
 	shield: Shield;
+	expired: boolean;
 	xp: number;
 	view: Text;
 	bar: Graphics;
