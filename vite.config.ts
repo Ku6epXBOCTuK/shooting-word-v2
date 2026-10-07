@@ -2,6 +2,7 @@ import { defineConfig } from "vitest/config";
 import adapterStatic from "@sveltejs/adapter-static";
 import adapterNode from "@sveltejs/adapter-node";
 import { sveltekit } from "@sveltejs/kit/vite";
+import Icons from "unplugin-icons/vite";
 
 const base = (process.env.BASE_PATH ?? "") as "" | `/${string}`;
 const variant = process.env.APP_VARIANT === "node" ? "node" : "static";
@@ -24,6 +25,7 @@ export default defineConfig({
 			adapter,
 			experimental: { remoteFunctions: true },
 		}),
+		Icons({ compiler: "svelte" }),
 	],
 	test: {
 		expect: { requireAssertions: true },

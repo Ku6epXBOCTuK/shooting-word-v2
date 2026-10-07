@@ -25,3 +25,4 @@ reward-ids.json
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 data/app.db
+refs/
