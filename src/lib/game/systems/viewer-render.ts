@@ -16,6 +16,7 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 
 	const ships = new Map<Entity, AnimatedSprite>();
 	const appliedSkin = new Map<Entity, number>();
+	const shieldBubbles = new Map<Entity, Graphics>();
 
 	const shipFrames = (skin: number) =>
 		ctx.assets.ships[skin] ?? ctx.assets.ships[0];
@@ -45,6 +46,8 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 		ships.get(entity)?.destroy();
 		ships.delete(entity);
 		appliedSkin.delete(entity);
+		shieldBubbles.get(entity)?.destroy();
+		shieldBubbles.delete(entity);
 		entity.plate?.destroy();
 		entity.plate = undefined;
 		entity.bar?.destroy();
@@ -116,6 +119,55 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 					)
 					.fill("#2ecc40");
 			}
+
+			let bubble = shieldBubbles.get(entity);
+			if (entity.shield) {
+				if (!bubble) {
+					bubble = new Graphics();
+					shieldBubbles.set(entity, bubble);
+					ctx.app.stage.addChild(bubble);
+				}
+
+				const time = performance.now() / 1000;
+				const phase = entity.position.x * 0.013;
+				const radius =
+					Math.max(ship.width, ship.height) / 2 +
+					8 +
+					Math.sin(time * 2 + phase) * 1.5;
+				const { x, y } = entity.position;
+
+				bubble.clear();
+
+				for (let i = 4; i >= 1; i--) {
+					bubble
+						.circle(x, y, radius + i * 4)
+						.fill({ color: 0x3fa9ff, alpha: 0.03 });
+				}
+
+				bubble
+					.circle(x, y, radius)
+					.fill({ color: 0x3fa9ff, alpha: 0.07 })
+					.circle(x, y, radius)
+					.stroke({ color: 0x3fa9ff, alpha: 0.3, width: 4 })
+					.circle(x, y, radius)
+					.stroke({ color: 0xcfeaff, alpha: 0.85, width: 1.5 });
+
+				for (let i = 0; i < 8; i++) {
+					const angle = (i / 8) * Math.PI * 2 + time * 0.6 + phase;
+					const twinkle =
+						0.4 + 0.6 * Math.abs(Math.sin(time * 2.5 + i * 1.7 + phase));
+					bubble
+						.circle(
+							x + Math.cos(angle) * radius,
+							y + Math.sin(angle) * radius,
+							1 + twinkle,
+						)
+						.fill({ color: 0xcfeaff, alpha: twinkle });
+				}
+			} else if (bubble) {
+				bubble.destroy();
+				shieldBubbles.delete(entity);
+			}
 		}
 	};
 
@@ -127,6 +179,10 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 		}
 		ships.clear();
 		appliedSkin.clear();
+		for (const bubble of shieldBubbles.values()) {
+			bubble.destroy();
+		}
+		shieldBubbles.clear();
 		for (const entity of viewers) {
 			entity.plate?.destroy();
 			entity.plate = undefined;

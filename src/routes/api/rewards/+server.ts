@@ -10,6 +10,7 @@ import type {
 	RewardsManageResult,
 } from "#lib/features/rewards/port.js";
 import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
+import { clearRewardIds, setRewardId } from "#lib/server/reward-store.js";
 
 export const prerender = false;
 
@@ -88,14 +89,20 @@ export const POST: RequestHandler = async ({ request }) => {
 			const created: string[] = [];
 
 			for (const config of REWARD_CONFIGS) {
-				if (existing.some((reward) => reward.title === config.title)) {
+				const existingReward = existing.find(
+					(reward) => reward.title === config.title,
+				);
+
+				if (existingReward) {
+					await setRewardId(config.key, existingReward.id);
 					continue;
 				}
 
-				await context.api.channelPoints.createCustomReward(context.userId, {
-					title: config.title,
-					cost: config.cost,
-				});
+				const reward = await context.api.channelPoints.createCustomReward(
+					context.userId,
+					{ title: config.title, cost: config.cost },
+				);
+				await setRewardId(config.key, reward.id);
 				created.push(config.title);
 			}
 
@@ -114,6 +121,8 @@ export const POST: RequestHandler = async ({ request }) => {
 					reward.id,
 				);
 			}
+
+			await clearRewardIds();
 
 			return Response.json({
 				ok: true,

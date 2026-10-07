@@ -23,6 +23,11 @@ export const createEnemyShotSystem: SystemFactory = (ctx) => {
 			const step = entity.enemyShot.speed * dt;
 
 			if (distance <= Math.max(step, HIT_DISTANCE)) {
+				if (target.shield) {
+					toRemove.push(entity);
+					continue;
+				}
+
 				if (target.hp) {
 					target.hp.current = Math.max(
 						0,

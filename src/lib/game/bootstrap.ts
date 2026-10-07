@@ -63,6 +63,21 @@ export async function bootstrapGame(app: Application) {
 			persistViewers(world);
 		},
 
+		applyShields: (shields: { userId: string; expiresAt: number }[]) => {
+			const map = new Map(
+				shields.map((shield) => [shield.userId, shield.expiresAt]),
+			);
+
+			for (const entity of world.with("viewer")) {
+				const expiresAt = map.get(entity.viewer.userId);
+				if (expiresAt === undefined) continue;
+
+				if (!entity.shield || entity.shield.expiresAt < expiresAt) {
+					entity.shield = { expiresAt };
+				}
+			}
+		},
+
 		changeSkin: (userId: string, skin?: number) => {
 			for (const entity of world.with("viewer")) {
 				if (entity.viewer.userId !== userId) continue;

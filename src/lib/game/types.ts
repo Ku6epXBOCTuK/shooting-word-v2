@@ -69,6 +69,10 @@ export interface Hitpoints {
 	max: number;
 }
 
+export interface Shield {
+	expiresAt: number;
+}
+
 export interface Star {
 	age: number;
 	ttl: number;
@@ -90,6 +94,7 @@ export interface EntityComponents {
 	explosion: Explosion;
 	enemyShot: EnemyShot;
 	hp: Hitpoints;
+	shield: Shield;
 	xp: number;
 	view: Text;
 	bar: Graphics;

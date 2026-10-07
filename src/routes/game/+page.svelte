@@ -1,12 +1,16 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { page } from "$app/state";
+	import { resolve } from "$app/paths";
 	import PixiOverlay from "#lib/PixiOverlay.svelte";
 	import { TwurpleChatAdapter } from "#lib/chat/twurple-adapter.js";
 	import type { ChatPort } from "#lib/chat/port.js";
 	import { bootstrapGame } from "#lib/game/index.js";
+	import { features } from "#lib/features/variant.js";
+	import type { ActiveShield } from "#lib/features/rewards/config.js";
 
 	const DEFAULT_CHANNEL = "Ku6epXBOCTuK";
+	const SHIELDS_POLL_INTERVAL = 10_000;
 
 	let game: Awaited<ReturnType<typeof bootstrapGame>> | null = null;
 
@@ -30,8 +34,31 @@
 		});
 		chat.connect(channel);
 
+		let shieldsTimer: ReturnType<typeof setInterval> | undefined;
+		if (features.rewards) {
+			const pollShields = async () => {
+				try {
+					const response = await fetch(resolve("/api/shields"));
+					if (!response.ok) return;
+					const { shields } = (await response.json()) as {
+						shields: ActiveShield[];
+					};
+					game?.applyShields(shields);
+				} catch {
+					// endpoint unavailable — retry on next tick
+				}
+			};
+
+			void pollShields();
+			shieldsTimer = setInterval(
+				() => void pollShields(),
+				SHIELDS_POLL_INTERVAL,
+			);
+		}
+
 		return () => {
 			chat.disconnect();
+			if (shieldsTimer) clearInterval(shieldsTimer);
 			game?.destroy();
 			game = null;
 		};

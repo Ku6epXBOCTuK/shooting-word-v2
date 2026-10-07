@@ -19,6 +19,7 @@ Thumbs.db
 !.env.example
 !.env.test
 twitch-token.json
+reward-ids.json
 
 # Vite
 vite.config.js.timestamp-*
