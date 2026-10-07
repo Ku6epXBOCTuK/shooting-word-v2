@@ -2,6 +2,23 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.4.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/2fbd3302e23264948c341df1eb5c0a03b38ca0be..0.4.0) - 2026-10-07
+#### Features
+- separate persistance storage, add viewer storage layer - ([37acb89](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/37acb89e64ef80e4d31e1a2f9805df46dec5ef47)) - Ku6epXBOCTuK
+- separate viewer persistance - ([a3f4fa6](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/a3f4fa6fd633859306fac2230abef5a899f98d6e)) - Ku6epXBOCTuK
+- separate measure system - ([606e667](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/606e667de49252207ded2058169380b3425eb8a6)) - Ku6epXBOCTuK
+- separate enemy attack system - ([55de947](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/55de94710c80e1f8294b2049b8e3ee42eacd4cce)) - Ku6epXBOCTuK
+- separate homing system - both bullet and enemy-shot use it - ([37ac975](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/37ac975154f47e876f96e3fce8166c572da71f82)) - Ku6epXBOCTuK
+- separate bullet to homing system and hit system - ([7bcbb92](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/7bcbb925c2a5b0c99174085927262761a6c248f5)) - Ku6epXBOCTuK
+- add cleanup system - ([b4ee8ec](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/b4ee8eca1ab23ed7cbb099be2c6b560a58045ee4)) - Ku6epXBOCTuK
+- add rewards flow, add shield reward - ([48cd689](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/48cd68922d12acd79d086c9ff50e4a770bfec243)) - Ku6epXBOCTuK
+- update reward flow - create\delete - ([161aaaa](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/161aaaad7c33b95cd27b4574d35969d9c033b6e0)) - Ku6epXBOCTuK
+#### Bug Fixes
+- hoist queries - ([bb9d10c](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/bb9d10ce2a0f2b2c2c15afdf9b6c6114367c664a)) - Ku6epXBOCTuK
+- update twitch auth flow - ([2fbd330](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/2fbd3302e23264948c341df1eb5c0a03b38ca0be)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.3.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/e9f823145d860cd8a7df8303442d8142bc39c652..0.3.0) - 2026-10-06
 #### Features
 - add regen hp system - ([cad7c5a](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/cad7c5a2662d6010678b728dc2e7123a9568dc2a)) - Ku6epXBOCTuK
