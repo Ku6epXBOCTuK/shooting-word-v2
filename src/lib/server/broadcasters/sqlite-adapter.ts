@@ -68,4 +68,8 @@ export class SqliteBroadcastersRepo implements BroadcastersRepo {
 			.prepare("UPDATE broadcasters SET token = ? WHERE user_id = ?")
 			.run(JSON.stringify(token), userId);
 	}
+
+	remove(userId: string): void {
+		this.db.prepare("DELETE FROM broadcasters WHERE user_id = ?").run(userId);
+	}
 }

@@ -42,13 +42,17 @@ eventsub-листенер.
       (broadcaster_id, key, reward_id), viewers (broadcaster_id, user_id, data
       json). Миграция из json-файлов не нужна - одна повторная авторизация
       руками
-- [ ] 2. мульти-тенантный сервер: twitch-auth - токен на broadcaster в sqlite
+- [x] 2. мульти-тенантный сервер: twitch-auth - токен на broadcaster в sqlite
       вместо файла, провайдер/листенер/щиты - Map по broadcaster_id, eventsub
       WS-листенер на каждого активного стримера
-- [ ] 3. auth + кабинет: /auth/twitch/login -> callback создаёт broadcaster +
-      сессионная cookie, страница кабинета: виджет-ссылка, создание/удаление
-      наград. Виджет /widget/[uuid] - uuid стримера одновременно идентификатор и
-      секрет (не подобрать), записи (/api/storage) только по нему
+- [ ] 3. auth + кабинет:
+
+      - [x] 3.1. callback создаёт broadcaster и редиректит на кабинет /[uuid]
+            (виджет-ссылка + управление наградами), сессионная cookie не
+            понадобилась - uuid в URL и есть доступ
+      - [ ] 3.2. переезд виджета на роут /widget/[uuid] (сейчас /game?channel&uuid)
+      - [ ] 3.3. записи /api/storage только по uuid
+
 - [ ] 4. persistence: http-адаптер StoragePort -> /api/storage/[channel]/[key],
       viewer-store в sqlite (есть в беклоге технических задач), localStorage
       остаётся для статик-билда
@@ -57,6 +61,11 @@ eventsub-листенер.
       GitHub Actions: build -> ghcr -> ssh deploy
 
 ## Roadmap
+
+- [ ] sse вместо polling для щитов (и других событий сервер -> виджет): сейчас
+      виджет опрашивает /api/shields раз в 10 сек (задержка до 10 сек + ленивая
+      регистрация eventsub на первый запрос). Push по SSE даст мгновенную
+      доставку, но нужен канал с реконнектами
 
 - [ ] оценить варианты масштабирования eventsub при росте числа стримеров:
       conduit с шардированием (ws), http-webhook транспорт, irc для чат-команд.

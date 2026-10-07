@@ -46,10 +46,13 @@
 		chat.connect(channel);
 
 		let shieldsTimer: ReturnType<typeof setInterval> | undefined;
-		if (features.rewards) {
+		const uuid = page.url.searchParams.get("uuid");
+		if (features.rewards && uuid) {
 			const pollShields = async () => {
 				try {
-					const response = await fetch(resolve("/api/shields"));
+					const response = await fetch(
+						`${resolve("/api/shields")}?uuid=${encodeURIComponent(uuid)}`,
+					);
 					if (!response.ok) return;
 					const { shields } = (await response.json()) as {
 						shields: ActiveShield[];

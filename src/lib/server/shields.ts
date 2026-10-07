@@ -4,56 +4,59 @@ import {
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
 import { logger } from "#lib/logger.js";
+import type { Broadcaster } from "./broadcasters/index.js";
 import { subscribeRedemptions } from "./redemptions.js";
 
-interface ShieldsState {
-	activeShields: Map<string, number>;
-	registered: boolean;
-}
-
 const globalScope = globalThis as typeof globalThis & {
-	__shieldsState?: ShieldsState;
+	__activeShields?: Map<string, Map<string, number>>;
+	__shieldsRegistered?: Set<string>;
 };
 
-const state = (globalScope.__shieldsState ??= {
-	activeShields: new Map(),
-	registered: false,
-});
+const activeShields = (globalScope.__activeShields ??= new Map());
+const registered = (globalScope.__shieldsRegistered ??= new Set());
 
-export function getActiveShields(): ActiveShield[] {
+export function getActiveShields(broadcasterId: string): ActiveShield[] {
+	const shields = activeShields.get(broadcasterId);
+	if (!shields) return [];
+
 	const now = Date.now();
 	const result: ActiveShield[] = [];
 
-	for (const [userId, expiresAt] of state.activeShields) {
+	for (const [userId, expiresAt] of shields) {
 		if (expiresAt > now) {
 			result.push({ userId, expiresAt });
 		} else {
-			state.activeShields.delete(userId);
+			shields.delete(userId);
 		}
 	}
 
 	return result;
 }
 
-export function activateShield(userId: string): void {
-	state.activeShields.set(userId, Date.now() + SHIELD_DURATION_MS);
+export function activateShield(broadcasterId: string, userId: string): void {
+	let shields = activeShields.get(broadcasterId);
+	if (!shields) {
+		shields = new Map();
+		activeShields.set(broadcasterId, shields);
+	}
+	shields.set(userId, Date.now() + SHIELD_DURATION_MS);
 }
 
-export function ensureShieldFeature(): void {
-	if (state.registered) return;
-	state.registered = true;
+export function ensureShieldFeature(broadcaster: Broadcaster): void {
+	if (registered.has(broadcaster.userId)) return;
+	registered.add(broadcaster.userId);
 
-	subscribeRedemptions(SHIELD_REWARD.key, (event) => {
-		activateShield(event.userId);
+	subscribeRedemptions(broadcaster, SHIELD_REWARD.key, (event) => {
+		activateShield(broadcaster.userId, event.userId);
 		logger.info(
-			`[shields] ${event.userName} got shield for ${SHIELD_DURATION_MS / 60_000} min`,
+			`[shields] ${event.userName} got shield for ${SHIELD_DURATION_MS / 60_000} min (${broadcaster.login})`,
 		);
 	})
 		.then((ok) => {
-			if (!ok) state.registered = false;
+			if (!ok) registered.delete(broadcaster.userId);
 		})
 		.catch((error: unknown) => {
-			state.registered = false;
+			registered.delete(broadcaster.userId);
 			logger.error(
 				`[shields] registration failed: ${error instanceof Error ? error.message : String(error)}`,
 			);

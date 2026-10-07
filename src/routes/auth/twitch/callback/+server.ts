@@ -1,6 +1,6 @@
 import { exchangeCode, getTokenInfo } from "@twurple/auth";
 import { TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET } from "$app/env/private";
-import { resetAuthProvider, saveToken } from "#lib/server/twitch-auth.js";
+import { broadcasters } from "#lib/server/broadcasters/index.js";
 import { logger } from "#lib/logger.js";
 import type { RequestHandler } from "./$types";
 
@@ -29,22 +29,25 @@ export const GET: RequestHandler = async ({ url }) => {
 			throw new Error("token validation failed");
 		}
 
-		await saveToken(info.userId, token);
-		resetAuthProvider();
+		const broadcaster = broadcasters.upsert(
+			info.userId,
+			info.userName ?? info.userId,
+			token,
+		);
 
 		return new Response(
 			`<!doctype html>
 <html lang="ru">
 	<head>
 		<meta charset="utf-8" />
-		<meta http-equiv="refresh" content="3;url=/" />
+		<meta http-equiv="refresh" content="3;url=/${broadcaster.widgetUuid}" />
 		<title>Авторизация успешна</title>
 	</head>
 	<body>
 		<p>Twitch authorization successful. Redirecting in 3 seconds…</p>
 		<script>
 			setTimeout(() => {
-				window.location.href = "/";
+				window.location.href = "/${broadcaster.widgetUuid}";
 			}, 3000);
 		</script>
 	</body>

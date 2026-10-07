@@ -1,9 +1,6 @@
-import { ApiClient } from "@twurple/api";
-import {
-	getAuthProvider,
-	getStoredUserId,
-	isConfigured,
-} from "#lib/server/twitch-auth.js";
+import { broadcasters } from "#lib/server/broadcasters/index.js";
+import { rewardIds } from "#lib/server/reward-ids/index.js";
+import { getApiClient } from "#lib/server/twitch-auth.js";
 import type { RequestHandler } from "./$types";
 import type {
 	ChannelReward,
@@ -11,20 +8,18 @@ import type {
 } from "#lib/features/rewards/port.js";
 import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
 import { logger } from "#lib/logger.js";
-import { clearRewardIds, setRewardId } from "#lib/server/reward-store.js";
 
 export const prerender = false;
 
-async function resolveContext() {
-	if (!isConfigured()) return null;
+async function resolveContext(url: URL) {
+	const uuid = url.searchParams.get("uuid");
+	const broadcaster = uuid ? broadcasters.byUuid(uuid) : null;
+	if (!broadcaster) return null;
 
-	const authProvider = await getAuthProvider();
-	if (!authProvider) return null;
+	const api = await getApiClient(broadcaster);
+	if (!api) return null;
 
-	const userId = getStoredUserId();
-	if (!userId) return null;
-
-	return { api: new ApiClient({ authProvider }), userId };
+	return { api, userId: broadcaster.userId };
 }
 
 const NOT_AUTHORIZED = {
@@ -33,8 +28,8 @@ const NOT_AUTHORIZED = {
 	rewards: [],
 };
 
-export const GET: RequestHandler = async () => {
-	const context = await resolveContext();
+export const GET: RequestHandler = async ({ url }) => {
+	const context = await resolveContext(url);
 
 	if (!context) {
 		return Response.json(NOT_AUTHORIZED, { status: 503 });
@@ -70,8 +65,8 @@ const FAILURE = (reason: string): RewardsManageResult => ({
 	reason,
 });
 
-export const POST: RequestHandler = async ({ request }) => {
-	const context = await resolveContext();
+export const POST: RequestHandler = async ({ request, url }) => {
+	const context = await resolveContext(url);
 
 	if (!context) {
 		return Response.json(FAILURE("not authorized, visit /auth/twitch/login"), {
@@ -95,7 +90,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				);
 
 				if (existingReward) {
-					await setRewardId(config.key, existingReward.id);
+					rewardIds.set(context.userId, config.key, existingReward.id);
 					continue;
 				}
 
@@ -103,7 +98,7 @@ export const POST: RequestHandler = async ({ request }) => {
 					context.userId,
 					{ title: config.title, cost: config.cost },
 				);
-				await setRewardId(config.key, reward.id);
+				rewardIds.set(context.userId, config.key, reward.id);
 				created.push(config.title);
 			}
 
@@ -123,7 +118,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				);
 			}
 
-			await clearRewardIds();
+			rewardIds.clear(context.userId);
 
 			return Response.json({
 				ok: true,

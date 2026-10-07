@@ -1,54 +1,14 @@
 <script lang="ts">
-	import { onMount } from "svelte";
 	import { resolve } from "$app/paths";
 	import { features } from "#lib/features/variant.js";
-	import { rewards } from "#lib/features/rewards/index.js";
 
 	let channel = $state("");
-	let rewardsStatus = $state<string | null>(null);
-	let authorized = $state(false);
-	let manageResult = $state<string | null>(null);
-	let managing = $state(false);
-
-	const manage = async (action: "create" | "delete") => {
-		managing = true;
-		manageResult = null;
-
-		const result =
-			action === "create"
-				? await rewards.createRewards()
-				: await rewards.deleteAllRewards();
-
-		managing = false;
-
-		if (!result.ok) {
-			manageResult = result.reason ?? "ошибка";
-			return;
-		}
-
-		manageResult =
-			action === "create"
-				? result.created.length > 0
-					? `Созданы: ${result.created.join(", ")}`
-					: "Все награды уже существуют"
-				: `Удалено наград: ${result.deleted}`;
-	};
 
 	const gameLink = $derived(
 		channel.trim()
 			? `${resolve("/game")}?channel=${encodeURIComponent(channel.trim())}`
 			: null,
 	);
-
-	onMount(async () => {
-		if (!features.rewards) return;
-
-		const status = await rewards.status();
-		authorized = status.available;
-		rewardsStatus = status.available
-			? "Twitch авторизован, награды доступны"
-			: (status.reason ?? "награды недоступны");
-	});
 </script>
 
 <main>
@@ -59,26 +19,7 @@
 			<h2>Авторизация Twitch</h2>
 			<p>
 				<a href={resolve("/auth/twitch/login")}>Войти через Twitch</a>
-				{#if authorized}
-					· <a href={resolve("/auth/twitch/logout")}>Выйти</a>
-				{/if}
 			</p>
-			{#if rewardsStatus}
-				<p class="status">{rewardsStatus}</p>
-			{/if}
-			{#if authorized}
-				<p class="actions">
-					<button disabled={managing} onclick={() => manage("create")}>
-						Создать награды
-					</button>
-					<button disabled={managing} onclick={() => manage("delete")}>
-						Удалить награды
-					</button>
-				</p>
-				{#if manageResult}
-					<p class="status">{manageResult}</p>
-				{/if}
-			{/if}
 		</section>
 	{:else}
 		<section>
@@ -132,29 +73,5 @@
 	a {
 		color: #7cb3ff;
 		word-break: break-all;
-	}
-
-	.status {
-		color: #9a9aa5;
-		font-size: 0.9rem;
-	}
-
-	.actions {
-		display: flex;
-		gap: 0.5rem;
-	}
-
-	button {
-		padding: 0.4rem 0.8rem;
-		border: 1px solid #3a3a44;
-		border-radius: 6px;
-		background: #1c1c22;
-		color: inherit;
-		cursor: pointer;
-	}
-
-	button:disabled {
-		opacity: 0.5;
-		cursor: default;
 	}
 </style>

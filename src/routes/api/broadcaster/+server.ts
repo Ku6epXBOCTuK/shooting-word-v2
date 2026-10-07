@@ -1,5 +1,4 @@
 import { broadcasters } from "#lib/server/broadcasters/index.js";
-import { ensureShieldFeature, getActiveShields } from "#lib/server/shields.js";
 import type { RequestHandler } from "./$types";
 
 export const prerender = false;
@@ -9,9 +8,8 @@ export const GET: RequestHandler = ({ url }) => {
 	const broadcaster = uuid ? broadcasters.byUuid(uuid) : null;
 
 	if (!broadcaster) {
-		return Response.json({ shields: [] }, { status: 404 });
+		return Response.json({ login: null }, { status: 404 });
 	}
 
-	ensureShieldFeature(broadcaster);
-	return Response.json({ shields: getActiveShields(broadcaster.userId) });
+	return Response.json({ login: broadcaster.login });
 };

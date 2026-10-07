@@ -24,3 +24,4 @@ reward-ids.json
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+data/app.db

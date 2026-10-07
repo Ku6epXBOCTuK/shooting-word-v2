@@ -12,4 +12,5 @@ export interface BroadcastersRepo {
 	byUserId(userId: string): Broadcaster | null;
 	byUuid(widgetUuid: string): Broadcaster | null;
 	updateToken(userId: string, token: AccessToken): void;
+	remove(userId: string): void;
 }

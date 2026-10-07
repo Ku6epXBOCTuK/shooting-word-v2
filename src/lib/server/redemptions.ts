@@ -2,12 +2,9 @@ import { ApiClient } from "@twurple/api";
 import { EventSubWsListener } from "@twurple/eventsub-ws";
 import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
 import { logger } from "#lib/logger.js";
-import { getRewardId, setRewardId } from "./reward-store.js";
-import {
-	getAuthProvider,
-	getStoredUserId,
-	isConfigured,
-} from "./twitch-auth.js";
+import type { Broadcaster } from "./broadcasters/index.js";
+import { rewardIds } from "./reward-ids/index.js";
+import { getApiClient } from "./twitch-auth.js";
 
 export interface RedemptionEvent {
 	id: string;
@@ -16,51 +13,53 @@ export interface RedemptionEvent {
 	rewardTitle: string;
 }
 
-interface RedemptionsState {
+interface BroadcasterState {
 	listener: EventSubWsListener | null;
 	subscribed: Set<string>;
 }
 
 const globalScope = globalThis as typeof globalThis & {
-	__redemptionsState?: RedemptionsState;
+	__redemptionsStates?: Map<string, BroadcasterState>;
 };
 
-const state = (globalScope.__redemptionsState ??= {
-	listener: null,
-	subscribed: new Set(),
-});
+const states = (globalScope.__redemptionsStates ??= new Map());
 
-async function resolveContext() {
-	if (!isConfigured()) return null;
-
-	const authProvider = await getAuthProvider();
-	const userId = getStoredUserId();
-	if (!authProvider || !userId) return null;
-
-	return { apiClient: new ApiClient({ authProvider }), userId };
+function stateFor(userId: string): BroadcasterState {
+	let state = states.get(userId);
+	if (!state) {
+		state = { listener: null, subscribed: new Set() };
+		states.set(userId, state);
+	}
+	return state;
 }
 
 async function resolveRewardId(
 	apiClient: ApiClient,
-	userId: string,
+	broadcaster: Broadcaster,
 	key: string,
 ): Promise<string | null> {
-	const stored = await getRewardId(key);
+	const stored = rewardIds.get(broadcaster.userId, key);
 	if (stored) return stored;
 
 	const config = REWARD_CONFIGS.find((reward) => reward.key === key);
 	if (!config) return null;
 
-	const rewards = await apiClient.channelPoints.getCustomRewards(userId, true);
+	const rewards = await apiClient.channelPoints.getCustomRewards(
+		broadcaster.userId,
+		true,
+	);
 	const reward = rewards.find(({ title }) => title === config.title);
 	if (!reward) return null;
 
-	await setRewardId(key, reward.id);
+	rewardIds.set(broadcaster.userId, key, reward.id);
 	logger.info(`[redemptions] reward id for "${key}" stored: ${reward.id}`);
 	return reward.id;
 }
 
-function ensureListener(apiClient: ApiClient): EventSubWsListener {
+function ensureListener(
+	state: BroadcasterState,
+	apiClient: ApiClient,
+): EventSubWsListener {
 	if (state.listener) return state.listener;
 
 	const listener = new EventSubWsListener({ apiClient });
@@ -76,21 +75,21 @@ function ensureListener(apiClient: ApiClient): EventSubWsListener {
 }
 
 export async function subscribeRedemptions(
+	broadcaster: Broadcaster,
 	key: string,
 	handler: (event: RedemptionEvent) => void,
 ): Promise<boolean> {
-	const context = await resolveContext();
+	const apiClient = await getApiClient(broadcaster);
 
-	if (!context) {
-		logger.info("[redemptions] not authorized yet, will retry later");
+	if (!apiClient) {
+		logger.info(
+			`[redemptions] ${broadcaster.login} not authorized yet, will retry later`,
+		);
 		return false;
 	}
 
-	const rewardId = await resolveRewardId(
-		context.apiClient,
-		context.userId,
-		key,
-	);
+	const state = stateFor(broadcaster.userId);
+	const rewardId = await resolveRewardId(apiClient, broadcaster, key);
 
 	if (!rewardId) {
 		logger.warn(`[redemptions] reward "${key}" not found`);
@@ -99,19 +98,19 @@ export async function subscribeRedemptions(
 
 	if (state.subscribed.has(rewardId)) return true;
 
-	const listener = ensureListener(context.apiClient);
+	const listener = ensureListener(state, apiClient);
 
 	listener.onChannelRedemptionAddForReward(
-		context.userId,
+		broadcaster.userId,
 		rewardId,
 		(event) => {
 			logger.info(
 				`[redemptions] ${event.userName} redeemed "${event.rewardTitle}"`,
 			);
 
-			context.apiClient.channelPoints
+			apiClient.channelPoints
 				.updateRedemptionStatusByIds(
-					context.userId,
+					broadcaster.userId,
 					rewardId,
 					[event.id],
 					"FULFILLED",

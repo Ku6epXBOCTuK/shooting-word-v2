@@ -17,8 +17,8 @@ export interface RewardsManageResult {
 }
 
 export interface RewardsPort {
-	status(): Promise<RewardsStatus>;
-	listRewards(): Promise<ChannelReward[]>;
-	createRewards(): Promise<RewardsManageResult>;
-	deleteAllRewards(): Promise<RewardsManageResult>;
+	status(uuid?: string): Promise<RewardsStatus>;
+	listRewards(uuid?: string): Promise<ChannelReward[]>;
+	createRewards(uuid?: string): Promise<RewardsManageResult>;
+	deleteAllRewards(uuid?: string): Promise<RewardsManageResult>;
 }
