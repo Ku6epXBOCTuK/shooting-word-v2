@@ -67,6 +67,12 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 			const ship = entity.sprite;
 			if (!(ship instanceof AnimatedSprite)) continue;
 
+			const visible = !entity.dead;
+			ship.visible = visible;
+			if (entity.view) entity.view.visible = visible;
+			if (entity.plate) entity.plate.visible = visible;
+			if (entity.bar) entity.bar.visible = visible;
+
 			if (appliedSkin.get(entity) !== entity.viewer.skin) {
 				ship.textures = shipFrames(entity.viewer.skin);
 				ship.play();
@@ -128,6 +134,7 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 					shieldBubbles.set(entity, bubble);
 					ctx.app.stage.addChild(bubble);
 				}
+				bubble.visible = visible;
 
 				const frac = Math.max(0, entity.shield.hp / SHIELD_MAX_HP);
 				const time = performance.now() / 1000;

@@ -10,7 +10,7 @@ export const createEnemyAttackSystem: SystemFactory = (ctx) => {
 	const timedOut = ctx.world
 		.with("word", "expired", "position")
 		.without("hitBy");
-	const viewers = ctx.world.with("viewer", "position", "hp");
+	const viewers = ctx.world.with("viewer", "position", "hp").without("dead");
 
 	const pickTarget = (): Entity | null => {
 		if (viewers.size === 0) return null;

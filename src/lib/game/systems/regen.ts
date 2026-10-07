@@ -2,7 +2,7 @@ import { HP_REGEN_AMOUNT, HP_REGEN_INTERVAL } from "../config.js";
 import type { SystemFactory } from "./types.js";
 
 export const createRegenSystem: SystemFactory = (ctx) => {
-	const entities = ctx.world.with("hp");
+	const entities = ctx.world.with("hp").without("dead");
 
 	return (dt) => {
 		for (const entity of entities) {

@@ -1,11 +1,18 @@
 import { HP_REGEN_INTERVAL, SHIELD_REGEN_INTERVAL } from "../config.js";
 import { logger } from "#lib/logger.js";
+import { SESSIONPHASE } from "../types.js";
 import type { SystemFactory } from "./types.js";
 
 export const createEnemyShotHitSystem: SystemFactory = (ctx) => {
+	const sessions = ctx.world.with("session");
 	const hits = ctx.world.with("enemyShot", "homing", "arrived");
 
 	return () => {
+		let playing = false;
+		for (const entity of sessions) {
+			playing = entity.session.phase === SESSIONPHASE.PLAYING;
+		}
+
 		for (const entity of hits) {
 			const target = entity.homing.target;
 
@@ -20,11 +27,26 @@ export const createEnemyShotHitSystem: SystemFactory = (ctx) => {
 						`[shield] hit: ${target.viewer?.user ?? "?"} hp=${target.shield.hp}`,
 					);
 				} else if (target.hp) {
+					const minHp = playing ? 0 : 1;
 					target.hp.current = Math.max(
-						0,
+						minHp,
 						target.hp.current - entity.enemyShot.damage,
 					);
 					target.hp.regenIn ??= HP_REGEN_INTERVAL;
+
+					if (playing && target.hp.current <= 0 && !target.dead) {
+						ctx.world.addComponent(target, "dead", true);
+						if (target.position) {
+							ctx.world.add({
+								position: {
+									x: target.position.x,
+									y: target.position.y,
+								},
+								explosion: { age: 0 },
+							});
+						}
+						logger.debug(`[game] died: ${target.viewer?.user ?? "?"}`);
+					}
 				}
 			}
 

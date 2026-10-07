@@ -123,6 +123,7 @@ export interface EntityComponents {
 	shield: Shield;
 	hitBy: HitBy;
 	session: Session;
+	dead: boolean;
 	expired: boolean;
 	xp: number;
 	view: Text;

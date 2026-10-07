@@ -197,6 +197,20 @@ export async function bootstrapGame(app: Application) {
 			session.session.timer = 0;
 		},
 
+		respawn(userId: string) {
+			for (const entity of viewers) {
+				if (entity.viewer.userId !== userId || !entity.dead) continue;
+
+				world.removeComponent(entity, "dead");
+				if (entity.hp) {
+					entity.hp.current = entity.hp.max;
+					entity.hp.regenIn = undefined;
+				}
+				ctx.viewersDirty = true;
+				return;
+			}
+		},
+
 		setTimeScale(scale: number) {
 			timeScale = scale;
 		},

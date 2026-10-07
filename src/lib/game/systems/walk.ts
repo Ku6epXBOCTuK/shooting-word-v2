@@ -12,7 +12,7 @@ import {
 import type { SystemFactory } from "./types.js";
 
 export const createWalkSystem: SystemFactory = (ctx) => {
-	const walkers = ctx.world.with("walker", "position");
+	const walkers = ctx.world.with("walker", "position").without("dead");
 
 	return (dt) => {
 		const { width, height } = ctx.app.screen;
