@@ -39,7 +39,7 @@ playing авто-респавна нет - там смерть до конца �
 - [x] 2. компонент respawning { elapsed, duration, x } на зрителе.
       respawnScheduler-система: dead без respawning в фазе idle - ставит
       respawning со случайным x в границах зоны игроков
-- [ ] 3. respawnSystem: elapsed += dt, при duration - снять dead и respawning,
+- [x] 3. respawnSystem: elapsed += dt, при duration - снять dead и respawning,
       hp полное, position.x = x портала
 - [ ] 4. portal-render (плейсхолдер): простая графика портала в точке (x,
       земля) + полоска прогресса elapsed/duration. Анимацию потом заменим, не
