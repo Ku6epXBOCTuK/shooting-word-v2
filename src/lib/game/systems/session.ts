@@ -12,6 +12,7 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 	const stars = ctx.world.with("star");
 	const explosions = ctx.world.with("explosion");
 	const viewers = ctx.world.with("viewer");
+	const banners = ctx.world.with("banner");
 
 	let lastPhase: SessionPhase = SESSIONPHASE.IDLE;
 	let pendingPlayers: StoredViewer[] = [];
@@ -47,6 +48,18 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 		entity.session.timer = 0;
 	};
 
+	const allPlayersDead = () => {
+		for (const entity of viewers) {
+			if (!entity.dead) return false;
+		}
+		return true;
+	};
+
+	const finishGame = (entity: With<Entity, "session">) => {
+		ctx.world.add({ banner: { text: "игра завершена" } });
+		setPhase(entity, SESSIONPHASE.GAMEOVER);
+	};
+
 	return (dt) => {
 		for (const entity of sessions) {
 			const session = entity.session;
@@ -66,10 +79,15 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 			) {
 				spawnPlayers();
 				setPhase(entity, SESSIONPHASE.PLAYING);
+			} else if (session.phase === SESSIONPHASE.PLAYING && allPlayersDead()) {
+				finishGame(entity);
 			} else if (
 				session.phase === SESSIONPHASE.GAMEOVER &&
 				session.timer >= GAMEOVER_DURATION
 			) {
+				for (const banner of banners) {
+					ctx.world.remove(banner);
+				}
 				ctx.restoreViewers();
 				setPhase(entity, SESSIONPHASE.IDLE);
 			}

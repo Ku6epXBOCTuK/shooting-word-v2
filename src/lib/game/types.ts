@@ -97,6 +97,10 @@ export interface Session {
 	timer: number;
 }
 
+export interface Banner {
+	text: string;
+}
+
 export interface Star {
 	age: number;
 	ttl: number;
@@ -123,6 +127,7 @@ export interface EntityComponents {
 	shield: Shield;
 	hitBy: HitBy;
 	session: Session;
+	banner: Banner;
 	dead: boolean;
 	expired: boolean;
 	xp: number;

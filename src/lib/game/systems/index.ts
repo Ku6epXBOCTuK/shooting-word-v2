@@ -23,6 +23,7 @@ import { createEnemyShotRenderSystem } from "./enemy-shot-render.js";
 import { createViewerTimeoutSystem } from "./viewer-timeout.js";
 import { createViewerPersistenceSystem } from "./viewer-persistence.js";
 import { createRenderSystem } from "./render.js";
+import { createBannerRenderSystem } from "./banner-render.js";
 import { createViewerRenderSystem } from "./viewer-render.js";
 import { createCleanupSystem } from "./cleanup.js";
 
@@ -76,6 +77,7 @@ export function systemGroups(): SystemGroup[] {
 			name: "render",
 			factories: [
 				createRenderSystem,
+				createBannerRenderSystem,
 				createViewerRenderSystem,
 				createBulletRenderSystem,
 				createEnemyShotRenderSystem,
