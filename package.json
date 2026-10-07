@@ -16,7 +16,7 @@
 		"build": "vite build",
 		"build:static": "cross-env APP_VARIANT=static vite build --mode static",
 		"build:node": "cross-env APP_VARIANT=node vite build --mode node",
-		"start": "node build-node",
+		"start": "cross-env ORIGIN=http://localhost:3000 bun build-node",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",

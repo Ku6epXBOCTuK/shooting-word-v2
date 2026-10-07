@@ -1,5 +1,9 @@
 import { exchangeCode, getTokenInfo } from "@twurple/auth";
-import { TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET } from "$app/env/private";
+import {
+	TWITCH_CLIENT_ID,
+	TWITCH_CLIENT_SECRET,
+	TWITCH_REDIRECT_URI,
+} from "$app/env/private";
 import { broadcasters } from "#lib/server/broadcasters/index.js";
 import { logger } from "#lib/logger.js";
 import type { RequestHandler } from "./$types";
@@ -21,7 +25,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			TWITCH_CLIENT_ID ?? "",
 			TWITCH_CLIENT_SECRET ?? "",
 			code,
-			`${url.origin}/auth/twitch/callback`,
+			TWITCH_REDIRECT_URI ?? `${url.origin}/auth/twitch/callback`,
 		);
 
 		const info = await getTokenInfo(token.accessToken, TWITCH_CLIENT_ID);

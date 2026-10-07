@@ -56,9 +56,11 @@ eventsub-листенер.
       viewer-store в sqlite (есть в беклоге технических задач), localStorage
       остаётся для статик-билда. Записи принимать только по валидному uuid (uuid
       = секрет), при невалидном - 404
-- [ ] 5a. переезд на bun, локально: svelte-adapter-bun вместо adapter-node,
-      запуск dev/build/start под bun, проверка всего цикла (auth, награды, щиты,
-      persistence на node:sqlite -> bun:sqlite если нужно), twurple под bun
+- [x] 5a. переезд на bun, локально: svelte-adapter-bun мёртв (несовместим с
+      Kit 3) - сборка adapter-node, запуск bun build-node; bun 1.4.2; фикс
+      start-флоу: TWITCH_REDIRECT_URI в src/env.ts + .env (adapter-node без
+      прокси-заголовков считает origin https и ломал redirect_uri), start =
+      cross-env ORIGIN + bun; node:sqlite и twurple работают под bun
 - [ ] 5b. docker + ci/cd: multi-stage Dockerfile на oven/bun, на vps
       docker-compose (volume sqlite, caddy TLS под duckdns), GitHub Actions:
       build -> ghcr -> ssh deploy
