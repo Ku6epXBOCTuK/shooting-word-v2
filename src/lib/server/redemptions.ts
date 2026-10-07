@@ -108,19 +108,6 @@ export async function subscribeRedemptions(
 				`[redemptions] ${event.userName} redeemed "${event.rewardTitle}"`,
 			);
 
-			apiClient.channelPoints
-				.updateRedemptionStatusByIds(
-					broadcaster.userId,
-					rewardId,
-					[event.id],
-					"FULFILLED",
-				)
-				.catch((error: unknown) => {
-					logger.error(
-						`[redemptions] failed to fulfill ${event.id}: ${error instanceof Error ? error.message : String(error)}`,
-					);
-				});
-
 			handler({
 				id: event.id,
 				userId: event.userId,
