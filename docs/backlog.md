@@ -36,7 +36,7 @@ playing авто-респавна нет - там смерть до конца �
 команде/реварду через game.respawn).
 
 - [x] 1. убрать кламп minHp=1 в enemy-shot-hit - смерть при hp 0 в любой фазе
-- [ ] 2. компонент respawning { elapsed, duration, x } на зрителе.
+- [x] 2. компонент respawning { elapsed, duration, x } на зрителе.
       respawnScheduler-система: dead без respawning в фазе idle - ставит
       respawning со случайным x в границах зоны игроков
 - [ ] 3. respawnSystem: elapsed += dt, при duration - снять dead и respawning,

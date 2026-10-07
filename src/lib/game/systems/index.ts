@@ -9,6 +9,7 @@ import { createMeasureSystem } from "./measure.js";
 import { createRegenSystem } from "./regen.js";
 import { createShieldSystem } from "./shield.js";
 import { createShieldRegenSystem } from "./shield-regen.js";
+import { createRespawnSchedulerSystem } from "./respawn-scheduler.js";
 import { createHomingSystem } from "./homing.js";
 import { createEnemyAttackSystem } from "./enemy-attack.js";
 import { createBulletHitSystem } from "./bullet-hit.js";
@@ -69,6 +70,7 @@ export function systemGroups(): SystemGroup[] {
 				createRegenSystem,
 				createShieldSystem,
 				createShieldRegenSystem,
+				createRespawnSchedulerSystem,
 				createViewerTimeoutSystem,
 				createViewerPersistenceSystem,
 			],

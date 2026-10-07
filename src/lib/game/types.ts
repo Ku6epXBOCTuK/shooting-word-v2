@@ -101,6 +101,12 @@ export interface Banner {
 	text: string;
 }
 
+export interface Respawning {
+	elapsed: number;
+	duration: number;
+	x: number;
+}
+
 export interface Star {
 	age: number;
 	ttl: number;
@@ -129,6 +135,7 @@ export interface EntityComponents {
 	session: Session;
 	banner: Banner;
 	dead: boolean;
+	respawning: Respawning;
 	expired: boolean;
 	xp: number;
 	view: Text;

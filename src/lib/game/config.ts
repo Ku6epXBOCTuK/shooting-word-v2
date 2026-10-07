@@ -52,5 +52,6 @@ export const ENEMY_SHOT_DAMAGE = 1;
 export const ENEMY_SHOT_HIT_DISTANCE = 20;
 
 export const GAMEOVER_DURATION = 10;
+export const RESPAWN_DURATION = 10;
 export const SESSION_INTRO_DURATION = 1;
 export const SESSION_ENEMY_GRACE = 1.5;
