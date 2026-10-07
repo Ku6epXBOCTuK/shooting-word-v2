@@ -1,11 +1,7 @@
-import type { Application, Ticker } from "pixi.js";
-import { World } from "miniplex";
 import type { ChatMessage } from "#lib/chat/port.js";
 import { createViewerStore } from "#lib/features/persistence/index.js";
-import type { Entity, ViewerIdentity } from "./types.js";
-import type { GameContext } from "./context.js";
-import { systemGroups } from "./systems/index.js";
-import { spawnViewer } from "./spawn.js";
+import { World } from "miniplex";
+import type { Application, Ticker } from "pixi.js";
 import { loadAssets, SHIP_COUNT } from "./assets.js";
 import {
 	BULLET_HIT_DISTANCE,
@@ -16,6 +12,15 @@ import {
 	VIEWER_SCALE,
 	VIEWER_TIMEOUT_MS,
 } from "./config.js";
+import type { GameContext } from "./context.js";
+import { spawnViewer } from "./spawn.js";
+import { systemGroups } from "./systems/index.js";
+import {
+	SESSIONPHASE,
+	type Entity,
+	type SessionPhase,
+	type ViewerIdentity,
+} from "./types.js";
 
 const MAX_FRAME_MS = 50;
 
@@ -40,6 +45,12 @@ export async function bootstrapGame(app: Application) {
 		);
 
 	let groups = createGroups();
+
+	const createSession = () =>
+		world.add({
+			session: { phase: SESSIONPHASE.IDLE as SessionPhase, timer: 0 },
+		});
+	let session = createSession();
 
 	const restoreViewers = async () => {
 		const now = Date.now();
@@ -178,6 +189,12 @@ export async function bootstrapGame(app: Application) {
 			return app.ticker.started;
 		},
 
+		startGame() {
+			if (session.session.phase !== SESSIONPHASE.IDLE) return;
+			session.session.phase = SESSIONPHASE.STARTING;
+			session.session.timer = 0;
+		},
+
 		setTimeScale(scale: number) {
 			timeScale = scale;
 		},
@@ -192,6 +209,7 @@ export async function bootstrapGame(app: Application) {
 			}
 
 			groups = createGroups();
+			session = createSession();
 			void restoreViewers();
 			timeScale = 1;
 		},

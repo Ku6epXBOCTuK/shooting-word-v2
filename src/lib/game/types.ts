@@ -82,6 +82,21 @@ export interface HitBy {
 	shooterId: string;
 }
 
+export const SESSIONPHASE = {
+	IDLE: "idle",
+	STARTING: "starting",
+	PLAYING: "playing",
+	ENDING: "ending",
+	GAMEOVER: "gameover",
+} as const;
+
+export type SessionPhase = (typeof SESSIONPHASE)[keyof typeof SESSIONPHASE];
+
+export interface Session {
+	phase: SessionPhase;
+	timer: number;
+}
+
 export interface Star {
 	age: number;
 	ttl: number;
@@ -107,6 +122,7 @@ export interface EntityComponents {
 	hp: Hitpoints;
 	shield: Shield;
 	hitBy: HitBy;
+	session: Session;
 	expired: boolean;
 	xp: number;
 	view: Text;

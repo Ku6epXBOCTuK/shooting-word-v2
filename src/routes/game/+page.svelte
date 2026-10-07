@@ -23,6 +23,10 @@
 			game?.joinViewer({ userId: message.userId, user: message.user });
 
 			const text = message.text.trim();
+			if (text === "!игра") {
+				game?.startGame();
+				return;
+			}
 			if (text.startsWith("!скин")) {
 				const argument = text.slice("!скин".length).trim();
 				const skin = Number.parseInt(argument, 10);
