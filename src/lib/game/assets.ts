@@ -1,5 +1,6 @@
 import { Assets, Rectangle, Texture } from "pixi.js";
 import { asset } from "$app/paths";
+import { frameRect } from "./frame-label.js";
 
 const SHIP_PATHS = [
 	"ships/tinyShip1.png",
@@ -24,14 +25,9 @@ const SHIP_PATHS = [
 	"ships/tinyShip20.png",
 ] as const;
 
-const EXPLOSION_FRAMES = [
-	[164, 84, 9, 9],
-	[176, 81, 15, 15],
-	[178, 96, 16, 15],
-	[195, 96, 16, 15],
-];
+const EXPLOSION_FRAMES = ["f11", "f12", "g12", "g13"];
 
-const BULLET_FRAME = [4, 68, 9, 9];
+const BULLET_FRAME = "e1";
 
 const range = (from: number, to: number) =>
 	Array.from({ length: to - from + 1 }, (_, i) => from + i);
@@ -105,8 +101,10 @@ export async function loadAssets(): Promise<GameAssets> {
 	base.source.scaleMode = "nearest";
 
 	return {
-		explosion: EXPLOSION_FRAMES.map((frame) => cut(base.source, frame)),
-		bullet: cut(base.source, BULLET_FRAME),
+		explosion: EXPLOSION_FRAMES.map((label) =>
+			cut(base.source, frameRect(label)),
+		),
+		bullet: cut(base.source, frameRect(BULLET_FRAME)),
 		ships: await loadShips(),
 	};
 }
