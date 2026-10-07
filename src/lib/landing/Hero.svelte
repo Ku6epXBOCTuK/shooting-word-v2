@@ -122,7 +122,7 @@
 		position: absolute;
 		right: 8px;
 		bottom: -28px;
-		font-size: 9px;
+		font-size: 11px;
 		letter-spacing: 0.18em;
 		color: var(--cyan);
 	}
@@ -181,7 +181,7 @@
 		color: var(--foreground);
 		border: 1px solid rgba(255, 255, 255, 0.38);
 		padding: 5px 8px;
-		font-size: 9px;
+		font-size: 11px;
 		letter-spacing: 0.12em;
 		background: rgba(8, 9, 13, 0.7);
 	}

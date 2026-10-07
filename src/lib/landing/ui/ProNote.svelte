@@ -26,12 +26,12 @@
 		border: 1px solid rgba(255, 112, 66, 0.2);
 		background: rgba(255, 112, 66, 0.05);
 		color: var(--muted);
-		font-size: 11px;
+		font-size: 13px;
 		line-height: 1.4;
 	}
 
 	.pro-note-mark {
-		font-size: 9px;
+		font-size: 12px;
 		color: var(--orange);
 		letter-spacing: 0.1em;
 	}

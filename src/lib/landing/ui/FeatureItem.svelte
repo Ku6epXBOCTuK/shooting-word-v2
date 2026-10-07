@@ -21,7 +21,7 @@
 		align-items: center;
 		gap: 10px;
 		color: #c7c8cc;
-		font-size: 14px;
+		font-size: 16px;
 	}
 
 	.feature-icon {

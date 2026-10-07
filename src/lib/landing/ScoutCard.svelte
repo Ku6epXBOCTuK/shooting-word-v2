@@ -1,6 +1,7 @@
 <script lang="ts">
 	import LaunchCard from "./LaunchCard.svelte";
 	import Button from "./ui/Button.svelte";
+	import CopyField from "./ui/CopyField.svelte";
 	import FeatureList from "./ui/FeatureList.svelte";
 	import FeatureItem from "./ui/FeatureItem.svelte";
 	import FieldLabel from "./ui/FieldLabel.svelte";
@@ -55,7 +56,7 @@
 			bind:value={channel}
 			placeholder={DEFAULT_CHANNEL}
 		/>
-		<p class="link-out">{widgetLink}</p>
+		<CopyField value={widgetLink} />
 		<div class="button-row">
 			<Button variant="pro" onclick={openInBrowser}>
 				Войти в симуляцию
@@ -70,13 +71,6 @@
 </LaunchCard>
 
 <style>
-	.link-out {
-		margin: 8px 0 0;
-		font-size: 11px;
-		word-break: break-all;
-		color: var(--cyan);
-	}
-
 	.button-row {
 		display: flex;
 		gap: 9px;

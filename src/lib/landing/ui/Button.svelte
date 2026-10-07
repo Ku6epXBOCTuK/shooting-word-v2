@@ -42,7 +42,7 @@
 		align-items: center;
 		gap: 8px;
 		cursor: pointer;
-		font-size: 11px;
+		font-size: 13px;
 		font-weight: 700;
 		text-decoration: none;
 		color: var(--foreground);

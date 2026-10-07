@@ -16,7 +16,7 @@
 <style>
 	.field-label {
 		display: block;
-		font-size: 9px;
+		font-size: 12px;
 		letter-spacing: 0.13em;
 		color: var(--muted);
 		margin: 18px 0 7px;

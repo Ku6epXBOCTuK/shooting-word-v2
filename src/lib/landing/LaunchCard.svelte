@@ -37,7 +37,7 @@
 
 <style>
 	.launch-card {
-		border: 1px solid var(--line);
+		border: 1px solid rgba(255, 255, 255, 0.42);
 		background: var(--panel);
 		padding: 27px;
 		min-height: 355px;
@@ -84,14 +84,14 @@
 
 	.launch-card h2 {
 		margin: 24px 0 5px;
-		font-size: 25px;
+		font-size: 28px;
 		letter-spacing: -0.03em;
 	}
 
 	.card-subtitle {
 		margin: 0;
 		color: var(--muted);
-		font-size: 15px;
+		font-size: 16px;
 	}
 
 	.card-bottom {

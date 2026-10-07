@@ -1,7 +1,7 @@
 <script lang="ts">
+	import CommanderCard from "#lib/landing/CommanderCard.svelte";
 	import Hero from "#lib/landing/Hero.svelte";
 	import ScoutCard from "#lib/landing/ScoutCard.svelte";
-	import CommanderCard from "#lib/landing/CommanderCard.svelte";
 </script>
 
 <div class="scene">
@@ -30,7 +30,7 @@
 		--foreground: #ecebe7;
 		--muted: #8b8e98;
 		--line: rgba(255, 255, 255, 0.11);
-		--panel: rgba(17, 19, 26, 0.86);
+		--panel: oklch(27% 0.02 272.464 / 0.86);
 		--lime: #caff42;
 		--cyan: #69d8e6;
 		--orange: #ff7042;
