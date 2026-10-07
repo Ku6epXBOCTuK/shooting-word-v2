@@ -56,9 +56,12 @@ eventsub-листенер.
       viewer-store в sqlite (есть в беклоге технических задач), localStorage
       остаётся для статик-билда. Записи принимать только по валидному uuid (uuid
       = секрет), при невалидном - 404
-- [ ] 5. bun + docker + ci/cd: svelte-adapter-bun, multi-stage Dockerfile на
-      oven/bun, на vps docker-compose (volume sqlite, caddy TLS под duckdns),
-      GitHub Actions: build -> ghcr -> ssh deploy
+- [ ] 5a. переезд на bun, локально: svelte-adapter-bun вместо adapter-node,
+      запуск dev/build/start под bun, проверка всего цикла (auth, награды, щиты,
+      persistence на node:sqlite -> bun:sqlite если нужно), twurple под bun
+- [ ] 5b. docker + ci/cd: multi-stage Dockerfile на oven/bun, на vps
+      docker-compose (volume sqlite, caddy TLS под duckdns), GitHub Actions:
+      build -> ghcr -> ssh deploy
 
 ## Roadmap
 
