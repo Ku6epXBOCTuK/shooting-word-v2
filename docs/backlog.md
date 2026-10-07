@@ -28,8 +28,41 @@
 - [ ] перерисовать щит\
       ![shield bubble](./images/shield-bubble.avif)
 
+## План: деплой на vps (мульти-стример)
+
+Каждый стример логинится своим твич-аккаунтом (регистрация открытая), получает
+свою ссылку виджета для OBS. Данные в sqlite, проект в docker, ci/cd на vps
+(домен duckdns, образы в ghcr). Single-tenant точки сейчас: twitch-token.json +
+глобальный provider, плоский reward-ids.json, глобальные map щитов и один
+eventsub-листенер.
+
+- [ ] 1. sqlite (встроенный node:sqlite, без зависимостей; на шаге bun -
+      переключение на bun:sqlite через тонкую обёртку драйвера): таблицы
+      broadcasters (user_id, login, widget uuid, token json), reward_ids
+      (broadcaster_id, key, reward_id), viewers (broadcaster_id, user_id, data
+      json). Миграция из json-файлов не нужна - одна повторная авторизация
+      руками
+- [ ] 2. мульти-тенантный сервер: twitch-auth - токен на broadcaster в sqlite
+      вместо файла, провайдер/листенер/щиты - Map по broadcaster_id, eventsub
+      WS-листенер на каждого активного стримера
+- [ ] 3. auth + кабинет: /auth/twitch/login -> callback создаёт broadcaster +
+      сессионная cookie, страница кабинета: виджет-ссылка, создание/удаление
+      наград. Виджет /widget/[uuid] - uuid стримера одновременно идентификатор и
+      секрет (не подобрать), записи (/api/storage) только по нему
+- [ ] 4. persistence: http-адаптер StoragePort -> /api/storage/[channel]/[key],
+      viewer-store в sqlite (есть в беклоге технических задач), localStorage
+      остаётся для статик-билда
+- [ ] 5. bun + docker + ci/cd: svelte-adapter-bun, multi-stage Dockerfile на
+      oven/bun, на vps docker-compose (volume sqlite, caddy TLS под duckdns),
+      GitHub Actions: build -> ghcr -> ssh deploy
+
 ## Roadmap
 
+- [ ] оценить варианты масштабирования eventsub при росте числа стримеров:
+      conduit с шардированием (ws), http-webhook транспорт, irc для чат-команд.
+      Текущий ws-листенер на стримера ок до десятков
+- [ ] обдумать переезд бекенда на rust + axum (vps слабая, нужна минимальная
+      нагрузка) - отдельная эпопея после bun
 - [ ] entity id для сущностей. Исследовано (окт 2026): сейчас не нужно - ссылки
       между сущностями (homing.target) закрыты guard'ом world.has(), miniplex не
       переиспользует объекты, сериализации ссылок нет. Может понадобиться, если
