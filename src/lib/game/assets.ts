@@ -73,7 +73,7 @@ function cut(source: Texture["source"], [x, y, w, h]: number[]) {
 	return new Texture({ source, frame: new Rectangle(x, y, w, h) });
 }
 
-async function loadShips(): Promise<Texture[][]> {
+export async function loadShips(): Promise<Texture[][]> {
 	return Promise.all(
 		SHIP_SHEETS.map(async ({ cols, rows, frames }, index) => {
 			const base = await Assets.load<Texture>(asset(SHIP_PATHS[index]));
