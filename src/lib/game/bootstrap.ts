@@ -4,7 +4,7 @@ import type { ChatMessage } from "#lib/chat/port.js";
 import type { Entity, ViewerIdentity } from "./types.js";
 import type { GameContext } from "./context.js";
 import { systemGroups } from "./systems/index.js";
-import { persistViewers } from "./persistence.js";
+import { loadViewers, persistViewers } from "./persistence.js";
 import { spawnViewer } from "./spawn.js";
 import { loadAssets, SHIP_COUNT } from "./assets.js";
 import {
@@ -12,6 +12,7 @@ import {
 	BULLET_SPEED,
 	VIEWER_GROUND_MARGIN,
 	VIEWER_HEIGHT,
+	VIEWER_TIMEOUT_MS,
 } from "./config.js";
 
 const MAX_FRAME_MS = 50;
@@ -28,6 +29,16 @@ export async function bootstrapGame(app: Application) {
 		);
 
 	let groups = createGroups();
+
+	const restoreViewers = () => {
+		const now = Date.now();
+		for (const viewer of loadViewers()) {
+			if (now - viewer.lastSeen < VIEWER_TIMEOUT_MS) {
+				spawnViewer(world, viewer, app.screen, viewer.xp);
+			}
+		}
+	};
+	restoreViewers();
 
 	let timeScale = 1;
 	let isDestroyed = false;
@@ -163,6 +174,7 @@ export async function bootstrapGame(app: Application) {
 			}
 
 			groups = createGroups();
+			restoreViewers();
 			timeScale = 1;
 		},
 

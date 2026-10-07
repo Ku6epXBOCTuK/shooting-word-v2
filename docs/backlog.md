@@ -22,7 +22,7 @@
 - [x] ecs: вынести запись entity.size из viewer-render.ts:70 в отдельную
       measureSystem до walk - render не должен писать в логику (сейчас size
       отстаёт на кадр, walk читает его в walk.ts:33)
-- [ ] ecs: вынести спавн зрителей из конструктора viewer-persistence.ts:9-15 в
+- [x] ecs: вынести спавн зрителей из конструктора viewer-persistence.ts:9-15 в
       bootstrap - side effect в фабрике системы, невидим и неуправляем по
       порядку
 - [ ] ecs: persistViewers вызывается из 5 мест (bullet, viewer-timeout,
