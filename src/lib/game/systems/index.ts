@@ -26,6 +26,7 @@ import { createViewerTimeoutSystem } from "./viewer-timeout.js";
 import { createViewerPersistenceSystem } from "./viewer-persistence.js";
 import { createRenderSystem } from "./render.js";
 import { createBannerRenderSystem } from "./banner-render.js";
+import { createPortalRenderSystem } from "./portal-render.js";
 import { createViewerRenderSystem } from "./viewer-render.js";
 import { createCleanupSystem } from "./cleanup.js";
 
@@ -82,6 +83,7 @@ export function systemGroups(): SystemGroup[] {
 			factories: [
 				createRenderSystem,
 				createBannerRenderSystem,
+				createPortalRenderSystem,
 				createViewerRenderSystem,
 				createBulletRenderSystem,
 				createEnemyShotRenderSystem,
