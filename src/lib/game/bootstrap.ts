@@ -149,6 +149,7 @@ export async function bootstrapGame(app: Application) {
 			let from: { x: number; y: number } | undefined;
 			for (const entity of viewersWithPosition) {
 				if (entity.viewer.userId === message.userId) {
+					if (entity.dead) return;
 					const halfHeight =
 						(entity.size?.height ?? VIEWER_HEIGHT * VIEWER_SCALE) / 2;
 					from = {
