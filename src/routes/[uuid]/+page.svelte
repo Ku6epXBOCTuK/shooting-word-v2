@@ -15,9 +15,7 @@
 	let managing = $state(false);
 
 	const widgetLink = $derived(
-		login
-			? `${page.url.origin}${resolve("/game")}?channel=${encodeURIComponent(login)}&uuid=${encodeURIComponent(uuid)}`
-			: null,
+		login ? `${page.url.origin}${resolve("/widget/[uuid]", { uuid })}` : null,
 	);
 
 	const manage = async (action: "create" | "delete") => {

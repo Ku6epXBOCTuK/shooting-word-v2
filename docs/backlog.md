@@ -50,12 +50,12 @@ eventsub-листенер.
       - [x] 3.1. callback создаёт broadcaster и редиректит на кабинет /[uuid]
             (виджет-ссылка + управление наградами), сессионная cookie не
             понадобилась - uuid в URL и есть доступ
-      - [ ] 3.2. переезд виджета на роут /widget/[uuid] (сейчас /game?channel&uuid)
-      - [ ] 3.3. записи /api/storage только по uuid
+      - [x] 3.2. переезд виджета на роут /widget/[uuid] (сейчас /game?channel&uuid)
 
-- [ ] 4. persistence: http-адаптер StoragePort -> /api/storage/[channel]/[key],
+- [ ] 4. persistence: http-адаптер StoragePort -> /api/storage/[uuid]/[key],
       viewer-store в sqlite (есть в беклоге технических задач), localStorage
-      остаётся для статик-билда
+      остаётся для статик-билда. Записи принимать только по валидному uuid (uuid
+      = секрет), при невалидном - 404
 - [ ] 5. bun + docker + ci/cd: svelte-adapter-bun, multi-stage Dockerfile на
       oven/bun, на vps docker-compose (volume sqlite, caddy TLS под duckdns),
       GitHub Actions: build -> ghcr -> ssh deploy
