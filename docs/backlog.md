@@ -19,7 +19,7 @@
 - [x] ecs: разделить lifetime.ts - система только старит и помечает expired,
       отдельная enemyAttackSystem реагирует на expired + word (pickTarget, спавн
       enemyShot)
-- [ ] ecs: вынести запись entity.size из viewer-render.ts:70 в отдельную
+- [x] ecs: вынести запись entity.size из viewer-render.ts:70 в отдельную
       measureSystem до walk - render не должен писать в логику (сейчас size
       отстаёт на кадр, walk читает его в walk.ts:33)
 - [ ] ecs: вынести спавн зрителей из конструктора viewer-persistence.ts:9-15 в

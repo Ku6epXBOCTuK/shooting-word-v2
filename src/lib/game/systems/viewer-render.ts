@@ -1,10 +1,10 @@
 import { AnimatedSprite, Graphics, Text, TextStyle } from "pixi.js";
+import { VIEWER_PLATE_PADDING } from "../config.js";
 import type { Entity } from "../types.js";
 import type { System, SystemFactory } from "./types.js";
 
 const LABEL_GAP = 4;
 const SHIP_ANIMATION_SPEED = 0.2;
-const PLATE_PADDING = 6;
 const PLATE_RADIUS = 6;
 const PLATE_ALPHA = 0.7;
 const HP_BAR_HEIGHT = 3;
@@ -14,7 +14,6 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 	const viewers = ctx.world.with("viewer", "position");
 	const labelStyle = new TextStyle({ fill: "#ffffff", fontSize: 12 });
 
-	const ships = new Map<Entity, AnimatedSprite>();
 	const appliedSkin = new Map<Entity, number>();
 	const shieldBubbles = new Map<Entity, Graphics>();
 
@@ -32,7 +31,7 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 		ship.anchor.set(0.5);
 		ship.animationSpeed = SHIP_ANIMATION_SPEED;
 		ship.play();
-		ships.set(entity, ship);
+		entity.sprite = ship;
 		appliedSkin.set(entity, entity.viewer.skin);
 
 		const label = new Text({ text: entity.viewer.user, style: labelStyle });
@@ -43,8 +42,8 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 	});
 
 	const unsubscribeRemoved = viewers.onEntityRemoved.subscribe((entity) => {
-		ships.get(entity)?.destroy();
-		ships.delete(entity);
+		entity.sprite?.destroy();
+		entity.sprite = undefined;
 		appliedSkin.delete(entity);
 		shieldBubbles.get(entity)?.destroy();
 		shieldBubbles.delete(entity);
@@ -58,20 +57,14 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 
 	const system: System = () => {
 		for (const entity of viewers) {
-			const ship = ships.get(entity);
-			if (!ship) continue;
+			const ship = entity.sprite;
+			if (!(ship instanceof AnimatedSprite)) continue;
 
 			if (appliedSkin.get(entity) !== entity.viewer.skin) {
 				ship.textures = shipFrames(entity.viewer.skin);
 				ship.play();
 				appliedSkin.set(entity, entity.viewer.skin);
 			}
-
-			entity.size = {
-				width:
-					Math.max(ship.width, entity.view?.width ?? 0) + PLATE_PADDING * 2,
-				height: ship.height,
-			};
 
 			ship.x = entity.position.x;
 			ship.y = entity.position.y;
@@ -85,14 +78,15 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 				const labelWidth = entity.view?.width ?? 0;
 				const labelTop =
 					(entity.view?.y ?? entity.position.y) - (entity.view?.height ?? 0);
-				const width = Math.max(ship.width, labelWidth) + PLATE_PADDING * 2;
-				const top = labelTop - PLATE_PADDING;
+				const width =
+					Math.max(ship.width, labelWidth) + VIEWER_PLATE_PADDING * 2;
+				const top = labelTop - VIEWER_PLATE_PADDING;
 				const bottom =
 					entity.position.y +
 					ship.height / 2 +
 					HP_BAR_GAP +
 					HP_BAR_HEIGHT +
-					PLATE_PADDING;
+					VIEWER_PLATE_PADDING;
 
 				entity.plate
 					.clear()
@@ -174,16 +168,14 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 	system.dispose = () => {
 		unsubscribeAdded();
 		unsubscribeRemoved();
-		for (const ship of ships.values()) {
-			ship.destroy();
-		}
-		ships.clear();
 		appliedSkin.clear();
 		for (const bubble of shieldBubbles.values()) {
 			bubble.destroy();
 		}
 		shieldBubbles.clear();
 		for (const entity of viewers) {
+			entity.sprite?.destroy();
+			entity.sprite = undefined;
 			entity.plate?.destroy();
 			entity.plate = undefined;
 			entity.bar?.destroy();
