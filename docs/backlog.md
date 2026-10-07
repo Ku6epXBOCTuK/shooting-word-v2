@@ -2,14 +2,16 @@
 
 ## Технические задачи
 
-- [x] изменить persistance - static - localstorage, node - server
-- [x] node sqlite - вместо json файлов
-- [ ] списание баллов (fullfilment) должно настраиваться в конфиге
+- [ ] главная страница с понятным выбором: обрезанная - статическая на github
+      pages или полная - на моем бекенде. четко описать - не доверяете - вводите
+      имя и играйте в статику. хотитет доп возможностей - подключайте полный
+      бекенд со всеми фичами
+- [ ] показывать награды за баллы, созданные приложением - а не "удалено 1
+      награда"
+- [ ] списание баллов (fullfilment) должно настраиваться в конфиге, автосписание
+      по умолчанию должно быть выключено
 - [ ] проверить статик билд - чтобы в билде вообще не было недоступных систем,
       ошибок, попыток авторизации и т.д.
-- [x] persistence: добавить http-адаптер StoragePort + серверный endpoint
-      /api/storage/:key для node-билда (порт и localStorage-адаптер уже есть в
-      src/lib/features/persistence)
 - [ ] писать в чат от имени бот-аккаунта (отдельный токен бота, не основного
       стримера)
 
@@ -18,52 +20,14 @@
 - [ ] цикл разрушения корабля зрителя: взрыв - портал, слишком быстрый. нужен
       более длительный взрыв, паузу между взрывом и появлением портала и
       анимацию появления портала из точки
-- [ ] цикл игры - волна врагов, игра до последнего умершего зрителя, надо
-      отбалансировать щит
-- [ ] режим "работа" - более спокойный, чтобы чат не спамил, и режим
-      "афк\игра\босс\волна" - чтобы было чем заняться, пока стример отошел
+- [ ] режимы игры: - основной: более спокойный, чтобы чат не спамил - игра: один
+      раунд до разрушения всех кораблей зрителей - волны\боссы - афк: пока
+      стример отошел - более активные враги или циклический перезапуск игры
 - [ ] подумать над дружественными словами - по темам или цветам выбирать
 - [ ] слова приближаются слишком равномерно\скучно, посмотреть
       скорости\ускорения и возможно какую-то анимацию тряски\удара при остановке
 - [ ] перерисовать щит\
       ![shield bubble](./images/shield-bubble.avif)
-
-## План: деплой на vps (мульти-стример)
-
-Каждый стример логинится своим твич-аккаунтом (регистрация открытая), получает
-свою ссылку виджета для OBS. Данные в sqlite, проект в docker, ci/cd на vps
-(домен duckdns, образы в ghcr). Single-tenant точки сейчас: twitch-token.json +
-глобальный provider, плоский reward-ids.json, глобальные map щитов и один
-eventsub-листенер.
-
-- [x] 1. sqlite (встроенный node:sqlite, без зависимостей; на шаге bun -
-      переключение на bun:sqlite через тонкую обёртку драйвера): таблицы
-      broadcasters (user_id, login, widget uuid, token json), reward_ids
-      (broadcaster_id, key, reward_id), viewers (broadcaster_id, user_id, data
-      json). Миграция из json-файлов не нужна - одна повторная авторизация
-      руками
-- [x] 2. мульти-тенантный сервер: twitch-auth - токен на broadcaster в sqlite
-      вместо файла, провайдер/листенер/щиты - Map по broadcaster_id, eventsub
-      WS-листенер на каждого активного стримера
-- [ ] 3. auth + кабинет:
-
-      - [x] 3.1. callback создаёт broadcaster и редиректит на кабинет /[uuid]
-            (виджет-ссылка + управление наградами), сессионная cookie не
-            понадобилась - uuid в URL и есть доступ
-      - [x] 3.2. переезд виджета на роут /widget/[uuid] (сейчас /game?channel&uuid)
-
-- [x] 4. persistence: http-адаптер StoragePort -> /api/storage/[uuid]/[key],
-      viewer-store в sqlite (есть в беклоге технических задач), localStorage
-      остаётся для статик-билда. Записи принимать только по валидному uuid (uuid
-      = секрет), при невалидном - 404
-- [x] 5a. переезд на bun, локально: svelte-adapter-bun мёртв (несовместим с
-      Kit 3) - сборка adapter-node, запуск bun build-node; bun 1.4.2; фикс
-      start-флоу: TWITCH_REDIRECT_URI в src/env.ts + .env (adapter-node без
-      прокси-заголовков считает origin https и ломал redirect_uri), start =
-      cross-env ORIGIN + bun; node:sqlite и twurple работают под bun
-- [ ] 5b. docker + ci/cd: multi-stage Dockerfile на oven/bun, на vps
-      docker-compose (volume sqlite, caddy TLS под duckdns), GitHub Actions:
-      build -> ghcr -> ssh deploy
 
 ## Roadmap
 
@@ -71,7 +35,6 @@ eventsub-листенер.
       виджет опрашивает /api/shields раз в 10 сек (задержка до 10 сек + ленивая
       регистрация eventsub на первый запрос). Push по SSE даст мгновенную
       доставку, но нужен канал с реконнектами
-
 - [ ] оценить варианты масштабирования eventsub при росте числа стримеров:
       conduit с шардированием (ws), http-webhook транспорт, irc для чат-команд.
       Текущий ws-листенер на стримера ок до десятков
@@ -89,8 +52,41 @@ eventsub-листенер.
 
 ## Архив
 
+- [x] цикл игры - волна врагов, игра до последнего умершего зрителя, надо
+      отбалансировать щит
+- [x] изменить persistance - static - localstorage, node - server
+- [x] node sqlite - вместо json файлов
+- [x] persistence: добавить http-адаптер StoragePort + серверный endpoint
+      /api/storage/:key для node-билда (порт и localStorage-адаптер уже есть в
+      src/lib/features/persistence)
 - [x] сделать сетку на fx картинках, чтобы я могла выбирать анимацию по
       нумерации типа a1-a2-b1-b2
+
+### План: деплой на vps (мульти-стример) (выполнен)
+
+Каждый стример логинится своим твич-аккаунтом (регистрация открытая), получает
+свою ссылку виджета для OBS. Данные в sqlite, проект в docker, ci/cd на vps
+(домен duckdns, образы в ghcr).
+
+- [x] 1. sqlite (встроенный node:sqlite, без зависимостей): таблицы broadcasters
+      (user_id, login, widget uuid, token json), reward_ids (broadcaster_id,
+      key, reward_id), viewers (broadcaster_id, user_id, data json)
+- [x] 2. мульти-тенантный сервер: twitch-auth - токен на broadcaster в sqlite,
+      провайдер/листенер/щиты - Map по broadcaster_id, eventsub WS-листенер на
+      каждого активного стримера
+- [x] 3. auth + кабинет: callback создаёт broadcaster и редиректит на кабинет
+      /[uuid] (uuid = доступ, cookie не понадобилась); виджет на роуте
+      /widget/[uuid]
+- [x] 4. persistence: http-адаптер StoragePort -> /api/storage/[uuid]/[key],
+      viewer-store в sqlite, localStorage для статик-билда; записи только по
+      валидному uuid
+- [x] 5a. bun локально: сборка adapter-node, запуск bun build-node (bun 1.4.2);
+      фикс start-флоу: TWITCH_REDIRECT_URI в src/env.ts (adapter-node считает
+      origin https), start = cross-env ORIGIN + bun; node:sqlite и twurple под
+      bun
+- [x] 5b. docker + ci/cd: multi-stage Dockerfile на oven/bun (prod-deps слой),
+      vps docker-compose (volume sqlite, nginx + certbot, порт APP_PORT), GitHub
+      Actions: build -> ghcr -> ssh deploy (явный тег latest)
 
 ### План: нумерация кадров fx (выполнен)
 
