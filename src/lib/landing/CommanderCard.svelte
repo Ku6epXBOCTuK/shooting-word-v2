@@ -1,11 +1,15 @@
 <script lang="ts">
-	import { features } from "#lib/features/variant.js";
-	import LaunchCard from "./LaunchCard.svelte";
-	import SparklesIcon from "~icons/lucide/sparkles";
-	import ShieldIcon from "~icons/lucide/shield";
-	import RadioIcon from "~icons/lucide/radio";
-	import GaugeIcon from "~icons/lucide/gauge";
 	import ArrowUpRightIcon from "~icons/lucide/arrow-up-right";
+	import GaugeIcon from "~icons/lucide/gauge";
+	import RadioIcon from "~icons/lucide/radio";
+	import ShieldIcon from "~icons/lucide/shield";
+	import SparklesIcon from "~icons/lucide/sparkles";
+	import LaunchCard from "./LaunchCard.svelte";
+	import Button from "./ui/Button.svelte";
+	import FeatureList from "./ui/FeatureList.svelte";
+	import FeatureItem from "./ui/FeatureItem.svelte";
+	import Icon from "./ui/Icon.svelte";
+	import ProNote from "./ui/ProNote.svelte";
 
 	const FULL_HOST = "https://xboct-games.duckdns.org";
 </script>
@@ -14,42 +18,27 @@
 	variant="orange"
 	title="Командир"
 	subtitle="Полный вход через Twitch"
+	icon={SparklesIcon}
 >
-	{#snippet icon()}
-		<SparklesIcon class="i i-lg" />
-	{/snippet}
-
-	{#if features.rewards}
-		<ul class="feature-list">
-			<li class="feature-item">
-				<span class="feature-icon"><ShieldIcon class="i" /></span>
-				Награда «Силовой щит» за баллы канала
-			</li>
-			<li class="feature-item">
-				<span class="feature-icon"><RadioIcon class="i" /></span>
-				Зрители и их XP хранятся на сервере
-			</li>
-			<li class="feature-item">
-				<span class="feature-icon"><GaugeIcon class="i" /></span>
-				Кабинет: ссылка виджета и награды
-			</li>
-		</ul>
-	{/if}
+	<FeatureList>
+		<FeatureItem icon={ShieldIcon}>
+			Награда «Силовой щит» за баллы канала
+		</FeatureItem>
+		<FeatureItem icon={RadioIcon}>
+			Зрители и их XP хранятся на сервере
+		</FeatureItem>
+		<FeatureItem icon={GaugeIcon}>
+			Кабинет: ссылка виджета и награды
+		</FeatureItem>
+	</FeatureList>
 
 	{#snippet bottom()}
-		{#if features.rewards}
-			<div class="pro-note">
-				<span class="pro-note-mark">TWITCH</span>
-				<span
-					>разрешения: управление наградами канала, отправка сообщений в чат.</span
-				>
-			</div>
-			<a class="button button-pro" href={FULL_HOST}>
-				Войти через Twitch
-				<ArrowUpRightIcon class="i" />
-			</a>
-		{:else}
-			<p class="pro-note">в этой сборке недоступна — требует серверный режим</p>
-		{/if}
+		<ProNote mark="TWITCH">
+			разрешения: управление наградами канала, отправка сообщений в чат.
+		</ProNote>
+		<Button variant="pro" href={FULL_HOST}>
+			Войти через Twitch
+			<Icon as={ArrowUpRightIcon} />
+		</Button>
 	{/snippet}
 </LaunchCard>

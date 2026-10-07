@@ -1,5 +1,4 @@
 <script lang="ts">
-	import "#lib/landing/landing.css";
 	import Hero from "#lib/landing/Hero.svelte";
 	import ScoutCard from "#lib/landing/ScoutCard.svelte";
 	import CommanderCard from "#lib/landing/CommanderCard.svelte";
@@ -84,6 +83,12 @@
 		mask-image: linear-gradient(to bottom, black, transparent 80%);
 	}
 
+	.launch-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 16px;
+	}
+
 	.launch-section {
 		border-top: 1px solid var(--line);
 		padding: 38px 0 74px;
@@ -115,6 +120,10 @@
 	}
 
 	@media (max-width: 760px) {
+		.launch-grid {
+			grid-template-columns: 1fr;
+		}
+
 		.launch-section {
 			padding-top: 26px;
 			width: min(100% - 32px, 560px);

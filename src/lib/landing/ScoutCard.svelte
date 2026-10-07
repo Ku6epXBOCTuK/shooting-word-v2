@@ -1,5 +1,11 @@
 <script lang="ts">
 	import LaunchCard from "./LaunchCard.svelte";
+	import Button from "./ui/Button.svelte";
+	import FeatureList from "./ui/FeatureList.svelte";
+	import FeatureItem from "./ui/FeatureItem.svelte";
+	import FieldLabel from "./ui/FieldLabel.svelte";
+	import HandleInput from "./ui/HandleInput.svelte";
+	import Icon from "./ui/Icon.svelte";
 	import RocketIcon from "~icons/lucide/rocket";
 	import ZapIcon from "~icons/lucide/zap";
 	import CrosshairIcon from "~icons/lucide/crosshair";
@@ -8,17 +14,17 @@
 	import LinkIcon from "~icons/lucide/link-2";
 
 	const STATIC_HOST = "https://ku6epxboctuk.is-a.dev/shooting-word-v2";
+	const DEFAULT_CHANNEL = "Ku6epXBOCTuK";
 
 	let channel = $state("");
 	let copied = $state(false);
 
-	const nick = $derived(channel.trim());
+	const nick = $derived(channel.trim() || DEFAULT_CHANNEL);
 	const widgetLink = $derived(
-		nick ? `${STATIC_HOST}/game?channel=${encodeURIComponent(nick)}` : null,
+		`${STATIC_HOST}/game?channel=${encodeURIComponent(nick)}`,
 	);
 
 	const copyLink = async () => {
-		if (!widgetLink) return;
 		await navigator.clipboard.writeText(widgetLink);
 		copied = true;
 		setTimeout(() => {
@@ -27,62 +33,59 @@
 	};
 
 	const openInBrowser = () => {
-		if (widgetLink) window.open(widgetLink, "_blank", "noopener");
+		window.open(widgetLink, "_blank", "noopener");
 	};
 </script>
 
-<LaunchCard title="Разведчик" subtitle="Без авторизации и разрешений">
-	{#snippet icon()}
-		<RocketIcon class="i i-lg" />
-	{/snippet}
-
-	<ul class="feature-list">
-		<li class="feature-item">
-			<span class="feature-icon"><ZapIcon class="i" /></span>
-			Полный игровой цикл без входа
-		</li>
-		<li class="feature-item">
-			<span class="feature-icon"><CrosshairIcon class="i" /></span>
-			Слова, стрельба и волны
-		</li>
-		<li class="feature-item">
-			<span class="feature-icon"><ShieldIcon class="i" /></span>
-			Прогресс сохраняется локально
-		</li>
-	</ul>
+<LaunchCard
+	title="Разведчик"
+	subtitle="Без авторизации и разрешений"
+	icon={RocketIcon}
+>
+	<FeatureList>
+		<FeatureItem icon={ZapIcon}>Полный игровой цикл без входа</FeatureItem>
+		<FeatureItem icon={CrosshairIcon}>Слова, стрельба и волны</FeatureItem>
+		<FeatureItem icon={ShieldIcon}>Прогресс сохраняется локально</FeatureItem>
+	</FeatureList>
 
 	{#snippet bottom()}
-		<label class="field-label" for="handle">ПОЗЫВНОЙ КАПИТАНА</label>
-		<input
+		<FieldLabel for="handle">ПОЗЫВНОЙ КАПИТАНА</FieldLabel>
+		<HandleInput
 			id="handle"
 			bind:value={channel}
-			placeholder="например, nova_7"
-			class="handle-input"
-			autocomplete="off"
-			spellcheck="false"
+			placeholder={DEFAULT_CHANNEL}
 		/>
-		{#if widgetLink}
-			<p class="link-out">{widgetLink}</p>
-		{/if}
+		<p class="link-out">{widgetLink}</p>
 		<div class="button-row">
-			<button
-				class="button button-primary"
-				type="button"
-				disabled={!widgetLink}
-				onclick={openInBrowser}
-			>
+			<Button variant="pro" onclick={openInBrowser}>
 				Войти в симуляцию
-				<ArrowUpRightIcon class="i" />
-			</button>
-			<button
-				class="button button-ghost"
-				type="button"
-				disabled={!widgetLink}
-				onclick={copyLink}
-			>
-				<LinkIcon class="i" />
+				<Icon as={ArrowUpRightIcon} />
+			</Button>
+			<Button variant="pro" onclick={copyLink}>
+				<Icon as={LinkIcon} />
 				{copied ? "Ссылка скопирована" : "Ссылка для OBS"}
-			</button>
+			</Button>
 		</div>
 	{/snippet}
 </LaunchCard>
+
+<style>
+	.link-out {
+		margin: 8px 0 0;
+		font-size: 11px;
+		word-break: break-all;
+		color: var(--cyan);
+	}
+
+	.button-row {
+		display: flex;
+		gap: 9px;
+		margin-top: 13px;
+	}
+
+	@media (max-width: 760px) {
+		.button-row {
+			flex-wrap: wrap;
+		}
+	}
+</style>
