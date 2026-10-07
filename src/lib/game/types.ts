@@ -73,6 +73,10 @@ export interface Shield {
 	expiresAt: number;
 }
 
+export interface HitBy {
+	shooterId: string;
+}
+
 export interface Star {
 	age: number;
 	ttl: number;
@@ -95,6 +99,7 @@ export interface EntityComponents {
 	enemyShot: EnemyShot;
 	hp: Hitpoints;
 	shield: Shield;
+	hitBy: HitBy;
 	expired: boolean;
 	xp: number;
 	view: Text;
