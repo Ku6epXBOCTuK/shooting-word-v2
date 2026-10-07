@@ -69,10 +69,13 @@ export interface EnemyShot {
 export interface Hitpoints {
 	current: number;
 	max: number;
+	regenIn?: number;
 }
 
 export interface Shield {
 	expiresAt: number;
+	hp: number;
+	regenIn?: number;
 }
 
 export interface HitBy {

@@ -10,6 +10,7 @@ import { loadAssets, SHIP_COUNT } from "./assets.js";
 import {
 	BULLET_HIT_DISTANCE,
 	BULLET_SPEED,
+	SHIELD_MAX_HP,
 	VIEWER_GROUND_MARGIN,
 	VIEWER_HEIGHT,
 	VIEWER_TIMEOUT_MS,
@@ -97,8 +98,13 @@ export async function bootstrapGame(app: Application) {
 				const expiresAt = map.get(entity.viewer.userId);
 				if (expiresAt === undefined) continue;
 
-				if (!entity.shield || entity.shield.expiresAt < expiresAt) {
-					entity.shield = { expiresAt };
+				if (!entity.shield) {
+					world.addComponent(entity, "shield", {
+						expiresAt,
+						hp: SHIELD_MAX_HP,
+					});
+				} else if (entity.shield.expiresAt < expiresAt) {
+					entity.shield.expiresAt = expiresAt;
 				}
 			}
 		},
