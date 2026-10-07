@@ -5,6 +5,7 @@ import {
 	MAX_FLY_SPEED,
 	MIN_FLY_SPEED,
 	VIEWER_BASE_HP,
+	VIEWER_SCALE,
 	VIEWER_WIDTH,
 	WALK_MAX_SPEED,
 	WALK_MAX_TURN_TIME,
@@ -45,9 +46,9 @@ export function spawnViewer(
 	screen: Size,
 	xp = 0,
 ) {
-	const halfWidth = VIEWER_WIDTH / 2;
-	const x =
-		halfWidth + Math.random() * Math.max(1, screen.width - VIEWER_WIDTH);
+	const width = VIEWER_WIDTH * VIEWER_SCALE;
+	const halfWidth = width / 2;
+	const x = halfWidth + Math.random() * Math.max(1, screen.width - width);
 
 	world.add({
 		viewer,

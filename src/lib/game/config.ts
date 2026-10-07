@@ -16,6 +16,7 @@ export const MAX_ENEMIES = 30;
 
 export const VIEWER_WIDTH = 24;
 export const VIEWER_HEIGHT = 32;
+export const VIEWER_SCALE = 2;
 export const VIEWER_GROUND_MARGIN = 16;
 export const VIEWER_PLATE_PADDING = 6;
 export const WALK_EDGE_MARGIN = 8;

@@ -1,6 +1,7 @@
 import {
 	VIEWER_GROUND_MARGIN,
 	VIEWER_HEIGHT,
+	VIEWER_SCALE,
 	VIEWER_WIDTH,
 	WALK_EDGE_MARGIN,
 	WALK_MAX_SPEED,
@@ -30,7 +31,7 @@ export const createWalkSystem: SystemFactory = (ctx) => {
 
 			entity.position.x += entity.walker.direction * entity.walker.speed * dt;
 
-			const halfWidth = (entity.size?.width ?? VIEWER_WIDTH) / 2;
+			const halfWidth = (entity.size?.width ?? VIEWER_WIDTH * VIEWER_SCALE) / 2;
 			const minX = halfWidth + WALK_EDGE_MARGIN;
 			const maxX = Math.max(minX, width - halfWidth - WALK_EDGE_MARGIN);
 			if (entity.position.x < minX) {
@@ -41,7 +42,9 @@ export const createWalkSystem: SystemFactory = (ctx) => {
 				entity.walker.direction = -1;
 			}
 
-			entity.position.y = height - VIEWER_GROUND_MARGIN - VIEWER_HEIGHT / 2;
+			const halfHeight =
+				(entity.size?.height ?? VIEWER_HEIGHT * VIEWER_SCALE) / 2;
+			entity.position.y = height - VIEWER_GROUND_MARGIN - halfHeight;
 		}
 	};
 };

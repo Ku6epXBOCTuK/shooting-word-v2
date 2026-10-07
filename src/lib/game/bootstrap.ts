@@ -13,6 +13,7 @@ import {
 	SHIELD_MAX_HP,
 	VIEWER_GROUND_MARGIN,
 	VIEWER_HEIGHT,
+	VIEWER_SCALE,
 	VIEWER_TIMEOUT_MS,
 } from "./config.js";
 
@@ -137,9 +138,11 @@ export async function bootstrapGame(app: Application) {
 			let from: { x: number; y: number } | undefined;
 			for (const entity of viewersWithPosition) {
 				if (entity.viewer.userId === message.userId) {
+					const halfHeight =
+						(entity.size?.height ?? VIEWER_HEIGHT * VIEWER_SCALE) / 2;
 					from = {
 						x: entity.position.x,
-						y: entity.position.y - VIEWER_HEIGHT / 2,
+						y: entity.position.y - halfHeight,
 					};
 					break;
 				}
