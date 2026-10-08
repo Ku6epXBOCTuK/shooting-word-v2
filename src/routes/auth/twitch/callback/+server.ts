@@ -1,5 +1,6 @@
 import { redirect } from "@sveltejs/kit";
-import { exchangeCode, getTokenInfo } from "@twurple/auth";
+import { ApiClient } from "@twurple/api";
+import { exchangeCode, getTokenInfo, StaticAuthProvider } from "@twurple/auth";
 import {
 	TWITCH_CLIENT_ID,
 	TWITCH_CLIENT_SECRET,
@@ -37,9 +38,18 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 			throw new Error("token validation failed");
 		}
 
+		const api = new ApiClient({
+			authProvider: new StaticAuthProvider(
+				TWITCH_CLIENT_ID ?? "",
+				token.accessToken,
+			),
+		});
+		const user = await api.users.getUserById(info.userId);
+
 		const broadcaster = broadcasters.upsert(
 			info.userId,
 			info.userName ?? info.userId,
+			user?.displayName ?? info.userName ?? null,
 			token,
 		);
 		broadcasterUserId = broadcaster.userId;

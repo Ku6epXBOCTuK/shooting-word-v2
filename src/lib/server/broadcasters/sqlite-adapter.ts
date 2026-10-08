@@ -6,6 +6,7 @@ import type { Broadcaster, BroadcastersRepo } from "./port.js";
 interface BroadcasterRow {
 	user_id: string;
 	login: string;
+	display_name: string | null;
 	widget_uuid: string;
 	token: string;
 }
@@ -13,6 +14,7 @@ interface BroadcasterRow {
 const toBroadcaster = (row: BroadcasterRow): Broadcaster => ({
 	userId: row.user_id,
 	login: row.login,
+	displayName: row.display_name,
 	widgetUuid: row.widget_uuid,
 	token: JSON.parse(row.token) as AccessToken,
 });
@@ -27,26 +29,38 @@ export class SqliteBroadcastersRepo implements BroadcastersRepo {
 				token TEXT NOT NULL
 			)
 		`);
+
+		const columns = this.db
+			.prepare("PRAGMA table_info(broadcasters)")
+			.all() as { name: string }[];
+		if (!columns.some((column) => column.name === "display_name")) {
+			this.db.exec("ALTER TABLE broadcasters ADD COLUMN display_name TEXT");
+		}
 	}
 
-	upsert(userId: string, login: string, token: AccessToken): Broadcaster {
+	upsert(
+		userId: string,
+		login: string,
+		displayName: string | null,
+		token: AccessToken,
+	): Broadcaster {
 		const existing = this.byUserId(userId);
 		if (existing) {
 			this.db
 				.prepare(
-					"UPDATE broadcasters SET login = ?, token = ? WHERE user_id = ?",
+					"UPDATE broadcasters SET login = ?, display_name = ?, token = ? WHERE user_id = ?",
 				)
-				.run(login, JSON.stringify(token), userId);
-			return { ...existing, login, token };
+				.run(login, displayName, JSON.stringify(token), userId);
+			return { ...existing, login, displayName, token };
 		}
 
 		const widgetUuid = randomUUID();
 		this.db
 			.prepare(
-				"INSERT INTO broadcasters (user_id, login, widget_uuid, token) VALUES (?, ?, ?, ?)",
+				"INSERT INTO broadcasters (user_id, login, display_name, widget_uuid, token) VALUES (?, ?, ?, ?, ?)",
 			)
-			.run(userId, login, widgetUuid, JSON.stringify(token));
-		return { userId, login, widgetUuid, token };
+			.run(userId, login, displayName, widgetUuid, JSON.stringify(token));
+		return { userId, login, displayName, widgetUuid, token };
 	}
 
 	byUserId(userId: string): Broadcaster | null {

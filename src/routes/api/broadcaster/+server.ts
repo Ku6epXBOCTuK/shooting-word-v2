@@ -18,6 +18,7 @@ export const GET: RequestHandler = ({ url, cookies }) => {
 
 	return Response.json({
 		login: broadcaster.login,
+		displayName: broadcaster.displayName,
 		...(ownSession ? { widgetUuid: broadcaster.widgetUuid } : {}),
 	});
 };
