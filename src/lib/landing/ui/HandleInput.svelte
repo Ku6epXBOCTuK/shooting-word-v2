@@ -30,7 +30,7 @@
 
 	.handle-input:focus {
 		border-color: var(--cyan);
-		box-shadow: 0 0 0 2px rgba(105, 216, 230, 0.12);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--cyan) 12%, transparent);
 	}
 
 	.handle-input::placeholder {

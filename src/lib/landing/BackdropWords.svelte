@@ -17,7 +17,7 @@
 		"Hype",
 	];
 
-	const COLORS = ["#ecebe7", "#69d8e6", "#caff42", "#ff7042"];
+	const COLORS = ["#ecebe7", "#7df0ff", "#caff42", "#ff8c42"];
 	const WORDS_ON_SCREEN = 100;
 	const FOCAL = 90;
 	const SPEED_MIN = 0.04;

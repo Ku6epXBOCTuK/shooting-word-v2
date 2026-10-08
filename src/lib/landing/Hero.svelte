@@ -4,10 +4,12 @@
 
 <section class="hero">
 	<div class="hero-copy">
-		<h1>Сбивай слова<br /><em>до твоего корабля.</em></h1>
+		<h1>
+			Печатать умеют все.<br /><em>А защитить стрим – твой чат сможет?</em>
+		</h1>
 		<p class="hero-lede">
-			Shooting Word превращает чат в поле боя. Слова-враги вылетают из портала —
-			ты сбиваешь их до того, как они достигнут твоего корабля.
+			Shooting Word: игра, в которую играет чат. Зрители сбивают волны
+			слов-врагов и качают свои корабли – просто печатая.
 		</p>
 	</div>
 
@@ -19,16 +21,17 @@
 <style>
 	.hero {
 		min-height: 476px;
+		padding-top: 48px;
 		display: grid;
 		grid-template-columns: 0.88fr 1.12fr;
 		align-items: center;
 		gap: 32px;
-		width: min(1180px, calc(100% - 48px));
+		width: min(1440px, calc(100% - 48px));
 		margin-inline: auto;
 	}
 
 	.hero h1 {
-		font-size: clamp(48px, 6vw, 82px);
+		font-size: clamp(36px, 4.5vw, 60px);
 		line-height: 0.94;
 		letter-spacing: -0.07em;
 		margin: 0 0 25px;

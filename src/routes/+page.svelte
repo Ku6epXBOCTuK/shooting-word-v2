@@ -1,6 +1,6 @@
 <script lang="ts">
-	import CommanderCard from "#lib/landing/CommanderCard.svelte";
 	import BackdropWords from "#lib/landing/BackdropWords.svelte";
+	import CommanderCard from "#lib/landing/CommanderCard.svelte";
 	import Hero from "#lib/landing/Hero.svelte";
 	import ScoutCard from "#lib/landing/ScoutCard.svelte";
 </script>
@@ -14,10 +14,6 @@
 		<Hero />
 
 		<section class="launch-section" id="launch">
-			<div class="section-heading">
-				<p>Выбери точку входа в игру</p>
-			</div>
-
 			<div class="launch-grid">
 				<ScoutCard />
 				<CommanderCard />
@@ -34,9 +30,8 @@
 		--line: rgba(255, 255, 255, 0.11);
 		--panel: oklch(27% 0.02 272.464 / 0.86);
 		--lime: #caff42;
-		--cyan: #69d8e6;
-		--orange: #ff7042;
-
+		--cyan: #7df0ff;
+		--orange: #ff8c42;
 		position: fixed;
 		inset: 0;
 		overflow-y: auto;
@@ -75,7 +70,11 @@
 		opacity: 0.34;
 		background-image:
 			radial-gradient(circle, rgba(255, 255, 255, 0.72) 0 1px, transparent 1px),
-			radial-gradient(circle, rgba(105, 216, 230, 0.55) 0 1px, transparent 1px);
+			radial-gradient(
+				circle,
+				color-mix(in srgb, var(--cyan) 55%, transparent) 0 1px,
+				transparent 1px
+			);
 		background-size:
 			83px 97px,
 			137px 151px;
@@ -94,21 +93,8 @@
 	.launch-section {
 		border-top: 1px solid var(--line);
 		padding: 38px 0 74px;
-		width: min(1180px, calc(100% - 48px));
+		width: min(1440px, calc(100% - 48px));
 		margin-inline: auto;
-	}
-
-	.section-heading {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		margin-bottom: 22px;
-	}
-
-	.section-heading p {
-		color: var(--muted);
-		font-size: 14px;
-		margin: 0;
 	}
 
 	:focus-visible {
@@ -129,14 +115,6 @@
 		.launch-section {
 			padding-top: 26px;
 			width: min(100% - 32px, 560px);
-		}
-
-		.section-heading {
-			display: block;
-		}
-
-		.section-heading p {
-			margin-top: 10px;
 		}
 	}
 </style>

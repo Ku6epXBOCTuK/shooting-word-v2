@@ -3,7 +3,7 @@
 
 	interface Props {
 		as: Component<{ class?: string }>;
-		size?: "sm" | "lg";
+		size?: "sm" | "md" | "lg";
 	}
 
 	let { as: Cmp, size = "sm" }: Props = $props();
@@ -18,8 +18,13 @@
 		flex: 0 0 auto;
 	}
 
-	:global(.icon-lg) {
+	:global(.icon-md) {
 		width: 20px;
 		height: 20px;
+	}
+
+	:global(.icon-lg) {
+		width: 26px;
+		height: 26px;
 	}
 </style>

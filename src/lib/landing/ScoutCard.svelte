@@ -1,18 +1,19 @@
 <script lang="ts">
+	import ArrowUpRightIcon from "~icons/lucide/arrow-up-right";
+	import CircleOffIcon from "~icons/lucide/circle-off";
+	import CrosshairIcon from "~icons/lucide/crosshair";
+	import LinkIcon from "~icons/lucide/link-2";
+	import RocketIcon from "~icons/lucide/rocket";
+	import ShieldIcon from "~icons/lucide/shield";
+	import ZapIcon from "~icons/lucide/zap";
 	import LaunchCard from "./LaunchCard.svelte";
 	import Button from "./ui/Button.svelte";
 	import CopyField from "./ui/CopyField.svelte";
-	import FeatureList from "./ui/FeatureList.svelte";
 	import FeatureItem from "./ui/FeatureItem.svelte";
+	import FeatureList from "./ui/FeatureList.svelte";
 	import FieldLabel from "./ui/FieldLabel.svelte";
 	import HandleInput from "./ui/HandleInput.svelte";
 	import Icon from "./ui/Icon.svelte";
-	import RocketIcon from "~icons/lucide/rocket";
-	import ZapIcon from "~icons/lucide/zap";
-	import CrosshairIcon from "~icons/lucide/crosshair";
-	import ShieldIcon from "~icons/lucide/shield";
-	import ArrowUpRightIcon from "~icons/lucide/arrow-up-right";
-	import LinkIcon from "~icons/lucide/link-2";
 
 	const STATIC_HOST = "https://ku6epxboctuk.is-a.dev/shooting-word-v2";
 	const DEFAULT_CHANNEL = "Ku6epXBOCTuK";
@@ -20,7 +21,19 @@
 	let channel = $state("");
 	let copied = $state(false);
 
-	const nick = $derived(channel.trim() || DEFAULT_CHANNEL);
+	const extractNick = (raw: string): string => {
+		const trimmed = raw.trim();
+		if (!trimmed) return DEFAULT_CHANNEL;
+
+		const urlMatch = trimmed.match(
+			/(?:https?:\/\/)?(?:www\.|m\.)?twitch\.tv\/([a-z0-9_]+)/i,
+		);
+		if (urlMatch) return urlMatch[1];
+
+		return trimmed.replace(/^@/, "");
+	};
+
+	const nick = $derived(extractNick(channel));
 	const widgetLink = $derived(
 		`${STATIC_HOST}/game?channel=${encodeURIComponent(nick)}`,
 	);
@@ -47,6 +60,9 @@
 		<FeatureItem icon={ZapIcon}>Полный игровой цикл без входа</FeatureItem>
 		<FeatureItem icon={CrosshairIcon}>Слова, стрельба и волны</FeatureItem>
 		<FeatureItem icon={ShieldIcon}>Прогресс сохраняется локально</FeatureItem>
+		<FeatureItem icon={CircleOffIcon}>
+			Без наград Twitch и данных на сервере
+		</FeatureItem>
 	</FeatureList>
 
 	{#snippet bottom()}

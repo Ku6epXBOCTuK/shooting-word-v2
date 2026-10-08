@@ -11,7 +11,7 @@
 </script>
 
 <li class="feature-item">
-	<span class="feature-icon"><Icon as={icon} /></span>
+	<span class="feature-icon"><Icon as={icon} size="md" /></span>
 	{@render children()}
 </li>
 
@@ -25,8 +25,8 @@
 	}
 
 	.feature-icon {
-		width: 22px;
-		height: 22px;
+		width: 32px;
+		height: 32px;
 		flex: 0 0 auto;
 		display: grid;
 		place-items: center;
