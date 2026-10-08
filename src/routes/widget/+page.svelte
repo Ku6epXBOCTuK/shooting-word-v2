@@ -4,7 +4,7 @@
 	import { resolve } from "$app/paths";
 	import GameWidget from "#lib/GameWidget.svelte";
 
-	const uuid = $derived(page.params.uuid ?? "");
+	const uuid = $derived(page.url.searchParams.get("uuid") ?? "");
 
 	let login = $state<string | null>(null);
 	let notFound = $state(false);

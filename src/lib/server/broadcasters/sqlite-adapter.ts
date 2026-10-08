@@ -69,6 +69,14 @@ export class SqliteBroadcastersRepo implements BroadcastersRepo {
 			.run(JSON.stringify(token), userId);
 	}
 
+	rotateUuid(userId: string): string {
+		const widgetUuid = randomUUID();
+		this.db
+			.prepare("UPDATE broadcasters SET widget_uuid = ? WHERE user_id = ?")
+			.run(widgetUuid, userId);
+		return widgetUuid;
+	}
+
 	remove(userId: string): void {
 		this.db.prepare("DELETE FROM broadcasters WHERE user_id = ?").run(userId);
 	}

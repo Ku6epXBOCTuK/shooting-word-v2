@@ -1,5 +1,6 @@
-import { broadcasters } from "#lib/server/broadcasters/index.js";
+import type { Cookies } from "@sveltejs/kit";
 import { rewardIds } from "#lib/server/reward-ids/index.js";
+import { resolveBroadcaster } from "#lib/server/resolve-broadcaster.js";
 import { getApiClient } from "#lib/server/twitch-auth.js";
 import type { RequestHandler } from "./$types";
 import type {
@@ -11,9 +12,8 @@ import { logger } from "#lib/logger.js";
 
 export const prerender = false;
 
-async function resolveContext(url: URL) {
-	const uuid = url.searchParams.get("uuid");
-	const broadcaster = uuid ? broadcasters.byUuid(uuid) : null;
+async function resolveContext(cookies: Cookies, url: URL) {
+	const broadcaster = resolveBroadcaster(cookies, url);
 	if (!broadcaster) return null;
 
 	const api = await getApiClient(broadcaster);
@@ -28,8 +28,8 @@ const NOT_AUTHORIZED = {
 	rewards: [],
 };
 
-export const GET: RequestHandler = async ({ url }) => {
-	const context = await resolveContext(url);
+export const GET: RequestHandler = async ({ url, cookies }) => {
+	const context = await resolveContext(cookies, url);
 
 	if (!context) {
 		return Response.json(NOT_AUTHORIZED, { status: 503 });
@@ -65,8 +65,8 @@ const FAILURE = (reason: string): RewardsManageResult => ({
 	reason,
 });
 
-export const POST: RequestHandler = async ({ request, url }) => {
-	const context = await resolveContext(url);
+export const POST: RequestHandler = async ({ request, url, cookies }) => {
+	const context = await resolveContext(cookies, url);
 
 	if (!context) {
 		return Response.json(FAILURE("not authorized, visit /auth/twitch/login"), {

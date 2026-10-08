@@ -6,12 +6,14 @@ import {
 	TWITCH_REDIRECT_URI,
 } from "$app/env/private";
 import { broadcasters } from "#lib/server/broadcasters/index.js";
+import { SESSION_COOKIE, sessions } from "#lib/server/sessions/index.js";
+import { SESSION_TTL_MS } from "#lib/server/sessions/sqlite-adapter.js";
 import { logger } from "#lib/logger.js";
 import type { RequestHandler } from "./$types";
 
 export const prerender = false;
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, cookies }) => {
 	const code = url.searchParams.get("code");
 	const error = url.searchParams.get("error");
 
@@ -21,7 +23,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		});
 	}
 
-	let widgetUuid: string;
+	let broadcasterUserId: string;
 	try {
 		const token = await exchangeCode(
 			TWITCH_CLIENT_ID ?? "",
@@ -40,7 +42,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			info.userName ?? info.userId,
 			token,
 		);
-		widgetUuid = broadcaster.widgetUuid;
+		broadcasterUserId = broadcaster.userId;
 	} catch (err) {
 		const status =
 			err instanceof Error && "statusCode" in err
@@ -56,5 +58,14 @@ export const GET: RequestHandler = async ({ url }) => {
 		);
 	}
 
-	redirect(302, `/${widgetUuid}`);
+	const sessionToken = sessions.create(broadcasterUserId);
+	cookies.set(SESSION_COOKIE, sessionToken, {
+		path: "/",
+		httpOnly: true,
+		sameSite: "lax",
+		secure: url.protocol === "https:",
+		maxAge: Math.floor(SESSION_TTL_MS / 1000),
+	});
+
+	redirect(302, "/cabinet");
 };

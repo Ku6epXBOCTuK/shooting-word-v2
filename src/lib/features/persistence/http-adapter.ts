@@ -5,7 +5,7 @@ export class HttpStorageAdapter implements StoragePort {
 	constructor(private readonly uuid: string) {}
 
 	private url(key: string): string {
-		return resolve("/api/storage/[uuid]/[key]", { uuid: this.uuid, key });
+		return `${resolve("/api/storage/[key]", { key })}?uuid=${encodeURIComponent(this.uuid)}`;
 	}
 
 	async load(key: string): Promise<unknown> {

@@ -9,8 +9,9 @@ interface StoredViewer {
 	[key: string]: unknown;
 }
 
-export const GET: RequestHandler = ({ params }) => {
-	const broadcaster = broadcasters.byUuid(params.uuid);
+export const GET: RequestHandler = ({ params, url }) => {
+	const uuid = url.searchParams.get("uuid");
+	const broadcaster = uuid ? broadcasters.byUuid(uuid) : null;
 	if (!broadcaster) {
 		return Response.json(null, { status: 404 });
 	}
@@ -22,8 +23,9 @@ export const GET: RequestHandler = ({ params }) => {
 	return Response.json(viewers.load(broadcaster.userId));
 };
 
-export const PUT: RequestHandler = async ({ params, request }) => {
-	const broadcaster = broadcasters.byUuid(params.uuid);
+export const PUT: RequestHandler = async ({ params, url, request }) => {
+	const uuid = url.searchParams.get("uuid");
+	const broadcaster = uuid ? broadcasters.byUuid(uuid) : null;
 	if (!broadcaster) {
 		return Response.json(null, { status: 404 });
 	}
