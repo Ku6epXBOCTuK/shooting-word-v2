@@ -8,7 +8,7 @@ import type { Broadcaster } from "./broadcasters/index.js";
 import { subscribeRedemptions } from "./redemptions.js";
 
 const globalScope = globalThis as typeof globalThis & {
-	__activeShields?: Map<string, Map<string, number>>;
+	__activeShields?: Map<string, Map<string, ActiveShield>>;
 	__shieldsRegistered?: Set<string>;
 };
 
@@ -22,9 +22,9 @@ export function getActiveShields(broadcasterId: string): ActiveShield[] {
 	const now = Date.now();
 	const result: ActiveShield[] = [];
 
-	for (const [userId, expiresAt] of shields) {
-		if (expiresAt > now) {
-			result.push({ userId, expiresAt });
+	for (const [userId, shield] of shields) {
+		if (shield.expiresAt > now) {
+			result.push(shield);
 		} else {
 			shields.delete(userId);
 		}
@@ -33,13 +33,21 @@ export function getActiveShields(broadcasterId: string): ActiveShield[] {
 	return result;
 }
 
-export function activateShield(broadcasterId: string, userId: string): void {
+export function activateShield(
+	broadcasterId: string,
+	userId: string,
+	userName: string,
+): void {
 	let shields = activeShields.get(broadcasterId);
 	if (!shields) {
 		shields = new Map();
 		activeShields.set(broadcasterId, shields);
 	}
-	shields.set(userId, Date.now() + SHIELD_DURATION_MS);
+	shields.set(userId, {
+		userId,
+		userName,
+		expiresAt: Date.now() + SHIELD_DURATION_MS,
+	});
 }
 
 export function ensureShieldFeature(broadcaster: Broadcaster): void {
@@ -47,7 +55,7 @@ export function ensureShieldFeature(broadcaster: Broadcaster): void {
 	registered.add(broadcaster.userId);
 
 	subscribeRedemptions(broadcaster, SHIELD_REWARD.key, (event) => {
-		activateShield(broadcaster.userId, event.userId);
+		activateShield(broadcaster.userId, event.userId, event.userName);
 		logger.info(
 			`[shields] ${event.userName} got shield for ${SHIELD_DURATION_MS / 60_000} min (${broadcaster.login})`,
 		);

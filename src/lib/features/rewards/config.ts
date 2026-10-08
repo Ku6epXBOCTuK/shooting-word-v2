@@ -22,5 +22,6 @@ export const SHIELD_DURATION_MS = 10 * 60 * 1000;
 
 export interface ActiveShield {
 	userId: string;
+	userName: string;
 	expiresAt: number;
 }

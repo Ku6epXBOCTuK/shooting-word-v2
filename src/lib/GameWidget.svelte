@@ -65,13 +65,25 @@
 						const { shields } = (await shieldsResponse.json()) as {
 							shields: ActiveShield[];
 						};
+						for (const shield of shields) {
+							game?.joinViewer({
+								userId: shield.userId,
+								user: shield.userName,
+							});
+						}
 						game?.applyShields(shields);
 					}
 					if (batteriesResponse.ok) {
 						const { grants } = (await batteriesResponse.json()) as {
-							grants: { userId: string }[];
+							grants: { userId: string; userName: string }[];
 						};
 						if (grants.length > 0) {
+							for (const grant of grants) {
+								game?.joinViewer({
+									userId: grant.userId,
+									user: grant.userName,
+								});
+							}
 							game?.grantBatteries(grants.map((grant) => grant.userId));
 						}
 					}
