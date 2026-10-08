@@ -1,4 +1,4 @@
-import { HP_REGEN_INTERVAL, SHIELD_REGEN_INTERVAL } from "../config.js";
+import { SHIELD_REGEN_INTERVAL } from "../config.js";
 import { logger } from "#lib/logger.js";
 import type { SystemFactory } from "./types.js";
 
@@ -24,7 +24,6 @@ export const createEnemyShotHitSystem: SystemFactory = (ctx) => {
 						0,
 						target.hp.current - entity.enemyShot.damage,
 					);
-					target.hp.regenIn ??= HP_REGEN_INTERVAL;
 
 					if (target.hp.current <= 0 && !target.dead) {
 						ctx.world.addComponent(target, "dead", true);

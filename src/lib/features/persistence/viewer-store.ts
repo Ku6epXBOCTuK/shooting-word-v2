@@ -3,7 +3,7 @@ import type { StoragePort } from "./port.js";
 
 const KEY = "viewers";
 
-export type StoredViewer = Viewer & { xp: number };
+export type StoredViewer = Viewer & { xp: number; batteries: number };
 
 function isStoredViewer(value: unknown): value is StoredViewer {
 	if (typeof value !== "object" || value === null) return false;
@@ -13,6 +13,7 @@ function isStoredViewer(value: unknown): value is StoredViewer {
 		typeof viewer.user === "string" &&
 		typeof viewer.lastSeen === "number" &&
 		(viewer.xp === undefined || typeof viewer.xp === "number") &&
+		(viewer.batteries === undefined || typeof viewer.batteries === "number") &&
 		(viewer.skin === undefined || typeof viewer.skin === "number")
 	);
 }
@@ -27,6 +28,7 @@ export class ViewerStore {
 		return parsed.filter(isStoredViewer).map((viewer) => ({
 			...viewer,
 			xp: viewer.xp ?? 0,
+			batteries: viewer.batteries ?? 0,
 			skin: viewer.skin ?? 0,
 		}));
 	}

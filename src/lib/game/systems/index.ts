@@ -6,7 +6,6 @@ import { createPerspectiveSystem } from "./perspective.js";
 import { createLifetimeSystem } from "./lifetime.js";
 import { createWalkSystem } from "./walk.js";
 import { createMeasureSystem } from "./measure.js";
-import { createRegenSystem } from "./regen.js";
 import { createShieldSystem } from "./shield.js";
 import { createShieldRegenSystem } from "./shield-regen.js";
 import { createRespawnSchedulerSystem } from "./respawn-scheduler.js";
@@ -69,7 +68,6 @@ export function systemGroups(): SystemGroup[] {
 			factories: [
 				createMeasureSystem,
 				createWalkSystem,
-				createRegenSystem,
 				createShieldSystem,
 				createShieldRegenSystem,
 				createRespawnSchedulerSystem,

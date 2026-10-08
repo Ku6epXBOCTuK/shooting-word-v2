@@ -69,7 +69,6 @@ export interface EnemyShot {
 export interface Hitpoints {
 	current: number;
 	max: number;
-	regenIn?: number;
 }
 
 export interface Shield {
@@ -138,6 +137,7 @@ export interface EntityComponents {
 	respawning: Respawning;
 	expired: boolean;
 	xp: number;
+	batteries: number;
 	view: Text;
 	bar: Graphics;
 	plate: Graphics;

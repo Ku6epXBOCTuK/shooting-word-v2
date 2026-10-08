@@ -45,6 +45,7 @@ export function spawnViewer(
 	viewer: Viewer,
 	screen: Size,
 	xp = 0,
+	batteries = 0,
 ) {
 	const width = VIEWER_WIDTH * VIEWER_SCALE;
 	const halfWidth = width / 2;
@@ -53,6 +54,7 @@ export function spawnViewer(
 	world.add({
 		viewer,
 		xp,
+		batteries,
 		hp: { current: VIEWER_BASE_HP, max: VIEWER_BASE_HP },
 		position: { x, y: 0 },
 		walker: {

@@ -13,7 +13,6 @@ export const createRespawnSystem: SystemFactory = (ctx) => {
 			ctx.world.removeComponent(entity, "dead");
 			if (entity.hp) {
 				entity.hp.current = entity.hp.max;
-				entity.hp.regenIn = undefined;
 			}
 			entity.position.x = x;
 		}

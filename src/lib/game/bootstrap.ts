@@ -4,6 +4,8 @@ import { World } from "miniplex";
 import type { Application, Ticker } from "pixi.js";
 import { loadAssets, SHIP_COUNT } from "./assets.js";
 import {
+	BATTERY_HEAL,
+	BATTERY_MAX,
 	BULLET_HIT_DISTANCE,
 	BULLET_SPEED,
 	SHIELD_MAX_HP,
@@ -56,7 +58,7 @@ export async function bootstrapGame(app: Application, uuid?: string) {
 		const now = Date.now();
 		for (const viewer of await ctx.viewerStore.load()) {
 			if (now - viewer.lastSeen < VIEWER_TIMEOUT_MS) {
-				spawnViewer(world, viewer, app.screen, viewer.xp);
+				spawnViewer(world, viewer, app.screen, viewer.xp, viewer.batteries);
 			}
 		}
 	};
@@ -119,6 +121,48 @@ export async function bootstrapGame(app: Application, uuid?: string) {
 					entity.shield.expiresAt = expiresAt;
 				}
 			}
+		},
+
+		grantBatteries: (userIds: string[]) => {
+			let changed = false;
+			for (const userId of userIds) {
+				for (const entity of viewers) {
+					if (entity.viewer.userId !== userId) continue;
+					entity.batteries = Math.min(BATTERY_MAX, (entity.batteries ?? 0) + 1);
+					changed = true;
+					break;
+				}
+			}
+			if (changed) ctx.viewersDirty = true;
+		},
+
+		repair: (userId: string, targetUser?: string) => {
+			const wanted = targetUser?.toLowerCase();
+			let healer: Entity | undefined;
+			let target: Entity | undefined;
+			for (const entity of viewers) {
+				if (entity.viewer.userId === userId) healer = entity;
+				if (
+					wanted !== undefined &&
+					entity.viewer.user.toLowerCase() === wanted
+				) {
+					target = entity;
+				}
+			}
+			if (!healer || (healer.batteries ?? 0) <= 0) return false;
+
+			target ??= healer;
+			if (!target.hp || target.dead || target.hp.current >= target.hp.max) {
+				return false;
+			}
+
+			healer.batteries = (healer.batteries ?? 0) - 1;
+			target.hp.current = Math.min(
+				target.hp.max,
+				target.hp.current + BATTERY_HEAL,
+			);
+			ctx.viewersDirty = true;
+			return true;
 		},
 
 		changeSkin: (userId: string, skin?: number) => {
@@ -203,7 +247,6 @@ export async function bootstrapGame(app: Application, uuid?: string) {
 				world.removeComponent(entity, "dead");
 				if (entity.hp) {
 					entity.hp.current = entity.hp.max;
-					entity.hp.regenIn = undefined;
 				}
 				ctx.viewersDirty = true;
 				return;

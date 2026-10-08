@@ -19,7 +19,11 @@ export const createViewerPersistenceSystem: SystemFactory = (ctx) => {
 
 		const stored: StoredViewer[] = [];
 		for (const entity of viewers) {
-			stored.push({ ...entity.viewer, xp: entity.xp ?? 0 });
+			stored.push({
+				...entity.viewer,
+				xp: entity.xp ?? 0,
+				batteries: entity.batteries ?? 0,
+			});
 		}
 		void ctx.viewerStore.save(stored);
 	};

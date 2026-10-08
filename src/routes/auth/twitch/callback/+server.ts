@@ -21,6 +21,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		});
 	}
 
+	let widgetUuid: string;
 	try {
 		const token = await exchangeCode(
 			TWITCH_CLIENT_ID ?? "",
@@ -39,8 +40,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			info.userName ?? info.userId,
 			token,
 		);
-
-		redirect(302, `/${broadcaster.widgetUuid}`);
+		widgetUuid = broadcaster.widgetUuid;
 	} catch (err) {
 		const status =
 			err instanceof Error && "statusCode" in err
@@ -55,4 +55,6 @@ export const GET: RequestHandler = async ({ url }) => {
 			{ status: 400 },
 		);
 	}
+
+	redirect(302, `/${widgetUuid}`);
 };

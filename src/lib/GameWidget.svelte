@@ -38,38 +38,58 @@
 				game?.changeSkin(message.userId, Number.isNaN(skin) ? undefined : skin);
 				return;
 			}
+			if (text === "!rep" || text === "!рем") {
+				game?.repair(message.userId);
+				return;
+			}
+			if (text.startsWith("!repair")) {
+				const target = text.slice("!repair".length).trim().replace(/^@/, "");
+				game?.repair(message.userId, target || undefined);
+				return;
+			}
 
 			game?.shoot(message);
 		});
 		chat.connect(channel);
 
-		let shieldsTimer: ReturnType<typeof setInterval> | undefined;
+		let rewardsTimer: ReturnType<typeof setInterval> | undefined;
 		if (features.rewards && uuid) {
-			const pollShields = async () => {
+			const pollRewards = async () => {
 				try {
-					const response = await fetch(
-						`${resolve("/api/shields")}?uuid=${encodeURIComponent(uuid)}`,
-					);
-					if (!response.ok) return;
-					const { shields } = (await response.json()) as {
-						shields: ActiveShield[];
-					};
-					game?.applyShields(shields);
+					const query = `?uuid=${encodeURIComponent(uuid)}`;
+					const [shieldsResponse, batteriesResponse] = await Promise.all([
+						fetch(`${resolve("/api/shields")}${query}`),
+						fetch(`${resolve("/api/batteries")}${query}`),
+					]);
+					if (shieldsResponse.ok) {
+						const { shields } = (await shieldsResponse.json()) as {
+							shields: ActiveShield[];
+						};
+						game?.applyShields(shields);
+					}
+					if (batteriesResponse.ok) {
+						const { grants } = (await batteriesResponse.json()) as {
+							grants: { userId: string }[];
+						};
+						if (grants.length > 0) {
+							game?.grantBatteries(grants.map((grant) => grant.userId));
+						}
+					}
 				} catch {
 					// endpoint unavailable — retry on next tick
 				}
 			};
 
-			void pollShields();
-			shieldsTimer = setInterval(
-				() => void pollShields(),
+			void pollRewards();
+			rewardsTimer = setInterval(
+				() => void pollRewards(),
 				SHIELDS_POLL_INTERVAL,
 			);
 		}
 
 		return () => {
 			chat.disconnect();
-			if (shieldsTimer) clearInterval(shieldsTimer);
+			if (rewardsTimer) clearInterval(rewardsTimer);
 			game?.destroy();
 			game = null;
 		};

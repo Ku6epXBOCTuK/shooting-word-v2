@@ -31,14 +31,24 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 
 		pendingPlayers = [];
 		for (const entity of viewers) {
-			pendingPlayers.push({ ...entity.viewer, xp: entity.xp ?? 0 });
+			pendingPlayers.push({
+				...entity.viewer,
+				xp: entity.xp ?? 0,
+				batteries: entity.batteries ?? 0,
+			});
 			ctx.world.remove(entity);
 		}
 	};
 
 	const spawnPlayers = () => {
 		for (const viewer of pendingPlayers) {
-			spawnViewer(ctx.world, viewer, ctx.app.screen, viewer.xp);
+			spawnViewer(
+				ctx.world,
+				viewer,
+				ctx.app.screen,
+				viewer.xp,
+				viewer.batteries,
+			);
 		}
 		pendingPlayers = [];
 	};
@@ -66,7 +76,6 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 			ctx.world.removeComponent(entity, "dead");
 			if (entity.hp) {
 				entity.hp.current = entity.hp.max;
-				entity.hp.regenIn = undefined;
 			}
 		}
 		ctx.viewersDirty = true;
