@@ -164,6 +164,7 @@ export interface EntityComponents {
 	expired: boolean;
 	xp: number;
 	batteries: number;
+	revives: number;
 	view: Text;
 	bar: Graphics;
 	plate: Graphics;

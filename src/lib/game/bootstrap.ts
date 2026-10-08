@@ -8,6 +8,7 @@ import {
 	BATTERY_MAX,
 	BULLET_HIT_DISTANCE,
 	BULLET_SPEED,
+	REVIVE_MAX,
 	SHIELD_MAX_HP,
 	VIEWER_GROUND_MARGIN,
 	VIEWER_HEIGHT,
@@ -62,7 +63,14 @@ export async function bootstrapGame(app: Application, uuid?: string) {
 		const now = Date.now();
 		for (const viewer of await ctx.viewerStore.load()) {
 			if (now - viewer.lastSeen < VIEWER_TIMEOUT_MS) {
-				spawnViewer(world, viewer, app.screen, viewer.xp, viewer.batteries);
+				spawnViewer(
+					world,
+					viewer,
+					app.screen,
+					viewer.xp,
+					viewer.batteries,
+					viewer.revives,
+				);
 			}
 		}
 	};
@@ -133,6 +141,19 @@ export async function bootstrapGame(app: Application, uuid?: string) {
 				for (const entity of viewers) {
 					if (entity.viewer.userId !== userId) continue;
 					entity.batteries = Math.min(BATTERY_MAX, (entity.batteries ?? 0) + 1);
+					changed = true;
+					break;
+				}
+			}
+			if (changed) ctx.viewersDirty = true;
+		},
+
+		grantRevives: (userIds: string[]) => {
+			let changed = false;
+			for (const userId of userIds) {
+				for (const entity of viewers) {
+					if (entity.viewer.userId !== userId) continue;
+					entity.revives = Math.min(REVIVE_MAX, (entity.revives ?? 0) + 1);
 					changed = true;
 					break;
 				}

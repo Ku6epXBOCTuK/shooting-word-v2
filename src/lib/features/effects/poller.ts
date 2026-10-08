@@ -1,6 +1,7 @@
 import { resolve } from "$app/paths";
 import {
 	BATTERY_REWARD,
+	REVIVE_REWARD,
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
 
@@ -19,6 +20,7 @@ interface EffectsGame {
 	joinViewer(identity: { userId: string; user: string }): void;
 	applyShields(shields: ActiveShield[]): void;
 	grantBatteries(userIds: string[]): void;
+	grantRevives(userIds: string[]): void;
 }
 
 export function applyEffects(
@@ -39,6 +41,13 @@ export function applyEffects(
 		.map((effect) => effect.userId);
 	if (batteryUserIds.length > 0) {
 		game.grantBatteries(batteryUserIds);
+	}
+
+	const reviveUserIds = response.effects
+		.filter((effect) => effect.key === REVIVE_REWARD.key)
+		.map((effect) => effect.userId);
+	if (reviveUserIds.length > 0) {
+		game.grantRevives(reviveUserIds);
 	}
 }
 

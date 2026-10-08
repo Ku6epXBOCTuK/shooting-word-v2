@@ -46,6 +46,7 @@ export function spawnViewer(
 	screen: Size,
 	xp = 0,
 	batteries = 0,
+	revives = 0,
 ) {
 	const width = VIEWER_WIDTH * VIEWER_SCALE;
 	const halfWidth = width / 2;
@@ -55,6 +56,7 @@ export function spawnViewer(
 		viewer,
 		xp,
 		batteries,
+		revives,
 		...(viewer.bot ? { bot: true } : {}),
 		hp: { current: VIEWER_BASE_HP, max: VIEWER_BASE_HP },
 		position: { x, y: 0 },

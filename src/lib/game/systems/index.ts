@@ -10,6 +10,7 @@ import { createShieldSystem } from "./shield.js";
 import { createShieldRegenSystem } from "./shield-regen.js";
 import { createRespawnSchedulerSystem } from "./respawn-scheduler.js";
 import { createRespawnSystem } from "./respawn.js";
+import { createReviveSystem } from "./revive.js";
 import { createHomingSystem } from "./homing.js";
 import { createEnemyAttackSystem } from "./enemy-attack.js";
 import { createEnemyFireSystem } from "./enemy-fire.js";
@@ -80,6 +81,7 @@ export function systemGroups(): SystemGroup[] {
 				createShieldRegenSystem,
 				createRespawnSchedulerSystem,
 				createRespawnSystem,
+				createReviveSystem,
 				createViewerTimeoutSystem,
 				createViewerPersistenceSystem,
 			],

@@ -40,6 +40,7 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 				...entity.viewer,
 				xp: entity.xp ?? 0,
 				batteries: entity.batteries ?? 0,
+				revives: entity.revives ?? 0,
 			});
 			ctx.world.remove(entity);
 		}
@@ -53,6 +54,7 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 				ctx.app.screen,
 				viewer.xp,
 				viewer.batteries,
+				viewer.revives,
 			);
 		}
 		pendingPlayers = [];

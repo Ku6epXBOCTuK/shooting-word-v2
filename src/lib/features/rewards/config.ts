@@ -16,7 +16,17 @@ export const BATTERY_REWARD: RewardConfig = {
 	cost: 200,
 };
 
-export const REWARD_CONFIGS: RewardConfig[] = [SHIELD_REWARD, BATTERY_REWARD];
+export const REVIVE_REWARD: RewardConfig = {
+	key: "revive",
+	title: "аварийный маяк",
+	cost: 400,
+};
+
+export const REWARD_CONFIGS: RewardConfig[] = [
+	SHIELD_REWARD,
+	BATTERY_REWARD,
+	REVIVE_REWARD,
+];
 
 export const SHIELD_DURATION_MS = 10 * 60 * 1000;
 

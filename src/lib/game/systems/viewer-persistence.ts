@@ -23,6 +23,7 @@ export const createViewerPersistenceSystem: SystemFactory = (ctx) => {
 				...entity.viewer,
 				xp: entity.xp ?? 0,
 				batteries: entity.batteries ?? 0,
+				revives: entity.revives ?? 0,
 			});
 		}
 		void ctx.viewerStore.save(stored);
