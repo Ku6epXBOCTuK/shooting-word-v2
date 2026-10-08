@@ -2,6 +2,18 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.7.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/a2e8699a4733ce4f62884e18456c7b4a6b483921..0.7.0) - 2026-10-08
+#### Features
+- add ricochet flow: render sparks, richochet bullet - ([524b94f](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/524b94fe5ecff3a2a59ade5f01f2352aaf49cd95)) - Ku6epXBOCTuK
+- redeem any reward spawn ship - ([0767d70](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/0767d708843f5d58b49ff5bbae278afde3275ae3)) - Ku6epXBOCTuK
+- add balance: simulation and calibration - ([9d40cbe](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/9d40cbe88f7e364c64468d659528fe7093e3f964)) - Ku6epXBOCTuK
+- enemy shot drossel, damage chance - ([0da0bb9](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/0da0bb9771c8d8a3e8690ccc1bac0ffd0c489693)) - Ku6epXBOCTuK
+- add batteries, remove hp regen - ([a2e8699](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/a2e8699a4733ce4f62884e18456c7b4a6b483921)) - Ku6epXBOCTuK
+#### Refactoring
+- rewards, game widget - ([ed0c3dd](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/ed0c3dde0895b712dfcb1dc9353f40d72459d3f1)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.6.2](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/2a0b1e6a8711a166850596ef7d5536f0f3ce8c7e..0.6.2) - 2026-10-08
 #### Bug Fixes
 - update button links, update ci, use sops - ([afa682e](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/afa682e13757c218277668aeb27f1f530056e83b)) - Ku6epXBOCTuK
