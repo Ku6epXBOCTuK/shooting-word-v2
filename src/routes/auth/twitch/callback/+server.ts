@@ -1,3 +1,4 @@
+import { redirect } from "@sveltejs/kit";
 import { exchangeCode, getTokenInfo } from "@twurple/auth";
 import {
 	TWITCH_CLIENT_ID,
@@ -39,25 +40,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			token,
 		);
 
-		return new Response(
-			`<!doctype html>
-<html lang="ru">
-	<head>
-		<meta charset="utf-8" />
-		<meta http-equiv="refresh" content="3;url=/${broadcaster.widgetUuid}" />
-		<title>Авторизация успешна</title>
-	</head>
-	<body>
-		<p>Twitch authorization successful. Redirecting in 3 seconds…</p>
-		<script>
-			setTimeout(() => {
-				window.location.href = "/${broadcaster.widgetUuid}";
-			}, 3000);
-		</script>
-	</body>
-</html>`,
-			{ headers: { "content-type": "text/html; charset=utf-8" } },
-		);
+		redirect(302, `/${broadcaster.widgetUuid}`);
 	} catch (err) {
 		const status =
 			err instanceof Error && "statusCode" in err

@@ -45,10 +45,6 @@
 			copied = false;
 		}, 1800);
 	};
-
-	const openInBrowser = () => {
-		window.open(widgetLink, "_blank", "noopener");
-	};
 </script>
 
 <LaunchCard
@@ -74,7 +70,7 @@
 		/>
 		<CopyField value={widgetLink} />
 		<div class="button-row">
-			<Button variant="pro" onclick={openInBrowser}>
+			<Button variant="pro" href={widgetLink} target="_blank">
 				Войти в симуляцию
 				<Icon as={ArrowUpRightIcon} />
 			</Button>

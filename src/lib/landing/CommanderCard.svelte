@@ -13,6 +13,7 @@
 	import ProNote from "./ui/ProNote.svelte";
 
 	const FULL_HOST = "https://xboct-games.duckdns.org";
+	const LOGIN_URL = `${FULL_HOST}/auth/twitch/login`;
 </script>
 
 <LaunchCard
@@ -36,7 +37,7 @@
 		<ProNote mark="TWITCH">
 			разрешения: управление наградами канала, отправка сообщений в чат.
 		</ProNote>
-		<Button variant="pro" href={FULL_HOST}>
+		<Button variant="pro" href={LOGIN_URL}>
 			Войти через Twitch
 			<Icon as={ArrowUpRightIcon} />
 		</Button>

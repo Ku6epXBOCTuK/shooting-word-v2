@@ -4,6 +4,7 @@
 	interface Props {
 		variant?: "default" | "pro";
 		href?: string;
+		target?: "_blank" | "_self";
 		onclick?: () => void;
 		disabled?: boolean;
 		children: Snippet;
@@ -12,6 +13,7 @@
 	let {
 		variant = "default",
 		href,
+		target,
 		onclick,
 		disabled = false,
 		children,
@@ -19,7 +21,13 @@
 </script>
 
 {#if href}
-	<a class="button" class:button-pro={variant === "pro"} {href}>
+	<a
+		class="button"
+		class:button-pro={variant === "pro"}
+		{href}
+		{target}
+		rel={target === "_blank" ? "noopener" : undefined}
+	>
 		{@render children()}
 	</a>
 {:else}
