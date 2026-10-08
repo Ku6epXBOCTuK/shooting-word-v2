@@ -50,7 +50,11 @@ export async function bootstrapGame(app: Application, uuid?: string) {
 
 	const createSession = () =>
 		world.add({
-			session: { phase: SESSIONPHASE.IDLE as SessionPhase, timer: 0 },
+			session: {
+				phase: SESSIONPHASE.IDLE as SessionPhase,
+				timer: 0,
+				afk: false as boolean,
+			},
 		});
 	let session = createSession();
 
@@ -251,6 +255,19 @@ export async function bootstrapGame(app: Application, uuid?: string) {
 			if (session.session.phase !== SESSIONPHASE.IDLE) return;
 			session.session.phase = SESSIONPHASE.STARTING;
 			session.session.timer = 0;
+		},
+
+		setAfk(enabled: boolean) {
+			session.session.afk = enabled;
+			session.session.timer = 0;
+			const phase = session.session.phase;
+			if (
+				enabled &&
+				viewers.size > 0 &&
+				(phase === SESSIONPHASE.IDLE || phase === SESSIONPHASE.INTERMISSION)
+			) {
+				session.session.phase = SESSIONPHASE.STARTING;
+			}
 		},
 
 		respawn(userId: string) {

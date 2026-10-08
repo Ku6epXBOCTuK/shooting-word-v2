@@ -22,6 +22,8 @@ export const createBannerRenderSystem: SystemFactory = (ctx) => {
 	const system: System = () => {
 		for (const entity of banners) {
 			if (!entity.view) continue;
+			entity.view.text = entity.banner.text;
+			entity.view.scale.set(entity.banner.scale ?? 1);
 			entity.view.x = ctx.app.screen.width / 2;
 			entity.view.y = ctx.app.screen.height / 2;
 		}

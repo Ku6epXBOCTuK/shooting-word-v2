@@ -1,6 +1,10 @@
 import type { With } from "miniplex";
 import type { StoredViewer } from "#lib/features/persistence/index.js";
-import { GAMEOVER_DURATION, SESSION_INTRO_DURATION } from "../config.js";
+import {
+	AFK_RESTART_DELAY,
+	GAMEOVER_DURATION,
+	SESSION_INTRO_DURATION,
+} from "../config.js";
 import { spawnViewer } from "../spawn.js";
 import { SESSIONPHASE, type Entity, type SessionPhase } from "../types.js";
 import type { SystemFactory } from "./types.js";
@@ -16,6 +20,7 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 
 	let lastPhase: SessionPhase = SESSIONPHASE.IDLE;
 	let pendingPlayers: StoredViewer[] = [];
+	let countdownBanner: Entity | null = null;
 
 	const expireAll = (entities: Iterable<Entity>) => {
 		for (const entity of entities) {
@@ -66,6 +71,8 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 	};
 
 	const finishGame = (entity: With<Entity, "session">) => {
+		expireAll(words);
+		expireAll(projectiles);
 		ctx.world.add({ banner: { text: "игра завершена" } });
 		setPhase(entity, SESSIONPHASE.GAMEOVER);
 	};
@@ -89,17 +96,28 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 				lastPhase = session.phase;
 				if (session.phase === SESSIONPHASE.STARTING) {
 					clearScene();
+					countdownBanner = ctx.world.add({
+						banner: { text: "", scale: 3 },
+					});
+				} else if (countdownBanner) {
+					ctx.world.remove(countdownBanner);
+					countdownBanner = null;
 				}
 			}
 
 			session.timer += dt;
 
-			if (
-				session.phase === SESSIONPHASE.STARTING &&
-				session.timer >= SESSION_INTRO_DURATION
-			) {
-				spawnPlayers();
-				setPhase(entity, SESSIONPHASE.PLAYING);
+			if (session.phase === SESSIONPHASE.STARTING) {
+				if (countdownBanner?.banner) {
+					const remaining = SESSION_INTRO_DURATION - session.timer;
+					countdownBanner.banner.text = String(
+						Math.max(1, Math.ceil(remaining)),
+					);
+				}
+				if (session.timer >= SESSION_INTRO_DURATION) {
+					spawnPlayers();
+					setPhase(entity, SESSIONPHASE.PLAYING);
+				}
 			} else if (session.phase === SESSIONPHASE.PLAYING && allPlayersDead()) {
 				finishGame(entity);
 			} else if (
@@ -110,7 +128,23 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 					ctx.world.remove(banner);
 				}
 				revivePlayers();
-				setPhase(entity, SESSIONPHASE.IDLE);
+				setPhase(
+					entity,
+					session.afk ? SESSIONPHASE.INTERMISSION : SESSIONPHASE.IDLE,
+				);
+			} else if (session.phase === SESSIONPHASE.INTERMISSION) {
+				if (!session.afk) {
+					setPhase(entity, SESSIONPHASE.IDLE);
+				} else if (session.timer >= AFK_RESTART_DELAY && viewers.size > 0) {
+					setPhase(entity, SESSIONPHASE.STARTING);
+				}
+			} else if (
+				session.afk &&
+				session.phase === SESSIONPHASE.IDLE &&
+				session.timer >= AFK_RESTART_DELAY &&
+				viewers.size > 0
+			) {
+				setPhase(entity, SESSIONPHASE.STARTING);
 			}
 		}
 	};

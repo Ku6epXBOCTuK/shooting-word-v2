@@ -5,7 +5,6 @@ export const FOCAL = Z_NEAR;
 export const FONT_SIZE = 28;
 
 export const WORD_TTL = 30;
-export const WORD_FADE_OUT = 0.5;
 
 export const MIN_FLY_SPEED = 500;
 export const MAX_FLY_SPEED = 900;
@@ -42,7 +41,7 @@ export const VIEWER_SCALE = 2;
 export const VIEWER_GROUND_MARGIN = 16;
 export const VIEWER_PLATE_PADDING = 6;
 export const WALK_EDGE_MARGIN = 8;
-export const VIEWER_BASE_HP = 10;
+export const VIEWER_BASE_HP = 1;
 export const BATTERY_HEAL = 3;
 export const BATTERY_MAX = 5;
 export const SHIELD_MAX_HP = 3;
@@ -70,7 +69,7 @@ export const EXPLOSION_SCALE = 2;
 export const BULLET_SCALE = 2;
 
 export const ENEMY_SHOT_SPEED = 400;
-export const ENEMY_SHOT_DAMAGE_CHANCE = 0.5;
+export const ENEMY_SHOT_DAMAGE_CHANCE = 0.9;
 export const RICOCHET_TTL = 0.6;
 export const RICOCHET_SPEED_FACTOR = 2;
 export const SPARK_COUNT = 5;
@@ -80,9 +79,10 @@ export const SPARK_HIT_TTL = 0.5;
 export const SPARK_SPEED = 180;
 export const ENEMY_SHOT_HIT_DISTANCE = 20;
 
-export const ACTIVE_FIRE_INTERVAL = 0.1;
+export const ARMED_FUSE_MS = 1000;
 
 export const GAMEOVER_DURATION = 10;
 export const RESPAWN_DURATION = 30;
-export const SESSION_INTRO_DURATION = 1;
+export const SESSION_INTRO_DURATION = 9;
 export const SESSION_ENEMY_GRACE = 1.5;
+export const AFK_RESTART_DELAY = 30;

@@ -1,5 +1,5 @@
 import { Graphics, Text, TextStyle } from "pixi.js";
-import { FONT_SIZE, WORD_FADE_OUT } from "../config.js";
+import { FONT_SIZE } from "../config.js";
 import type { System, SystemFactory } from "./types.js";
 
 const BAR_HEIGHT = 4;
@@ -57,13 +57,10 @@ export const createRenderSystem: SystemFactory = (ctx) => {
 					PLATE_RADIUS,
 				)
 				.fill({ color: 0x000000, alpha: PLATE_ALPHA });
-
 			if (entity.lifetime) {
-				const remaining = entity.lifetime.ttl - entity.lifetime.age;
 				const progress = Math.min(1, entity.lifetime.age / entity.lifetime.ttl);
 
-				view.alpha = entity.armed ? 1 : Math.min(1, remaining / WORD_FADE_OUT);
-
+				view.alpha = 1;
 				const hue = 120 * (1 - progress);
 				const width = view.width * progress;
 				bar

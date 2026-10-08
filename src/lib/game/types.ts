@@ -106,6 +106,7 @@ export const SESSIONPHASE = {
 	PLAYING: "playing",
 	ENDING: "ending",
 	GAMEOVER: "gameover",
+	INTERMISSION: "intermission",
 } as const;
 
 export type SessionPhase = (typeof SESSIONPHASE)[keyof typeof SESSIONPHASE];
@@ -113,10 +114,12 @@ export type SessionPhase = (typeof SESSIONPHASE)[keyof typeof SESSIONPHASE];
 export interface Session {
 	phase: SessionPhase;
 	timer: number;
+	afk: boolean;
 }
 
 export interface Banner {
 	text: string;
+	scale?: number;
 }
 
 export interface Respawning {

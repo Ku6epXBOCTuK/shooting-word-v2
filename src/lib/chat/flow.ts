@@ -20,6 +20,16 @@ const COMMANDS: Command[] = [
 		run: (game) => game.startGame(),
 	},
 	{
+		name: "!афк",
+		modOnly: true,
+		run: (game) => game.setAfk(true),
+	},
+	{
+		name: "!афк-",
+		modOnly: true,
+		run: (game) => game.setAfk(false),
+	},
+	{
 		name: "!боты-",
 		modOnly: true,
 		run: (game) => game.removeBots(),
