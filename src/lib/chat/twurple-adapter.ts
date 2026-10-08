@@ -13,6 +13,7 @@ export class TwurpleChatAdapter implements ChatPort {
 				userId: msg.userInfo.userId,
 				user: msg.userInfo.displayName,
 				text,
+				isMod: msg.userInfo.isMod || msg.userInfo.isBroadcaster,
 			};
 			for (const handler of this.handlers) {
 				handler(message);

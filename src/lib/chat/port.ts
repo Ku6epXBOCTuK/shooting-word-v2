@@ -3,6 +3,7 @@ export interface ChatMessage {
 	userId: string;
 	user: string;
 	text: string;
+	isMod: boolean;
 }
 
 export type ChatMessageHandler = (message: ChatMessage) => void;

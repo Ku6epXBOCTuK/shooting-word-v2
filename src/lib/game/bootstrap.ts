@@ -165,6 +165,19 @@ export async function bootstrapGame(app: Application, uuid?: string) {
 			return true;
 		},
 
+		removeBots: () => {
+			const toRemove: Entity[] = [];
+			for (const entity of viewers) {
+				if (entity.bot) {
+					toRemove.push(entity);
+				}
+			}
+			for (const entity of toRemove) {
+				world.remove(entity);
+			}
+			if (toRemove.length > 0) ctx.viewersDirty = true;
+		},
+
 		changeSkin: (userId: string, skin?: number) => {
 			for (const entity of viewers) {
 				if (entity.viewer.userId !== userId) continue;

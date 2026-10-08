@@ -55,6 +55,7 @@ export function spawnViewer(
 		viewer,
 		xp,
 		batteries,
+		...(viewer.bot ? { bot: true } : {}),
 		hp: { current: VIEWER_BASE_HP, max: VIEWER_BASE_HP },
 		position: { x, y: 0 },
 		walker: {

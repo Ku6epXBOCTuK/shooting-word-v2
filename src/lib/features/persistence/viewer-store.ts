@@ -14,6 +14,7 @@ function isStoredViewer(value: unknown): value is StoredViewer {
 		typeof viewer.lastSeen === "number" &&
 		(viewer.xp === undefined || typeof viewer.xp === "number") &&
 		(viewer.batteries === undefined || typeof viewer.batteries === "number") &&
+		(viewer.bot === undefined || typeof viewer.bot === "boolean") &&
 		(viewer.skin === undefined || typeof viewer.skin === "number")
 	);
 }

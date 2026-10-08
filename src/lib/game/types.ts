@@ -38,9 +38,10 @@ export interface Viewer {
 	user: string;
 	lastSeen: number;
 	skin: number;
+	bot?: boolean;
 }
 
-export type ViewerIdentity = Pick<Viewer, "userId" | "user">;
+export type ViewerIdentity = Pick<Viewer, "userId" | "user" | "bot">;
 
 export interface Walker {
 	direction: 1 | -1;
@@ -155,6 +156,7 @@ export interface EntityComponents {
 	session: Session;
 	banner: Banner;
 	dead: boolean;
+	bot: boolean;
 	respawning: Respawning;
 	expired: boolean;
 	xp: number;
