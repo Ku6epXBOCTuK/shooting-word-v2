@@ -31,6 +31,13 @@ export default defineConfig(
 		},
 	},
 	{
+		files: ["src/lib/game/balance/**"],
+		rules: {
+			"no-console": "off",
+			"@typescript-eslint/no-unused-vars": "off",
+		},
+	},
+	{
 		files: ["**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js"],
 		languageOptions: {
 			parserOptions: {

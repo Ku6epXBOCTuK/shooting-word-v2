@@ -10,9 +10,31 @@ export const WORD_FADE_OUT = 0.5;
 export const MIN_FLY_SPEED = 500;
 export const MAX_FLY_SPEED = 900;
 
-export const ENEMY_SPAWN_MIN_INTERVAL = 1;
-export const ENEMY_SPAWN_MAX_INTERVAL = 2.5;
+export const ENEMY_SPAWN_MIN_INTERVAL = 2;
+export const ENEMY_SPAWN_MAX_INTERVAL = 4;
 export const MAX_ENEMIES = 30;
+
+export const ACTIVE_SPAWN_INTERVAL_BASE = 1.95;
+export const ACTIVE_SPAWN_INTERVAL_PER_PLAYER = 7.0;
+export const ACTIVE_SPAWN_INTERVAL_WIDTH = 0.75;
+export const ACTIVE_MAX_ENEMIES_PER_PLAYER = 5;
+
+export function activeSpawnInterval(totalViewers: number): {
+	min: number;
+	max: number;
+} {
+	const center =
+		ACTIVE_SPAWN_INTERVAL_BASE +
+		ACTIVE_SPAWN_INTERVAL_PER_PLAYER / Math.max(1, totalViewers);
+	return {
+		min: Math.max(0.5, center - ACTIVE_SPAWN_INTERVAL_WIDTH),
+		max: center + ACTIVE_SPAWN_INTERVAL_WIDTH,
+	};
+}
+
+export function activeMaxEnemies(totalViewers: number): number {
+	return Math.round(Math.max(1, totalViewers) * ACTIVE_MAX_ENEMIES_PER_PLAYER);
+}
 
 export const VIEWER_WIDTH = 24;
 export const VIEWER_HEIGHT = 32;
