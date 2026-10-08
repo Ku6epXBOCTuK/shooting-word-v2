@@ -2,6 +2,21 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.6.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/0166d871b1a16192dc188186e5141b8e08342a4d..0.6.0) - 2026-10-08
+#### Features
+- update design - ([57201a3](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/57201a39950372b1ae8af0cc5307e03fc4596fde)) - Ku6epXBOCTuK
+- add back drop words on index page - ([c67fd36](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/c67fd36cdce234c28fd80f02541cee1a234ac89e)) - Ku6epXBOCTuK
+- use pixijs scene for hero - ([661c6e2](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/661c6e21d1ccaca21feb139dafe05538951b3aeb)) - Ku6epXBOCTuK
+- add initial index page - ([0a6f7e0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/0a6f7e0b17b6b66953dd83cbb26f209dc1250bbe)) - Ku6epXBOCTuK
+#### Bug Fixes
+- update favicon - ([bc71a35](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/bc71a35e56c2fc7b8b3cfe3fdaba4b9ab6e18f35)) - Ku6epXBOCTuK
+- update landing page design - ([951d437](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/951d43793f1e9aadcc5c9593cca8078250e5d16f)) - Ku6epXBOCTuK
+- auto fulfillment disabled by default - ([de9d2c5](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/de9d2c5e7e3f45305a6f77ddca7e4693baf8ac01)) - Ku6epXBOCTuK
+#### Refactoring
+- landing page - ([48706f3](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/48706f3d188c7ad7284a237d878a3bba36701b7c)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.5.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/07dc5eecce47545668c0c45670116fa0dfe13a80..0.5.0) - 2026-10-07
 #### Features
 - add server storage - ([fc7732c](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/fc7732c96580d23b0a86840a99d2d67ee7cfdb87)) - Ku6epXBOCTuK
