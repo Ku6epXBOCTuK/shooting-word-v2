@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.8.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/1c0e9682e7dafecc689495bf14e7cd911664a2b7..0.8.0) - 2026-10-08
+#### Features
+- add fun glitch effect for heading - ([f534b3e](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/f534b3eaf6d64d25c93977132bb238c3931df0b0)) - Ku6epXBOCTuK
+- add revive consumable - ([81b5d45](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/81b5d459c2269e04e76b2c3b1059e0903ec4f0aa)) - Ku6epXBOCTuK
+- add afk mode - rerun game infinitely - ([228aae5](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/228aae532aa44052c4bafee81966ed178a9bd4ce)) - Ku6epXBOCTuK
+- update commands processing, delete bots command - ([1c0e968](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/1c0e9682e7dafecc689495bf14e7cd911664a2b7)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.7.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/a2e8699a4733ce4f62884e18456c7b4a6b483921..0.7.0) - 2026-10-08
 #### Features
 - add ricochet flow: render sparks, richochet bullet - ([524b94f](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/524b94fe5ecff3a2a59ade5f01f2352aaf49cd95)) - Ku6epXBOCTuK
