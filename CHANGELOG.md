@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.9.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/18077771d1aaeb30e41f5999680ab3f14b13ada9..0.9.0) - 2026-10-08
+#### Features
+- redesign cabinet page - ([98d7592](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/98d75924974d28311cb80479b883392cb92b89fc)) - Ku6epXBOCTuK
+- security - hide links - ([1807777](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/18077771d1aaeb30e41f5999680ab3f14b13ada9)) - Ku6epXBOCTuK
+#### Refactoring
+- separate cabinet page to components - ([47cce4e](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/47cce4e550a46f150950ec1eb717e5dfb8c4bd71)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.8.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/1c0e9682e7dafecc689495bf14e7cd911664a2b7..0.8.0) - 2026-10-08
 #### Features
 - add fun glitch effect for heading - ([f534b3e](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/f534b3eaf6d64d25c93977132bb238c3931df0b0)) - Ku6epXBOCTuK
