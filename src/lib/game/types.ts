@@ -66,6 +66,10 @@ export interface EnemyShot {
 	damage: number;
 }
 
+export interface Armed {
+	enqueuedAt: number;
+}
+
 export interface Hitpoints {
 	current: number;
 	max: number;
@@ -128,6 +132,7 @@ export interface EntityComponents {
 	star: Star;
 	explosion: Explosion;
 	enemyShot: EnemyShot;
+	armed: Armed;
 	hp: Hitpoints;
 	shield: Shield;
 	hitBy: HitBy;

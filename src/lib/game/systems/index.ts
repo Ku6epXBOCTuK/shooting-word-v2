@@ -12,6 +12,7 @@ import { createRespawnSchedulerSystem } from "./respawn-scheduler.js";
 import { createRespawnSystem } from "./respawn.js";
 import { createHomingSystem } from "./homing.js";
 import { createEnemyAttackSystem } from "./enemy-attack.js";
+import { createEnemyFireSystem } from "./enemy-fire.js";
 import { createBulletHitSystem } from "./bullet-hit.js";
 import { createWordKillSystem } from "./word-kill.js";
 import { createBulletRenderSystem } from "./bullet-render.js";
@@ -55,6 +56,7 @@ export function systemGroups(): SystemGroup[] {
 			name: "combat",
 			factories: [
 				createEnemyAttackSystem,
+				createEnemyFireSystem,
 				createHomingSystem,
 				createBulletHitSystem,
 				createWordKillSystem,

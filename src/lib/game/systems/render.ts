@@ -44,6 +44,7 @@ export const createRenderSystem: SystemFactory = (ctx) => {
 			view.x = entity.position.x;
 			view.y = entity.position.y;
 			view.scale.set(entity.scale ?? 1);
+			view.tint = entity.armed ? 0xff4444 : 0xffffff;
 
 			const barZone = entity.lifetime ? BAR_GAP + BAR_HEIGHT + PLATE_PAD_Y : 0;
 			plate
@@ -61,7 +62,7 @@ export const createRenderSystem: SystemFactory = (ctx) => {
 				const remaining = entity.lifetime.ttl - entity.lifetime.age;
 				const progress = Math.min(1, entity.lifetime.age / entity.lifetime.ttl);
 
-				view.alpha = Math.min(1, remaining / WORD_FADE_OUT);
+				view.alpha = entity.armed ? 1 : Math.min(1, remaining / WORD_FADE_OUT);
 
 				const hue = 120 * (1 - progress);
 				const width = view.width * progress;

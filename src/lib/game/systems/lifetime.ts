@@ -1,7 +1,7 @@
 import type { SystemFactory } from "./types.js";
 
 export const createLifetimeSystem: SystemFactory = (ctx) => {
-	const living = ctx.world.with("lifetime");
+	const living = ctx.world.with("lifetime").without("armed");
 
 	return (dt) => {
 		for (const entity of living) {

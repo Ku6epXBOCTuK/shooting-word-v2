@@ -48,10 +48,12 @@ export const EXPLOSION_SCALE = 2;
 export const BULLET_SCALE = 2;
 
 export const ENEMY_SHOT_SPEED = 400;
-export const ENEMY_SHOT_DAMAGE = 1;
+export const ENEMY_SHOT_DAMAGE_CHANCE = 0.5;
 export const ENEMY_SHOT_HIT_DISTANCE = 20;
 
+export const ACTIVE_FIRE_INTERVAL = 0.1;
+
 export const GAMEOVER_DURATION = 10;
-export const RESPAWN_DURATION = 10;
+export const RESPAWN_DURATION = 30;
 export const SESSION_INTRO_DURATION = 1;
 export const SESSION_ENEMY_GRACE = 1.5;
