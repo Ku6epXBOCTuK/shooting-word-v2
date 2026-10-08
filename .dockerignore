@@ -9,3 +9,4 @@ data
 docs
 scripts
 *.md
+.env.*
