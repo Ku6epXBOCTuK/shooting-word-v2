@@ -74,6 +74,41 @@ function ensureListener(
 	return listener;
 }
 
+const ALL_REWARDS = "__all__";
+
+export async function subscribeAllRedemptions(
+	broadcaster: Broadcaster,
+	handler: (event: RedemptionEvent & { rewardId: string }) => void,
+): Promise<boolean> {
+	const apiClient = await getApiClient(broadcaster);
+
+	if (!apiClient) {
+		logger.info(
+			`[redemptions] ${broadcaster.login} not authorized yet, will retry later`,
+		);
+		return false;
+	}
+
+	const state = stateFor(broadcaster.userId);
+	if (state.subscribed.has(ALL_REWARDS)) return true;
+
+	const listener = ensureListener(state, apiClient);
+
+	listener.onChannelRedemptionAdd(broadcaster.userId, (event) => {
+		handler({
+			id: event.id,
+			userId: event.userId,
+			userName: event.userName,
+			rewardTitle: event.rewardTitle,
+			rewardId: event.rewardId,
+		});
+	});
+
+	state.subscribed.add(ALL_REWARDS);
+	logger.info("[redemptions] subscribed to all redemptions");
+	return true;
+}
+
 export async function subscribeRedemptions(
 	broadcaster: Broadcaster,
 	key: string,

@@ -1,107 +1,32 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import { resolve } from "$app/paths";
 	import PixiOverlay from "#lib/PixiOverlay.svelte";
-	import { TwurpleChatAdapter } from "#lib/chat/twurple-adapter.js";
-	import type { ChatPort } from "#lib/chat/port.js";
-	import { bootstrapGame } from "#lib/game/index.js";
+	import { startChatFlow } from "#lib/chat/flow.js";
+	import { startEffectsPolling } from "#lib/features/effects/poller.js";
 	import { features } from "#lib/features/variant.js";
-	import type { ActiveShield } from "#lib/features/rewards/config.js";
+	import { bootstrapGame } from "#lib/game/index.js";
+	import { onMount } from "svelte";
 
-	const SHIELDS_POLL_INTERVAL = 10_000;
+	const REWARDS_POLL_INTERVAL = 10_000;
 
 	let { channel, uuid }: { channel: string; uuid?: string } = $props();
 
 	let game: Awaited<ReturnType<typeof bootstrapGame>> | null = null;
 
 	onMount(() => {
-		const chat: ChatPort = new TwurpleChatAdapter();
+		const stopChat = startChatFlow(() => game, channel);
 
-		chat.onMessage((message) => {
-			game?.joinViewer({ userId: message.userId, user: message.user });
-
-			const text = message.text.trim();
-			if (text === "!игра") {
-				game?.startGame();
-				return;
-			}
-			if (text === "!боты") {
-				for (let i = 0; i < 5; i++) {
-					const id = Math.random().toString(36).slice(2, 8);
-					game?.joinViewer({ userId: `bot-${id}`, user: `бот-${id}` });
-				}
-				return;
-			}
-			if (text.startsWith("!скин")) {
-				const argument = text.slice("!скин".length).trim();
-				const skin = Number.parseInt(argument, 10);
-				game?.changeSkin(message.userId, Number.isNaN(skin) ? undefined : skin);
-				return;
-			}
-			if (text === "!rep" || text === "!рем") {
-				game?.repair(message.userId);
-				return;
-			}
-			if (text.startsWith("!repair")) {
-				const target = text.slice("!repair".length).trim().replace(/^@/, "");
-				game?.repair(message.userId, target || undefined);
-				return;
-			}
-
-			game?.shoot(message);
-		});
-		chat.connect(channel);
-
-		let rewardsTimer: ReturnType<typeof setInterval> | undefined;
+		let stopPolling: (() => void) | undefined;
 		if (features.rewards && uuid) {
-			const pollRewards = async () => {
-				try {
-					const query = `?uuid=${encodeURIComponent(uuid)}`;
-					const [shieldsResponse, batteriesResponse] = await Promise.all([
-						fetch(`${resolve("/api/shields")}${query}`),
-						fetch(`${resolve("/api/batteries")}${query}`),
-					]);
-					if (shieldsResponse.ok) {
-						const { shields } = (await shieldsResponse.json()) as {
-							shields: ActiveShield[];
-						};
-						for (const shield of shields) {
-							game?.joinViewer({
-								userId: shield.userId,
-								user: shield.userName,
-							});
-						}
-						game?.applyShields(shields);
-					}
-					if (batteriesResponse.ok) {
-						const { grants } = (await batteriesResponse.json()) as {
-							grants: { userId: string; userName: string }[];
-						};
-						if (grants.length > 0) {
-							for (const grant of grants) {
-								game?.joinViewer({
-									userId: grant.userId,
-									user: grant.userName,
-								});
-							}
-							game?.grantBatteries(grants.map((grant) => grant.userId));
-						}
-					}
-				} catch {
-					// endpoint unavailable — retry on next tick
-				}
-			};
-
-			void pollRewards();
-			rewardsTimer = setInterval(
-				() => void pollRewards(),
-				SHIELDS_POLL_INTERVAL,
+			stopPolling = startEffectsPolling(
+				() => game,
+				uuid,
+				REWARDS_POLL_INTERVAL,
 			);
 		}
 
 		return () => {
-			chat.disconnect();
-			if (rewardsTimer) clearInterval(rewardsTimer);
+			stopChat();
+			stopPolling?.();
 			game?.destroy();
 			game = null;
 		};
