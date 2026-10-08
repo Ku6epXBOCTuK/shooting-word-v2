@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.6.2](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/2a0b1e6a8711a166850596ef7d5536f0f3ce8c7e..0.6.2) - 2026-10-08
+#### Bug Fixes
+- update button links, update ci, use sops - ([afa682e](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/afa682e13757c218277668aeb27f1f530056e83b)) - Ku6epXBOCTuK
+- update links\button on landing page - ([2a0b1e6](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/2a0b1e6a8711a166850596ef7d5536f0f3ce8c7e)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.6.1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/dace7dd601c5d84d9172bb161fe5343d12282fa1..0.6.1) - 2026-10-08
 #### Bug Fixes
 - design - reduce brightness - ([dace7dd](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/dace7dd601c5d84d9172bb161fe5343d12282fa1)) - Ku6epXBOCTuK
