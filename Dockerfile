@@ -1,17 +1,21 @@
-FROM oven/bun:1 AS build
+FROM node:22-slim AS build
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml ./
-RUN bunx pnpm install --frozen-lockfile
+RUN npm install -g pnpm@12.4.1
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile
 
 COPY . .
-RUN bunx pnpm build:node
+RUN pnpm build:node
 
-FROM oven/bun:1 AS prod-deps
+FROM node:22-slim AS prod-deps
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml ./
-RUN bunx pnpm install --prod --frozen-lockfile
+RUN npm install -g pnpm@12.4.1
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --prod --frozen-lockfile
 
 FROM oven/bun:1-slim
 WORKDIR /app
