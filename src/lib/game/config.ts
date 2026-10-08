@@ -71,6 +71,13 @@ export const BULLET_SCALE = 2;
 
 export const ENEMY_SHOT_SPEED = 400;
 export const ENEMY_SHOT_DAMAGE_CHANCE = 0.5;
+export const RICOCHET_TTL = 0.6;
+export const RICOCHET_SPEED_FACTOR = 2;
+export const SPARK_COUNT = 5;
+export const SPARK_TTL = 0.35;
+export const SPARK_HIT_COUNT = 10;
+export const SPARK_HIT_TTL = 0.5;
+export const SPARK_SPEED = 180;
 export const ENEMY_SHOT_HIT_DISTANCE = 20;
 
 export const ACTIVE_FIRE_INTERVAL = 0.1;

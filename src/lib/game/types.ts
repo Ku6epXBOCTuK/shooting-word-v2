@@ -70,6 +70,20 @@ export interface Armed {
 	enqueuedAt: number;
 }
 
+export interface Ricochet {
+	vx: number;
+	vy: number;
+	age: number;
+	ttl: number;
+}
+
+export interface Spark {
+	vx: number;
+	vy: number;
+	age: number;
+	ttl: number;
+}
+
 export interface Hitpoints {
 	current: number;
 	max: number;
@@ -133,6 +147,8 @@ export interface EntityComponents {
 	explosion: Explosion;
 	enemyShot: EnemyShot;
 	armed: Armed;
+	ricochet: Ricochet;
+	spark: Spark;
 	hp: Hitpoints;
 	shield: Shield;
 	hitBy: HitBy;

@@ -21,6 +21,10 @@ import { createStarRenderSystem } from "./star-render.js";
 import { createExplosionSystem } from "./explosion.js";
 import { createExplosionRenderSystem } from "./explosion-render.js";
 import { createEnemyShotHitSystem } from "./enemy-shot-hit.js";
+import { createRicochetSystem } from "./ricochet.js";
+import { createRicochetRenderSystem } from "./ricochet-render.js";
+import { createSparkSystem } from "./spark.js";
+import { createSparkRenderSystem } from "./spark-render.js";
 import { createEnemyShotRenderSystem } from "./enemy-shot-render.js";
 import { createViewerTimeoutSystem } from "./viewer-timeout.js";
 import { createViewerPersistenceSystem } from "./viewer-persistence.js";
@@ -61,6 +65,8 @@ export function systemGroups(): SystemGroup[] {
 				createBulletHitSystem,
 				createWordKillSystem,
 				createEnemyShotHitSystem,
+				createRicochetSystem,
+				createSparkSystem,
 				createStarSystem,
 				createExplosionSystem,
 			],
@@ -87,6 +93,8 @@ export function systemGroups(): SystemGroup[] {
 				createViewerRenderSystem,
 				createBulletRenderSystem,
 				createEnemyShotRenderSystem,
+				createRicochetRenderSystem,
+				createSparkRenderSystem,
 				createStarRenderSystem,
 				createExplosionRenderSystem,
 			],
