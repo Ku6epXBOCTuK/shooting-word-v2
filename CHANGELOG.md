@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.6.1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/dace7dd601c5d84d9172bb161fe5343d12282fa1..0.6.1) - 2026-10-08
+#### Bug Fixes
+- design - reduce brightness - ([dace7dd](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/dace7dd601c5d84d9172bb161fe5343d12282fa1)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.6.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/0166d871b1a16192dc188186e5141b8e08342a4d..0.6.0) - 2026-10-08
 #### Features
 - update design - ([57201a3](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/57201a39950372b1ae8af0cc5307e03fc4596fde)) - Ku6epXBOCTuK
