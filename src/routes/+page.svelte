@@ -30,8 +30,8 @@
 		--line: rgba(255, 255, 255, 0.11);
 		--panel: oklch(27% 0.02 272.464 / 0.86);
 		--lime: #caff42;
-		--cyan: #7df0ff;
-		--orange: #ff8c42;
+		--cyan: #69d8e6;
+		--orange: #ff7042;
 		position: fixed;
 		inset: 0;
 		overflow-y: auto;

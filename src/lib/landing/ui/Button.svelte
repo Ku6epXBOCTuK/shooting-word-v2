@@ -61,9 +61,13 @@
 		bottom: -20%;
 		left: -60%;
 		width: 30%;
-		background: rgba(255, 255, 255, 0.85);
+		background: linear-gradient(
+			105deg,
+			rgba(255, 255, 255, 0),
+			rgba(255, 255, 255, 0.85),
+			rgba(255, 255, 255, 0)
+		);
 		mix-blend-mode: screen;
-		filter: blur(6px);
 		transform: skewX(-20deg);
 		pointer-events: none;
 	}
