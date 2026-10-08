@@ -1,124 +1,27 @@
 <script lang="ts">
-	import CopyIcon from "~icons/lucide/copy";
-	import CheckIcon from "~icons/lucide/check";
-	import EyeIcon from "~icons/lucide/eye";
-	import EyeOffIcon from "~icons/lucide/eye-off";
-	import GiftIcon from "~icons/lucide/gift";
-	import LogOutIcon from "~icons/lucide/log-out";
-	import MonitorPlayIcon from "~icons/lucide/monitor-play";
-	import PlusIcon from "~icons/lucide/plus";
-	import RefreshCwIcon from "~icons/lucide/refresh-cw";
-	import TrashIcon from "~icons/lucide/trash-2";
-	import { onMount } from "svelte";
+	import { loadSession, type CabinetSession } from "#lib/cabinet/api.js";
+	import RewardsCard from "#lib/cabinet/RewardsCard.svelte";
+	import TopBar from "#lib/cabinet/TopBar.svelte";
+	import UnauthorizedCard from "#lib/cabinet/UnauthorizedCard.svelte";
+	import WidgetCard from "#lib/cabinet/WidgetCard.svelte";
+	import { features } from "#lib/features/variant.js";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { rewards } from "#lib/features/rewards/index.js";
-	import { features } from "#lib/features/variant.js";
-	import LaunchCard from "#lib/landing/LaunchCard.svelte";
-	import Button from "#lib/landing/ui/Button.svelte";
-	import CopyField from "#lib/landing/ui/CopyField.svelte";
-	import FieldLabel from "#lib/landing/ui/FieldLabel.svelte";
-	import Icon from "#lib/landing/ui/Icon.svelte";
+	import { onMount } from "svelte";
 
-	let login = $state<string | null>(null);
-	let displayName = $state<string | null>(null);
-	let widgetUuid = $state<string | null>(null);
-	let unauthorized = $state(false);
-	let rewardsStatus = $state<string | null>(null);
-	let authorized = $state(false);
-	let manageResult = $state<string | null>(null);
-	let managing = $state(false);
-	let rotating = $state(false);
-	let copied = $state(false);
-	let linkVisible = $state(false);
 	let loading = $state(true);
+	let session = $state<CabinetSession | null>(null);
+	let widgetUuid = $state<string | null>(null);
 
 	const widgetLink = $derived(
-		login && widgetUuid
+		session && widgetUuid
 			? `${page.url.origin}${resolve("/widget")}?uuid=${encodeURIComponent(widgetUuid)}`
 			: null,
 	);
 
-	const manage = async (action: "create" | "delete") => {
-		managing = true;
-		manageResult = null;
-
-		const result =
-			action === "create"
-				? await rewards.createRewards()
-				: await rewards.deleteAllRewards();
-
-		managing = false;
-
-		if (!result.ok) {
-			manageResult = result.reason ?? "ошибка";
-			return;
-		}
-
-		manageResult =
-			action === "create"
-				? result.created.length > 0
-					? `Созданы: ${result.created.join(", ")}`
-					: "Все награды уже существуют"
-				: `Удалено наград: ${result.deleted}`;
-	};
-
-	const copyHidden = async () => {
-		if (!widgetLink) return;
-
-		await navigator.clipboard.writeText(widgetLink);
-		copied = true;
-		setTimeout(() => {
-			copied = false;
-		}, 1800);
-	};
-
-	const rotate = async () => {
-		rotating = true;
-		manageResult = null;
-
-		try {
-			const response = await fetch(resolve("/api/broadcaster"), {
-				method: "POST",
-			});
-			if (!response.ok) {
-				manageResult = "не удалось сбросить ссылку";
-				return;
-			}
-			const data = (await response.json()) as { widgetUuid: string };
-			widgetUuid = data.widgetUuid;
-			manageResult = "Ссылка виджета обновлена, старая больше не работает";
-		} finally {
-			rotating = false;
-		}
-	};
-
 	onMount(async () => {
-		const response = await fetch(resolve("/api/broadcaster"));
-		if (!response.ok) {
-			unauthorized = true;
-			loading = false;
-			return;
-		}
-		const data = (await response.json()) as {
-			login: string;
-			displayName?: string | null;
-			widgetUuid?: string;
-		};
-		login = data.login;
-		displayName = data.displayName ?? data.login;
-		widgetUuid = data.widgetUuid ?? null;
-
-		if (!features.rewards) {
-			loading = false;
-			return;
-		}
-
-		const status = await rewards.status();
-		authorized = status.available;
-		rewardsStatus = status.available
-			? "Twitch авторизован, награды доступны"
-			: (status.reason ?? "награды недоступны");
+		session = await loadSession();
+		widgetUuid = session?.widgetUuid ?? null;
 		loading = false;
 	});
 </script>
@@ -133,129 +36,34 @@
 		<div class="star-field" aria-hidden="true"></div>
 
 		<div class="content">
-			<header class="topbar">
-				<a class="brand" href={resolve("/")}>Shooting Word</a>
-				{#if login}
-					<div class="identity">
-						<span class="login-chip">{displayName}</span>
-						<a class="logout" href={resolve("/auth/twitch/logout")}>
-							<Icon as={LogOutIcon} />
-							выйти
-						</a>
-					</div>
-				{/if}
-			</header>
+			<TopBar displayName={session?.displayName ?? null} />
 
 			<h1>Кабинет <em>командира</em></h1>
 
 			{#if loading}
 				<p class="loading">Загрузка кабинета…</p>
-			{:else if unauthorized}
+			{:else if !session}
 				<div class="cards">
-					<LaunchCard
-						variant="orange"
-						title="Вход для командира"
-						subtitle="Кабинет открывается после авторизации"
-						icon={GiftIcon}
-					>
-						<p class="lede">
-							Управление виджетом и наградами канала привязано к твоему
-							Twitch-аккаунту.
-						</p>
-						{#snippet bottom()}
-							<Button variant="pro" href={resolve("/auth/twitch/login")}>
-								Войти через Twitch
-							</Button>
-						{/snippet}
-					</LaunchCard>
+					<UnauthorizedCard />
 				</div>
 			{:else}
 				<div class="cards">
 					{#if widgetLink}
-						<LaunchCard
-							variant="cyan"
-							title="Виджет для OBS"
-							subtitle="Browser source для трансляции"
-							icon={MonitorPlayIcon}
-						>
-							<FieldLabel>ссылка виджета</FieldLabel>
-							<div class="link-row">
-								<button
-									class="square-button"
-									type="button"
-									title={linkVisible ? "Скрыть" : "Показать"}
-									onclick={() => {
-										linkVisible = !linkVisible;
-									}}
-								>
-									<Icon as={linkVisible ? EyeOffIcon : EyeIcon} size="md" />
-								</button>
-								{#if linkVisible}
-									<CopyField value={widgetLink} />
-								{:else}
-									<div class="masked-field">
-										<span class="masked-dots">••••••••••••••••••••••</span>
-										<button
-											class="square-button"
-											type="button"
-											aria-label="Скопировать ссылку"
-											onclick={copyHidden}
-										>
-											<Icon as={copied ? CheckIcon : CopyIcon} />
-										</button>
-									</div>
-								{/if}
-							</div>
-
-							{#snippet bottom()}
-								<Button variant="pro" disabled={rotating} onclick={rotate}>
-									<Icon as={RefreshCwIcon} />
-									Сбросить ссылку
-								</Button>
-							{/snippet}
-						</LaunchCard>
+						<WidgetCard
+							link={widgetLink}
+							onrotated={(uuid) => {
+								widgetUuid = uuid;
+							}}
+						/>
 					{/if}
 
 					{#if features.rewards}
-						<LaunchCard
-							variant="orange"
-							title="Награды канала"
-							subtitle="Активации за баллы канала"
-							icon={GiftIcon}
-						>
-							{#if rewardsStatus}
-								<p class="status">{rewardsStatus}</p>
-							{/if}
-
-							{#snippet bottom()}
-								{#if authorized}
-									<div class="actions-row">
-										<Button
-											variant="pro"
-											disabled={managing}
-											onclick={() => manage("create")}
-										>
-											<Icon as={PlusIcon} />
-											Создать награды
-										</Button>
-										<Button
-											variant="pro"
-											disabled={managing}
-											onclick={() => manage("delete")}
-										>
-											<Icon as={TrashIcon} />
-											Удалить награды
-										</Button>
-									</div>
-								{/if}
-							{/snippet}
-						</LaunchCard>
+						<RewardsCard
+							authorized={session.rewardsAuthorized}
+							status={session.rewardsStatus}
+						/>
 					{/if}
 				</div>
-
-				{#if manageResult}
-					<p class="result">{manageResult}</p>
-				{/if}
 			{/if}
 		</div>
 	</main>
@@ -328,50 +136,6 @@
 		mask-image: linear-gradient(to bottom, black, transparent 80%);
 	}
 
-	.topbar {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 16px;
-	}
-
-	.brand {
-		color: var(--foreground);
-		text-decoration: none;
-		font-weight: 700;
-		font-size: 18px;
-		letter-spacing: -0.02em;
-	}
-
-	.identity {
-		display: flex;
-		align-items: center;
-		gap: 14px;
-	}
-
-	.login-chip {
-		border: 1px solid color-mix(in srgb, var(--cyan) 38%, transparent);
-		background: color-mix(in srgb, var(--cyan) 7%, transparent);
-		color: var(--cyan);
-		padding: 8px 14px;
-		font-size: 15px;
-		font-weight: 700;
-	}
-
-	.logout {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		color: var(--muted);
-		text-decoration: none;
-		font-size: 15px;
-		transition: color 0.2s;
-	}
-
-	.logout:hover {
-		color: var(--foreground);
-	}
-
 	h1 {
 		font-size: clamp(38px, 4.5vw, 56px);
 		letter-spacing: -0.05em;
@@ -419,88 +183,6 @@
 
 	.content :global(.copy-field-button) {
 		width: 48px;
-	}
-
-	.link-row {
-		display: flex;
-		align-items: stretch;
-		gap: 8px;
-	}
-
-	.link-row :global(.copy-field) {
-		flex: 1;
-		min-width: 0;
-		margin-top: 0;
-	}
-
-	.square-button {
-		flex: 0 0 auto;
-		display: grid;
-		place-items: center;
-		width: 48px;
-		background: #0b0d12;
-		color: var(--muted);
-		border: 1px solid rgba(255, 255, 255, 0.18);
-		cursor: pointer;
-		transition:
-			color 0.2s,
-			border-color 0.2s;
-	}
-
-	.square-button:hover {
-		color: var(--foreground);
-		border-color: rgba(255, 255, 255, 0.3);
-	}
-
-	.masked-field {
-		flex: 1;
-		min-width: 0;
-		display: flex;
-		background: #0b0d12;
-		border: 1px solid rgba(255, 255, 255, 0.18);
-	}
-
-	.masked-dots {
-		flex: 1;
-		min-width: 0;
-		display: flex;
-		align-items: center;
-		padding: 14px;
-		color: var(--muted);
-		font-size: 15px;
-		overflow: hidden;
-		white-space: nowrap;
-	}
-
-	.masked-field .square-button {
-		border: 0;
-	}
-
-	.status {
-		color: #a4a6ae;
-		font-size: 17px;
-		line-height: 1.6;
-		margin: 12px 0 20px;
-	}
-
-	.lede {
-		color: #a4a6ae;
-		font-size: 18px;
-		line-height: 1.65;
-		margin: 16px 0 22px;
-	}
-
-	.actions-row {
-		display: flex;
-		gap: 12px;
-		flex-wrap: wrap;
-	}
-
-	.result {
-		margin-top: 20px;
-		color: var(--cyan);
-		font-size: 16px;
-		font-weight: 700;
 	}
 
 	.loading {
