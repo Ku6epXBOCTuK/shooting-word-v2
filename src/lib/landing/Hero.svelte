@@ -1,11 +1,12 @@
 <script lang="ts">
+	import GlitchHeadline from "./GlitchHeadline.svelte";
 	import HeroScene from "./HeroScene.svelte";
 </script>
 
 <section class="hero">
 	<div class="hero-copy">
-		<h1>
-			Печатать умеют все.<br /><em>А защитить стрим – твой чат сможет?</em>
+		<h1 aria-label="Печатать умеют все. А защитить стрим – твой чат сможет?">
+			<GlitchHeadline /><br /><em>А защитить стрим –<br />твой чат сможет?</em>
 		</h1>
 		<p class="hero-lede">
 			Shooting Word: игра, в которую играет чат. Зрители сбивают волны
