@@ -20,7 +20,7 @@
       активных щитов (иначе щиты, выданные до загрузки виджета, потеряются) +
       drain очереди. На abort request.signal - удалить controller из Set (OBS
       перезагружает источник, Set не должен расти)
-- [ ] 3. heartbeat: ":"-комментарий каждые 25-30 сек, иначе прокси закроет
+- [x] 3. heartbeat: ":"-комментарий каждые 25-30 сек, иначе прокси закроет
       idle-соединение
 - [ ] 4. клиент: poller.ts - заменить setInterval+fetch на
       EventSource("/api/effects/stream?uuid="), onmessage -> applyEffects
