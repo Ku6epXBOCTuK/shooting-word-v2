@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.11.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/e25f52bfe7eb08fb5c26d05e64c9335b7bf89004..0.11.0) - 2026-10-09
+#### Features
+- add dev config overrides - ([e25f52b](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/e25f52bfe7eb08fb5c26d05e64c9335b7bf89004)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.10.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/7cb466a20e357de3bf53c7245fd24fe22ca06990..0.10.0) - 2026-10-09
 #### Features
 - add auto fulfillment and auto refund setting - ([b7b8dc2](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/b7b8dc22dad53ae41d7359c3cd7f4f8783d9a25b)) - Ku6epXBOCTuK
