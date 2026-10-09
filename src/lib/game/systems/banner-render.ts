@@ -1,9 +1,9 @@
 import { Text, TextStyle } from "pixi.js";
-import type { System, SystemFactory } from "./types.js";
+import type { System, RenderSystemFactory } from "./types.js";
 
 const BANNER_FONT_SIZE = 48;
 
-export const createBannerRenderSystem: SystemFactory = (ctx) => {
+export const createBannerRenderSystem: RenderSystemFactory = (ctx) => {
 	const banners = ctx.world.with("banner");
 	const style = new TextStyle({ fill: "#ffffff", fontSize: BANNER_FONT_SIZE });
 

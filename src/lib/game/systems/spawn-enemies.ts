@@ -35,7 +35,7 @@ export const createEnemySpawnSystem: SystemFactory = (ctx) => {
 
 		if (enemies.size >= MAX_ENEMIES) return;
 
-		const screen = ctx.app.screen;
+		const screen = ctx.screen;
 		const text = randomWord();
 		const size = estimateWordSize(text);
 		const offset = findPlacement(

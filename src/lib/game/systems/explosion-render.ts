@@ -1,8 +1,8 @@
 import { Sprite } from "pixi.js";
 import { EXPLOSION_FRAME_DURATION, EXPLOSION_SCALE } from "../config.js";
-import type { System, SystemFactory } from "./types.js";
+import type { System, RenderSystemFactory } from "./types.js";
 
-export const createExplosionRenderSystem: SystemFactory = (ctx) => {
+export const createExplosionRenderSystem: RenderSystemFactory = (ctx) => {
 	const explosions = ctx.world.with("explosion", "position");
 	const frames = ctx.assets.explosion;
 

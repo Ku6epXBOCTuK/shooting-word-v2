@@ -46,8 +46,7 @@ export function spawnViewer(
 	batteries = 0,
 	revives = 0,
 ) {
-	const { world, app, settings } = ctx;
-	const { screen } = app;
+	const { world, screen, settings } = ctx;
 	const width = VIEWER_WIDTH * settings.viewerScale;
 	const halfWidth = width / 2;
 	const x = halfWidth + Math.random() * Math.max(1, screen.width - width);

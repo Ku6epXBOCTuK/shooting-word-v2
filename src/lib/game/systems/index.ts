@@ -1,4 +1,4 @@
-import type { SystemGroup } from "./types.js";
+import type { RenderSystemGroup, SystemGroup } from "./types.js";
 import { createSessionSystem } from "./session.js";
 import { createEnemySpawnSystem } from "./spawn-enemies.js";
 import { createFlightSystem } from "./flight.js";
@@ -35,7 +35,7 @@ import { createPortalRenderSystem } from "./portal-render.js";
 import { createViewerRenderSystem } from "./viewer-render.js";
 import { createCleanupSystem } from "./cleanup.js";
 
-export function systemGroups(): SystemGroup[] {
+export function logicGroups(): SystemGroup[] {
 	return [
 		{
 			name: "session",
@@ -86,6 +86,11 @@ export function systemGroups(): SystemGroup[] {
 				createViewerPersistenceSystem,
 			],
 		},
+	];
+}
+
+export function renderGroups(): RenderSystemGroup[] {
+	return [
 		{
 			name: "render",
 			factories: [
@@ -101,6 +106,11 @@ export function systemGroups(): SystemGroup[] {
 				createExplosionRenderSystem,
 			],
 		},
+	];
+}
+
+export function cleanupGroups(): SystemGroup[] {
+	return [
 		{
 			name: "cleanup",
 			factories: [createCleanupSystem],

@@ -13,10 +13,10 @@ import {
 	VIEWER_HEIGHT,
 	VIEWER_TIMEOUT_MS,
 } from "./config.js";
-import type { GameContext } from "./context.js";
+import type { RenderContext } from "./context.js";
 import { defaultSettings, type GameSettings } from "./settings.js";
 import { spawnViewer } from "./spawn.js";
-import { systemGroups } from "./systems/index.js";
+import { cleanupGroups, logicGroups, renderGroups } from "./systems/index.js";
 import {
 	SESSIONPHASE,
 	type Entity,
@@ -37,17 +37,20 @@ export async function bootstrapGame(
 	const viewers = world.with("viewer");
 	const viewersWithPosition = world.with("viewer", "position");
 	const wordsWithPosition = world.with("word", "position");
-	const ctx: GameContext = {
+	const ctx: RenderContext = {
 		world,
-		app,
-		assets,
+		screen: app.screen,
 		settings,
 		viewerStore: createViewerStore(uuid),
 		viewersDirty: false,
+		now: Date.now,
+		rng: Math.random,
+		app,
+		assets,
 	};
 
 	const createGroups = () =>
-		systemGroups().map((group) =>
+		[...logicGroups(), ...renderGroups(), ...cleanupGroups()].map((group) =>
 			group.factories.map((factory) => factory(ctx)),
 		);
 
@@ -242,8 +245,8 @@ export async function bootstrapGame(
 				}
 			}
 			from ??= {
-				x: app.screen.width / 2,
-				y: app.screen.height - VIEWER_GROUND_MARGIN,
+				x: ctx.screen.width / 2,
+				y: ctx.screen.height - VIEWER_GROUND_MARGIN,
 			};
 
 			for (const target of targets) {

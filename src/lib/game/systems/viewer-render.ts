@@ -1,7 +1,7 @@
 import { AnimatedSprite, Graphics, Text, TextStyle } from "pixi.js";
 import { SHIELD_MAX_HP, VIEWER_PLATE_PADDING } from "../config.js";
 import type { Entity } from "../types.js";
-import type { System, SystemFactory } from "./types.js";
+import type { System, RenderSystemFactory } from "./types.js";
 
 const LABEL_GAP = 4;
 const SHIP_ANIMATION_SPEED = 0.2;
@@ -12,7 +12,7 @@ const HP_BAR_GAP = 3;
 const SHIELD_DOT_RADIUS = 2.5;
 const SHIELD_DOT_GAP = 8;
 
-export const createViewerRenderSystem: SystemFactory = (ctx) => {
+export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 	const viewers = ctx.world.with("viewer", "position");
 	const labelStyle = new TextStyle({ fill: "#ffffff", fontSize: 12 });
 

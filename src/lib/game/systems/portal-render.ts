@@ -1,6 +1,6 @@
 import { Graphics } from "pixi.js";
 import { VIEWER_GROUND_MARGIN } from "../config.js";
-import type { System, SystemFactory } from "./types.js";
+import type { System, RenderSystemFactory } from "./types.js";
 
 const PORTAL_RADIUS = 32;
 const PORTAL_COLOR = 0x9b59ff;
@@ -9,7 +9,7 @@ const BAR_WIDTH = 48;
 const BAR_HEIGHT = 4;
 const BAR_GAP = 8;
 
-export const createPortalRenderSystem: SystemFactory = (ctx) => {
+export const createPortalRenderSystem: RenderSystemFactory = (ctx) => {
 	const portals = ctx.world.with("respawning");
 
 	const unsubscribeAdded = portals.onEntityAdded.subscribe((entity) => {

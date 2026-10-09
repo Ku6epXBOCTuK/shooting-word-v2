@@ -18,7 +18,7 @@ export const createPerspectiveSystem: SystemFactory = (ctx) => {
 
 	return () => {
 		for (const entity of flying) {
-			const projected = projectPoint(entity.position3, ctx.app.screen);
+			const projected = projectPoint(entity.position3, ctx.screen);
 			entity.position.x = projected.x;
 			entity.position.y = projected.y;
 			entity.scale = projected.scale;

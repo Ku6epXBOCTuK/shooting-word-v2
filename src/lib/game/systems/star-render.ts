@@ -1,8 +1,8 @@
 import { Graphics } from "pixi.js";
 import { STAR_RADIUS, STAR_SPIN } from "../config.js";
-import type { System, SystemFactory } from "./types.js";
+import type { System, RenderSystemFactory } from "./types.js";
 
-export const createStarRenderSystem: SystemFactory = (ctx) => {
+export const createStarRenderSystem: RenderSystemFactory = (ctx) => {
 	const stars = ctx.world.with("star", "position");
 
 	const unsubscribeAdded = stars.onEntityAdded.subscribe((entity) => {

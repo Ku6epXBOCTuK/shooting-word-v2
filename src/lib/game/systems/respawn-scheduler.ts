@@ -13,7 +13,7 @@ export const createRespawnSchedulerSystem: SystemFactory = (ctx) => {
 		}
 		if (!idle) return;
 
-		const { width } = ctx.app.screen;
+		const { width } = ctx.screen;
 
 		for (const entity of dead) {
 			const halfWidth =

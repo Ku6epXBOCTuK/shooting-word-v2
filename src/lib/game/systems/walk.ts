@@ -14,7 +14,7 @@ export const createWalkSystem: SystemFactory = (ctx) => {
 	const walkers = ctx.world.with("walker", "position").without("dead");
 
 	return (dt) => {
-		const { width, height } = ctx.app.screen;
+		const { width, height } = ctx.screen;
 
 		for (const entity of walkers) {
 			entity.walker.timer -= dt;

@@ -16,10 +16,14 @@ Date.now (walk, spawn-enemies, placement, enemy-fire, spawn, shield,
 enemy-attack) уходят в ctx.rng()/ctx.now() с настоящими дефолтами; sim
 подсовывает seeded mulberry32 + виртуальные часы.
 
-- [ ] 1. разделить контекст: GameContext = { world, screen: Size, settings,
+- [x] 1. разделить контекст: GameContext = { world, screen: Size, settings,
       viewerStore, viewersDirty, now(), rng() }; app/assets уходят в
-      RenderContext поверх него; поправить flight, perspective, spawn-enemies,
-      walk, respawn-scheduler, spawn, bootstrap (8 мест чтения app.screen)
+      RenderContext поверх него; поправлены flight, perspective, spawn-enemies,
+      walk, respawn-scheduler, spawn, bootstrap; systemGroups разделены на
+      logicGroups/renderGroups/cleanupGroups (порядок render перед cleanup
+      сохранён); render-системы на RenderSystemFactory; кадры взрыва -
+      EXPLOSION_FRAME_LABELS в config.ts (assets.ts и explosion.ts читают
+      оттуда)
 - [ ] 2. measureText в контексте: measure.ts не читает sprite; игровая
       реализация через pixi Text, headless - estimateWordSize; viewer size из
       констант при spawnViewer

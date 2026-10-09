@@ -1,10 +1,10 @@
 import { Graphics } from "pixi.js";
-import type { System, SystemFactory } from "./types.js";
+import type { System, RenderSystemFactory } from "./types.js";
 
 const SPARK_RADIUS = 2;
 const SPARK_COLOR = 0xffdd66;
 
-export const createSparkRenderSystem: SystemFactory = (ctx) => {
+export const createSparkRenderSystem: RenderSystemFactory = (ctx) => {
 	const sparks = ctx.world.with("spark", "position");
 
 	const unsubscribeAdded = sparks.onEntityAdded.subscribe((entity) => {

@@ -1,8 +1,8 @@
 import { Sprite } from "pixi.js";
 import { BULLET_SCALE } from "../config.js";
-import type { System, SystemFactory } from "./types.js";
+import type { System, RenderSystemFactory } from "./types.js";
 
-export const createRicochetRenderSystem: SystemFactory = (ctx) => {
+export const createRicochetRenderSystem: RenderSystemFactory = (ctx) => {
 	const ricochets = ctx.world.with("ricochet", "position");
 
 	const unsubscribeAdded = ricochets.onEntityAdded.subscribe((entity) => {

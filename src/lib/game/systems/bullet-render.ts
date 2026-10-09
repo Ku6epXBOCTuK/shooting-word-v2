@@ -1,8 +1,8 @@
 import { Sprite } from "pixi.js";
 import { BULLET_SCALE } from "../config.js";
-import type { System, SystemFactory } from "./types.js";
+import type { System, RenderSystemFactory } from "./types.js";
 
-export const createBulletRenderSystem: SystemFactory = (ctx) => {
+export const createBulletRenderSystem: RenderSystemFactory = (ctx) => {
 	const bullets = ctx.world.with("bullet", "position");
 
 	const unsubscribeAdded = bullets.onEntityAdded.subscribe((entity) => {

@@ -1,10 +1,10 @@
 import { Sprite } from "pixi.js";
 import { BULLET_SCALE } from "../config.js";
-import type { System, SystemFactory } from "./types.js";
+import type { System, RenderSystemFactory } from "./types.js";
 
 const SHOT_TINT = 0xff6666;
 
-export const createEnemyShotRenderSystem: SystemFactory = (ctx) => {
+export const createEnemyShotRenderSystem: RenderSystemFactory = (ctx) => {
 	const shots = ctx.world.with("enemyShot", "position");
 
 	const unsubscribeAdded = shots.onEntityAdded.subscribe((entity) => {

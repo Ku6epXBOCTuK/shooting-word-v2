@@ -1,6 +1,6 @@
 import { Graphics, Text, TextStyle } from "pixi.js";
 import { FONT_SIZE } from "../config.js";
-import type { System, SystemFactory } from "./types.js";
+import type { System, RenderSystemFactory } from "./types.js";
 
 const BAR_HEIGHT = 4;
 const BAR_GAP = 6;
@@ -9,7 +9,7 @@ const PLATE_PAD_Y = 4;
 const PLATE_RADIUS = 6;
 const PLATE_ALPHA = 0.7;
 
-export const createRenderSystem: SystemFactory = (ctx) => {
+export const createRenderSystem: RenderSystemFactory = (ctx) => {
 	const words = ctx.world.with("word", "position");
 	const style = new TextStyle({ fill: "#ffffff", fontSize: FONT_SIZE });
 
