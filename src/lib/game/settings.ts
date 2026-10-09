@@ -35,6 +35,22 @@ export const SETTINGS_SCHEMA: SettingDef[] = [
 		step: 0.5,
 		default: VIEWER_SCALE,
 	},
+	{
+		key: "autoFulfillment",
+		param: "auto_fulfillment",
+		label: "Автосписание баллов за награды",
+		type: "boolean",
+		scope: "full",
+		default: false,
+	},
+	{
+		key: "autoRefund",
+		param: "auto_refund",
+		label: "Авто-возврат баллов при активации сверх лимита",
+		type: "boolean",
+		scope: "full",
+		default: true,
+	},
 ];
 
 export const SETTING_GROUPS: Record<string, string> = {};
