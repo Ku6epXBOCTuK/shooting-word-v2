@@ -24,9 +24,12 @@ enemy-attack) уходят в ctx.rng()/ctx.now() с настоящими деф
       сохранён); render-системы на RenderSystemFactory; кадры взрыва -
       EXPLOSION_FRAME_LABELS в config.ts (assets.ts и explosion.ts читают
       оттуда)
-- [ ] 2. measureText в контексте: measure.ts не читает sprite; игровая
-      реализация через pixi Text, headless - estimateWordSize; viewer size из
-      констант при spawnViewer
+- [x] 2. measureText в контексте: measure.ts не читает sprite - size зрителя из
+      констант корабля + measureText(ник, VIEWER_LABEL_FONT_SIZE), кэш по (user,
+      scale) в WeakMap, перевычисление при смене ника/масштаба; игровая
+      реализация - pixi Text probe в bootstrap (кэш TextStyle), headless -
+      estimateWordSize (добавлен параметр fontSize). Бонус: size больше не
+      отстаёт на кадр после спавна
 - [ ] 3. rng()/now() по системам: walk, spawn-enemies, placement, enemy-fire,
       spawn (Math.random); shield, enemy-attack, enemy-fire (Date.now -
       ARMED_FUSE_MS, expiresAt)

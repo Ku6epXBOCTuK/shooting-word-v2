@@ -1,5 +1,9 @@
 import { AnimatedSprite, Graphics, Text, TextStyle } from "pixi.js";
-import { SHIELD_MAX_HP, VIEWER_PLATE_PADDING } from "../config.js";
+import {
+	SHIELD_MAX_HP,
+	VIEWER_LABEL_FONT_SIZE,
+	VIEWER_PLATE_PADDING,
+} from "../config.js";
 import type { Entity } from "../types.js";
 import type { System, RenderSystemFactory } from "./types.js";
 
@@ -14,7 +18,10 @@ const SHIELD_DOT_GAP = 8;
 
 export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 	const viewers = ctx.world.with("viewer", "position");
-	const labelStyle = new TextStyle({ fill: "#ffffff", fontSize: 12 });
+	const labelStyle = new TextStyle({
+		fill: "#ffffff",
+		fontSize: VIEWER_LABEL_FONT_SIZE,
+	});
 
 	const appliedSkin = new Map<Entity, number>();
 	const shieldBubbles = new Map<Entity, Graphics>();

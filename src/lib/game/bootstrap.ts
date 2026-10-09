@@ -2,7 +2,7 @@ import type { ChatMessage } from "#lib/chat/port.js";
 import { createViewerStore } from "#lib/features/persistence/index.js";
 import { logger } from "#lib/logger.js";
 import { World } from "miniplex";
-import type { Application, Ticker } from "pixi.js";
+import { Text, TextStyle, type Application, type Ticker } from "pixi.js";
 import { loadAssets, SHIP_COUNT } from "./assets.js";
 import {
 	BULLET_HIT_DISTANCE,
@@ -33,6 +33,19 @@ export async function bootstrapGame(
 ) {
 	const assets = await loadAssets();
 
+	const measureStyles = new Map<number, TextStyle>();
+	const measureText = (text: string, fontSize: number) => {
+		let style = measureStyles.get(fontSize);
+		if (!style) {
+			style = new TextStyle({ fontSize });
+			measureStyles.set(fontSize, style);
+		}
+		const probe = new Text({ text, style });
+		const size = { width: probe.width, height: probe.height };
+		probe.destroy();
+		return size;
+	};
+
 	const world = new World<Entity>();
 	const viewers = world.with("viewer");
 	const viewersWithPosition = world.with("viewer", "position");
@@ -45,6 +58,7 @@ export async function bootstrapGame(
 		viewersDirty: false,
 		now: Date.now,
 		rng: Math.random,
+		measureText,
 		app,
 		assets,
 	};

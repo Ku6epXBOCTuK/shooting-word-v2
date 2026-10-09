@@ -3,6 +3,7 @@ export const Z_NEAR = 200;
 export const FOCAL = Z_NEAR;
 
 export const FONT_SIZE = 28;
+export const VIEWER_LABEL_FONT_SIZE = 12;
 
 export const WORD_TTL = 30;
 

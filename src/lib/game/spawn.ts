@@ -13,10 +13,10 @@ import {
 import type { GameContext } from "./context.js";
 import type { Entity, Size, Viewer, Word } from "./types.js";
 
-export function estimateWordSize(text: string): Size {
+export function estimateWordSize(text: string, fontSize = FONT_SIZE): Size {
 	return {
-		width: Math.max(FONT_SIZE, text.length * FONT_SIZE * 0.55),
-		height: FONT_SIZE * 1.3,
+		width: Math.max(fontSize, text.length * fontSize * 0.55),
+		height: fontSize * 1.3,
 	};
 }
 

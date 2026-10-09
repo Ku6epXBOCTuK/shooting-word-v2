@@ -13,6 +13,7 @@ export interface GameContext {
 	viewersDirty: boolean;
 	now(): number;
 	rng(): number;
+	measureText(text: string, fontSize: number): Size;
 }
 
 export interface RenderContext extends GameContext {
