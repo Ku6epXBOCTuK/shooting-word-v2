@@ -51,27 +51,19 @@ export function applyEffects(
 	}
 }
 
-export function startEffectsPolling(
-	getGame: () => EffectsGame | null,
+export function startEffectsStream(
+	game: EffectsGame,
 	uuid: string,
-	intervalMs: number,
 ): () => void {
-	const poll = async () => {
+	const source = new EventSource(
+		`${resolve("/api/effects/stream")}?uuid=${encodeURIComponent(uuid)}`,
+	);
+	source.onmessage = (message: MessageEvent<string>) => {
 		try {
-			const response = await fetch(
-				`${resolve("/api/effects")}?uuid=${encodeURIComponent(uuid)}`,
-			);
-			if (!response.ok) return;
-
-			const body = (await response.json()) as EffectsResponse;
-			const game = getGame();
-			if (game) applyEffects(game, body);
+			applyEffects(game, JSON.parse(message.data) as EffectsResponse);
 		} catch {
-			// endpoint unavailable — retry on next tick
+			// malformed event - ignore, stream stays open
 		}
 	};
-
-	void poll();
-	const timer = setInterval(() => void poll(), intervalMs);
-	return () => clearInterval(timer);
+	return () => source.close();
 }
