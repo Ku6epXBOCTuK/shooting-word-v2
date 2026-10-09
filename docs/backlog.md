@@ -12,7 +12,7 @@
       grantShield пушат событие всем подписчикам broadcaster'а. Очередь НЕ
       убирать - от неё зависит проверка лимита батареек (pendingCount,
       reward-effects.ts:97-106), она остаётся буфером до коннекта
-- [ ] 2. эндпойнт src/routes/api/effects/stream/+server.ts: GET по ?uuid= (auth
+- [x] 2. эндпойнт src/routes/api/effects/stream/+server.ts: GET по ?uuid= (auth
       через broadcasters.byUuid как сейчас), Response(ReadableStream) с
       text/event-stream, no-cache и X-Accel-Buffering: no (nginx на VPS вне
       репо - заголовок надёжнее правки конфига). При коннекте:
