@@ -3,6 +3,8 @@
 import "unplugin-icons/types/svelte";
 
 declare global {
+	const __APP_VARIANT_NODE__: boolean;
+
 	namespace App {
 		// interface Error {}
 		// interface Locals {}

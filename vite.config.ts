@@ -13,6 +13,9 @@ const adapter =
 		: adapterStatic({ fallback: "404.html" });
 
 export default defineConfig({
+	define: {
+		__APP_VARIANT_NODE__: JSON.stringify(variant === "node"),
+	},
 	plugins: [
 		sveltekit({
 			paths: { base },

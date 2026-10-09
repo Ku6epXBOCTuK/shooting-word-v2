@@ -5,7 +5,7 @@
 	import TrashIcon from "~icons/lucide/trash-2";
 	import { untrack } from "svelte";
 	import type { AppRewardStatus } from "#lib/features/rewards/port.js";
-	import { features } from "#lib/features/variant.js";
+	import { REWARDS_ENABLED } from "#lib/features/variant.js";
 	import type { GameSettings } from "#lib/game/settings.js";
 	import LaunchCard from "#lib/landing/LaunchCard.svelte";
 	import Button from "#lib/landing/ui/Button.svelte";
@@ -96,7 +96,7 @@
 >
 	<SettingsForm {settings} flat />
 
-	{#if features.rewards}
+	{#if REWARDS_ENABLED}
 		<div class="rewards-section">
 			<div class="rewards-head">
 				<h3 class="rewards-title">Награды канала</h3>

@@ -1,24 +1,19 @@
 <script lang="ts">
-	import Icon from "#lib/landing/ui/Icon.svelte";
+	import type { Snippet } from "svelte";
 	import { resolve } from "$app/paths";
-	import LogOutIcon from "~icons/lucide/log-out";
 
 	interface Props {
-		displayName: string | null;
+		children?: Snippet;
 	}
 
-	let { displayName }: Props = $props();
+	let { children }: Props = $props();
 </script>
 
 <header class="topbar">
 	<a class="brand" href={resolve("/")}>Shooting Word</a>
-	{#if displayName}
-		<div class="identity">
-			<span class="login-chip">{displayName}</span>
-			<a class="logout" href={resolve("/auth/twitch/logout")}>
-				<Icon as={LogOutIcon} />
-				выйти
-			</a>
+	{#if children}
+		<div class="side">
+			{@render children()}
 		</div>
 	{/if}
 </header>
@@ -39,32 +34,9 @@
 		letter-spacing: -0.02em;
 	}
 
-	.identity {
+	.side {
 		display: flex;
 		align-items: center;
 		gap: 14px;
-	}
-
-	.login-chip {
-		border: 1px solid color-mix(in srgb, var(--cyan) 38%, transparent);
-		background: color-mix(in srgb, var(--cyan) 7%, transparent);
-		color: var(--cyan);
-		padding: 8px 14px;
-		font-size: 15px;
-		font-weight: 700;
-	}
-
-	.logout {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		color: var(--muted);
-		text-decoration: none;
-		font-size: 15px;
-		transition: color 0.2s;
-	}
-
-	.logout:hover {
-		color: var(--foreground);
 	}
 </style>

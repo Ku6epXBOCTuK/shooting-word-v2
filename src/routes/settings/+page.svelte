@@ -55,7 +55,7 @@
 		<div class="star-field" aria-hidden="true"></div>
 
 		<div class="content">
-			<TopBar displayName={null} />
+			<TopBar />
 
 			<h1>Настройки <em>игры</em></h1>
 

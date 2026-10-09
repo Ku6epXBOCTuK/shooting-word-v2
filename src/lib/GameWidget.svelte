@@ -2,7 +2,7 @@
 	import PixiOverlay from "#lib/PixiOverlay.svelte";
 	import { startChatFlow } from "#lib/chat/flow.js";
 	import { startEffectsPolling } from "#lib/features/effects/poller.js";
-	import { features } from "#lib/features/variant.js";
+	import { REWARDS_ENABLED } from "#lib/features/variant.js";
 	import { bootstrapGame } from "#lib/game/index.js";
 	import type { GameSettings } from "#lib/game/settings.js";
 	import { onMount } from "svelte";
@@ -21,7 +21,7 @@
 		const stopChat = startChatFlow(() => game, channel);
 
 		let stopPolling: (() => void) | undefined;
-		if (features.rewards && uuid) {
+		if (REWARDS_ENABLED && uuid) {
 			stopPolling = startEffectsPolling(
 				() => game,
 				uuid,

@@ -1,7 +1,7 @@
 import { resolve } from "$app/paths";
 import type { AppRewardStatus } from "#lib/features/rewards/port.js";
 import { rewards } from "#lib/features/rewards/index.js";
-import { features } from "#lib/features/variant.js";
+import { REWARDS_ENABLED } from "#lib/features/variant.js";
 import {
 	defaultSettings,
 	normalizeSettings,
@@ -19,6 +19,8 @@ export interface CabinetSession {
 }
 
 export async function loadSession(): Promise<CabinetSession | null> {
+	if (!REWARDS_ENABLED) return null;
+
 	const response = await fetch(resolve("/api/broadcaster"));
 	if (!response.ok) return null;
 
@@ -32,7 +34,7 @@ export async function loadSession(): Promise<CabinetSession | null> {
 	let rewardsStatus: string | null = null;
 	let appRewards: AppRewardStatus[] = [];
 
-	if (features.rewards) {
+	if (REWARDS_ENABLED) {
 		const status = await rewards.status();
 		rewardsAuthorized = status.available;
 		rewardsStatus = status.available

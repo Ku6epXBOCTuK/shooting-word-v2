@@ -6,7 +6,7 @@
 	import ShieldIcon from "~icons/lucide/shield";
 	import SparklesIcon from "~icons/lucide/sparkles";
 	import { resolve } from "$app/paths";
-	import { features } from "#lib/features/variant.js";
+	import { REWARDS_ENABLED } from "#lib/features/variant.js";
 	import { FULL_HOST } from "./config.js";
 	import LaunchCard from "./LaunchCard.svelte";
 	import Button from "./ui/Button.svelte";
@@ -15,7 +15,7 @@
 	import Icon from "./ui/Icon.svelte";
 	import ProNote from "./ui/ProNote.svelte";
 
-	const loginHref = features.rewards
+	const loginHref = REWARDS_ENABLED
 		? resolve("/auth/twitch/login")
 		: resolve("/connect");
 	const hostLabel = FULL_HOST.replace("https://", "");
@@ -47,7 +47,7 @@
 				Войти через Twitch
 				<Icon as={ArrowUpRightIcon} />
 			</Button>
-			{#if !features.rewards}
+			{#if !REWARDS_ENABLED}
 				<span class="login-hint">вход на {hostLabel}</span>
 			{/if}
 		</div>

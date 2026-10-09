@@ -4,8 +4,6 @@
 
 - [ ] писать в чат от имени бот-аккаунта (отдельный токен бота, не основного
       стримера)
-- [ ] проверить статик билд - чтобы в билде вообще не было недоступных систем,
-      ошибок, попыток авторизации и т.д., может какой-то тест\линтер написать?
 - [ ] пересмотреть favicon, что я там вообще хочу?
 
 ## Геймплей\Фичи\Идеи
@@ -85,6 +83,15 @@
 
 ## Архив
 
+- [x] аудит статик-билда: слой 1 - eslint-зона, запрет импорта #lib/server,
+      @twurple/api|auth|eventsub, $app/env/private, node:* вне серверных зон
+      (probe-тестом подтверждено; minimatch ест # как комментарий - паттерн
+      ?lib/server/**); слой 2 - scripts/check-static-build.mjs сканирует build/
+      на секреты/node:sqlite/quoted /api и /auth/twitch, встроен в build:static;
+      чтобы пройти честно: variant-флаг через vite define (**APP_VARIANT_NODE**
+      -> REWARDS_ENABLED, rollup вырезает мёртвые ветки), кабинет и виджет -
+      variant-свичи со заглушками FullVersionStub, TopBar brand-only, identity в
+      CabinetPage
 - [x] списание и возврат баллов: настройки autoFulfillment и autoRefund
       (boolean, scope full; авто-возврат включён по умолчанию, автосписание
       выключено) в SETTINGS_SCHEMA; reward-effects считает лимит как stored
