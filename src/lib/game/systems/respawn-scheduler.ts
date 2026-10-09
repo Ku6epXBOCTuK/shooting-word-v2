@@ -1,9 +1,4 @@
-import {
-	RESPAWN_DURATION,
-	VIEWER_SCALE,
-	VIEWER_WIDTH,
-	WALK_EDGE_MARGIN,
-} from "../config.js";
+import { RESPAWN_DURATION, VIEWER_WIDTH, WALK_EDGE_MARGIN } from "../config.js";
 import { SESSIONPHASE } from "../types.js";
 import type { SystemFactory } from "./types.js";
 
@@ -21,7 +16,8 @@ export const createRespawnSchedulerSystem: SystemFactory = (ctx) => {
 		const { width } = ctx.app.screen;
 
 		for (const entity of dead) {
-			const halfWidth = (entity.size?.width ?? VIEWER_WIDTH * VIEWER_SCALE) / 2;
+			const halfWidth =
+				(entity.size?.width ?? VIEWER_WIDTH * ctx.settings.viewerScale) / 2;
 			const minX = halfWidth + WALK_EDGE_MARGIN;
 			const maxX = Math.max(minX, width - halfWidth - WALK_EDGE_MARGIN);
 			const x = minX + Math.random() * (maxX - minX);

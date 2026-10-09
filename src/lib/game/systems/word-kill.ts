@@ -1,4 +1,4 @@
-import { STAR_TTL, VIEWER_HEIGHT, VIEWER_SCALE } from "../config.js";
+import { STAR_TTL, VIEWER_HEIGHT } from "../config.js";
 import type { SystemFactory } from "./types.js";
 
 const STAR_HEAD_OFFSET = 20;
@@ -20,7 +20,8 @@ export const createWordKillSystem: SystemFactory = (ctx) => {
 					ctx.viewersDirty = true;
 
 					const halfHeight =
-						(viewer.size?.height ?? VIEWER_HEIGHT * VIEWER_SCALE) / 2;
+						(viewer.size?.height ?? VIEWER_HEIGHT * ctx.settings.viewerScale) /
+						2;
 					const startY = viewer.position.y - halfHeight - STAR_HEAD_OFFSET;
 					ctx.world.add({
 						position: { x: viewer.position.x, y: startY },

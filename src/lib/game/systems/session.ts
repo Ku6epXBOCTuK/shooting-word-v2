@@ -48,14 +48,7 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 
 	const spawnPlayers = () => {
 		for (const viewer of pendingPlayers) {
-			spawnViewer(
-				ctx.world,
-				viewer,
-				ctx.app.screen,
-				viewer.xp,
-				viewer.batteries,
-				viewer.revives,
-			);
+			spawnViewer(ctx, viewer, viewer.xp, viewer.batteries, viewer.revives);
 		}
 		pendingPlayers = [];
 	};

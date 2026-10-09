@@ -1,9 +1,5 @@
 import { AnimatedSprite, Graphics, Text, TextStyle } from "pixi.js";
-import {
-	SHIELD_MAX_HP,
-	VIEWER_PLATE_PADDING,
-	VIEWER_SCALE,
-} from "../config.js";
+import { SHIELD_MAX_HP, VIEWER_PLATE_PADDING } from "../config.js";
 import type { Entity } from "../types.js";
 import type { System, SystemFactory } from "./types.js";
 
@@ -35,7 +31,7 @@ export const createViewerRenderSystem: SystemFactory = (ctx) => {
 
 		const ship = new AnimatedSprite(shipFrames(entity.viewer.skin));
 		ship.anchor.set(0.5);
-		ship.scale.set(VIEWER_SCALE);
+		ship.scale.set(ctx.settings.viewerScale);
 		ship.animationSpeed = SHIP_ANIMATION_SPEED;
 		ship.play();
 		entity.sprite = ship;

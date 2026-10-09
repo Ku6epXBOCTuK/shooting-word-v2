@@ -12,10 +12,10 @@ import {
 	SHIELD_MAX_HP,
 	VIEWER_GROUND_MARGIN,
 	VIEWER_HEIGHT,
-	VIEWER_SCALE,
 	VIEWER_TIMEOUT_MS,
 } from "./config.js";
 import type { GameContext } from "./context.js";
+import { defaultSettings, type GameSettings } from "./settings.js";
 import { spawnViewer } from "./spawn.js";
 import { systemGroups } from "./systems/index.js";
 import {
@@ -27,7 +27,11 @@ import {
 
 const MAX_FRAME_MS = 50;
 
-export async function bootstrapGame(app: Application, uuid?: string) {
+export async function bootstrapGame(
+	app: Application,
+	uuid?: string,
+	settings: GameSettings = defaultSettings(),
+) {
 	const assets = await loadAssets();
 
 	const world = new World<Entity>();
@@ -38,6 +42,7 @@ export async function bootstrapGame(app: Application, uuid?: string) {
 		world,
 		app,
 		assets,
+		settings,
 		viewerStore: createViewerStore(uuid),
 		viewersDirty: false,
 	};
@@ -63,14 +68,7 @@ export async function bootstrapGame(app: Application, uuid?: string) {
 		const now = Date.now();
 		for (const viewer of await ctx.viewerStore.load()) {
 			if (now - viewer.lastSeen < VIEWER_TIMEOUT_MS) {
-				spawnViewer(
-					world,
-					viewer,
-					app.screen,
-					viewer.xp,
-					viewer.batteries,
-					viewer.revives,
-				);
+				spawnViewer(ctx, viewer, viewer.xp, viewer.batteries, viewer.revives);
 			}
 		}
 	};
@@ -103,15 +101,11 @@ export async function bootstrapGame(app: Application, uuid?: string) {
 				}
 			}
 
-			spawnViewer(
-				world,
-				{
-					...identity,
-					lastSeen: Date.now(),
-					skin: Math.floor(Math.random() * SHIP_COUNT),
-				},
-				app.screen,
-			);
+			spawnViewer(ctx, {
+				...identity,
+				lastSeen: Date.now(),
+				skin: Math.floor(Math.random() * SHIP_COUNT),
+			});
 			ctx.viewersDirty = true;
 		},
 
@@ -233,7 +227,7 @@ export async function bootstrapGame(app: Application, uuid?: string) {
 				if (entity.viewer.userId === message.userId) {
 					if (entity.dead) return;
 					const halfHeight =
-						(entity.size?.height ?? VIEWER_HEIGHT * VIEWER_SCALE) / 2;
+						(entity.size?.height ?? VIEWER_HEIGHT * settings.viewerScale) / 2;
 					from = {
 						x: entity.position.x,
 						y: entity.position.y - halfHeight,

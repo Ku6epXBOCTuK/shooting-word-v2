@@ -4,11 +4,16 @@
 	import { startEffectsPolling } from "#lib/features/effects/poller.js";
 	import { features } from "#lib/features/variant.js";
 	import { bootstrapGame } from "#lib/game/index.js";
+	import type { GameSettings } from "#lib/game/settings.js";
 	import { onMount } from "svelte";
 
 	const REWARDS_POLL_INTERVAL = 10_000;
 
-	let { channel, uuid }: { channel: string; uuid?: string } = $props();
+	let {
+		channel,
+		uuid,
+		settings,
+	}: { channel: string; uuid?: string; settings?: GameSettings } = $props();
 
 	let game: Awaited<ReturnType<typeof bootstrapGame>> | null = null;
 
@@ -35,7 +40,7 @@
 
 <PixiOverlay
 	onReady={(app) => {
-		void bootstrapGame(app, uuid).then((instance) => {
+		void bootstrapGame(app, uuid, settings).then((instance) => {
 			game = instance;
 		});
 	}}

@@ -5,13 +5,13 @@ import {
 	MAX_FLY_SPEED,
 	MIN_FLY_SPEED,
 	VIEWER_BASE_HP,
-	VIEWER_SCALE,
 	VIEWER_WIDTH,
 	WALK_MAX_SPEED,
 	WALK_MAX_TURN_TIME,
 	WALK_MIN_SPEED,
 	Z_FAR,
 } from "./config.js";
+import type { GameContext } from "./context.js";
 import type { Entity, Size, Viewer, Word } from "./types.js";
 
 export function estimateWordSize(text: string): Size {
@@ -41,14 +41,15 @@ export function spawnEnemy(
 }
 
 export function spawnViewer(
-	world: World<Entity>,
+	ctx: GameContext,
 	viewer: Viewer,
-	screen: Size,
 	xp = 0,
 	batteries = 0,
 	revives = 0,
 ) {
-	const width = VIEWER_WIDTH * VIEWER_SCALE;
+	const { world, app, settings } = ctx;
+	const { screen } = app;
+	const width = VIEWER_WIDTH * settings.viewerScale;
 	const halfWidth = width / 2;
 	const x = halfWidth + Math.random() * Math.max(1, screen.width - width);
 
