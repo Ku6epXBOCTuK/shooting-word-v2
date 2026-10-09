@@ -53,7 +53,7 @@ export const WALK_MAX_SPEED = 70;
 export const WALK_MIN_TURN_TIME = 1;
 export const WALK_MAX_TURN_TIME = 4;
 
-export const VIEWER_TIMEOUT_MS = 24 * 60 * 60 * 1000;
+export const VIEWER_TIMEOUT_MS = 12 * 60 * 60 * 1000;
 
 export const ENEMY_BOTTOM_MARGIN = 90;
 

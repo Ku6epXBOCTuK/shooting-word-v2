@@ -1,5 +1,6 @@
 import type { ChatMessage } from "#lib/chat/port.js";
 import { createViewerStore } from "#lib/features/persistence/index.js";
+import { logger } from "#lib/logger.js";
 import { World } from "miniplex";
 import type { Application, Ticker } from "pixi.js";
 import { loadAssets, SHIP_COUNT } from "./assets.js";
@@ -67,6 +68,10 @@ export async function bootstrapGame(
 		for (const viewer of await ctx.viewerStore.load()) {
 			if (now - viewer.lastSeen < VIEWER_TIMEOUT_MS) {
 				spawnViewer(ctx, viewer, viewer.xp, viewer.batteries, viewer.revives);
+			} else {
+				logger.info(
+					`[viewers] skip stale ${viewer.user} (${viewer.userId}), idle ${Math.round((now - viewer.lastSeen) / 3_600_000)}h`,
+				);
 			}
 		}
 	};

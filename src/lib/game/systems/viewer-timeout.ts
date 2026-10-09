@@ -1,3 +1,5 @@
+import { logger } from "#lib/logger.js";
+import type { With } from "miniplex";
 import { VIEWER_TIMEOUT_MS } from "../config.js";
 import type { Entity } from "../types.js";
 import type { SystemFactory } from "./types.js";
@@ -14,7 +16,7 @@ export const createViewerTimeoutSystem: SystemFactory = (ctx) => {
 		timer = CHECK_INTERVAL;
 
 		const now = Date.now();
-		const expired: Entity[] = [];
+		const expired: With<Entity, "viewer">[] = [];
 
 		for (const entity of viewers) {
 			if (now - entity.viewer.lastSeen > VIEWER_TIMEOUT_MS) {
@@ -25,6 +27,9 @@ export const createViewerTimeoutSystem: SystemFactory = (ctx) => {
 		if (expired.length === 0) return;
 
 		for (const entity of expired) {
+			logger.info(
+				`[viewer-timeout] removing ${entity.viewer.user} (${entity.viewer.userId}), idle ${Math.round((now - entity.viewer.lastSeen) / 3_600_000)}h`,
+			);
 			ctx.world.remove(entity);
 		}
 		ctx.viewersDirty = true;
