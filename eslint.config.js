@@ -38,6 +38,39 @@ export default defineConfig(
 		},
 	},
 	{
+		files: ["src/**"],
+		ignores: [
+			"src/lib/server/**",
+			"src/routes/api/**",
+			"src/routes/auth/**",
+			"**/+server.ts",
+			"**/*.server.ts",
+			"**/*.spec.ts",
+			"**/*.test.ts",
+		],
+		rules: {
+			"no-restricted-imports": [
+				"error",
+				{
+					patterns: [
+						{
+							group: [
+								"?lib/server/**",
+								"@twurple/api",
+								"@twurple/auth",
+								"@twurple/eventsub-*",
+								"$app/env/private",
+								"node:*",
+							],
+							message:
+								"server-only import outside server zone (breaks static build)",
+						},
+					],
+				},
+			],
+		},
+	},
+	{
 		files: ["**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js"],
 		languageOptions: {
 			parserOptions: {
