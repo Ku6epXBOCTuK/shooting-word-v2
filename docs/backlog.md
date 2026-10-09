@@ -1,5 +1,42 @@
 # Backlog
 
+## План: симуляция баланса на ECS (headless)
+
+Оценка: 10-14 ч. Сейчас sim.ts - отдельный движок, расходится с игрой (спавн,
+огонь, смерть, TTL, баффы). Переводим симуляцию на реальные логические системы
+без pixi. Калибруем ТОЛЬКО режим `!игра` (playing, перманентная смерть); афк и
+другие режимы - отдельно потом.
+
+Дизайн: никаких моков - pixi уходит из логики в 3 точках: ctx.app -> screen:
+Size (логике нужны только размеры), measure читает спрайт -> measureText(text):
+Size в контексте (в игре - pixi Text, в sim - estimateWordSize из spawn.ts;
+размер зрителя = константы x viewerScale), explosion.ts берёт кадры из
+assets.explosion.length -> константа в config.ts. Для детерминизма Math.random/
+Date.now (walk, spawn-enemies, placement, enemy-fire, spawn, shield,
+enemy-attack) уходят в ctx.rng()/ctx.now() с настоящими дефолтами; sim
+подсовывает seeded mulberry32 + виртуальные часы.
+
+- [ ] 1. разделить контекст: GameContext = { world, screen: Size, settings,
+      viewerStore, viewersDirty, now(), rng() }; app/assets уходят в
+      RenderContext поверх него; поправить flight, perspective, spawn-enemies,
+      walk, respawn-scheduler, spawn, bootstrap (8 мест чтения app.screen)
+- [ ] 2. measureText в контексте: measure.ts не читает sprite; игровая
+      реализация через pixi Text, headless - estimateWordSize; viewer size из
+      констант при spawnViewer
+- [ ] 3. rng()/now() по системам: walk, spawn-enemies, placement, enemy-fire,
+      spawn (Math.random); shield, enemy-attack, enemy-fire (Date.now -
+      ARMED_FUSE_MS, expiresAt)
+- [ ] 4. headless-раннер: фабрика createHeadlessGame(settings, rng) - world +
+      только логические системы (без render-*), ручной step(dt) вместо ticker,
+      stub viewerStore (no-op), без viewer-persistence; экспонировать те же
+      joinViewer/shoot/applyShields/grantBatteries/startGame
+- [ ] 5. драйвер ботов под режим !игра: печать (reaction + len/cps -> shoot),
+      расписания щитов/батареек -> вызовы api раннера, сбор SimStats из world
+      (deaths, wipeSec, shotsFired, avgHpFraction, expiredPct)
+- [ ] 6. переписать sim.ts/sim.spec.ts на раннер: сетка шанс урона x total
+      игроков x баффы, детерминизм по seed, калибровка против
+      docs/balance-targets.md, регенерация docs/balance.md
+
 ## Технические задачи
 
 - [ ] писать в чат от имени бот-аккаунта (отдельный токен бота, не основного
@@ -52,9 +89,6 @@
       190/total^1.5), no-buff окно 5-10 мин достигнуто на 10/30/50. Открытый
       вопрос: max_enemies и очередь красных слов на экране (плотность ~100-110
       слов на 1080p)
-- [ ] сейчас симуляция баланса - отдельный алгоритм, могут быть расхождения,
-      надо переделать на использование текущей ecs системы, надо отвязать рендер
-      систему
 - [ ] пересмотреть ui\ux страниц настроек - сохранение при редактировании,
       индикатор изменений и т.д.
 
