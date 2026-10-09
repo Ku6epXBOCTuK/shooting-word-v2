@@ -62,6 +62,7 @@ export function findPlacement(
 	size: Size,
 	taken: Rect[],
 	bottomMargin = 0,
+	rng: () => number = Math.random,
 ): { x: number; y: number } | null {
 	const usableHeight = Math.max(0, screen.height - bottomMargin);
 	const maxOffsetX = Math.max(
@@ -75,8 +76,8 @@ export function findPlacement(
 	const centerShiftY = -bottomMargin / 2;
 
 	for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-		const offsetX = (Math.random() * 2 - 1) * maxOffsetX;
-		const offsetY = centerShiftY + (Math.random() * 2 - 1) * maxOffsetY;
+		const offsetX = (rng() * 2 - 1) * maxOffsetX;
+		const offsetY = centerShiftY + (rng() * 2 - 1) * maxOffsetY;
 		const candidate = rectAt(
 			screen.width / 2 + offsetX,
 			screen.height / 2 + offsetY,

@@ -81,7 +81,7 @@ export async function bootstrapGame(
 	let session = createSession();
 
 	const restoreViewers = async () => {
-		const now = Date.now();
+		const now = ctx.now();
 		for (const viewer of await ctx.viewerStore.load()) {
 			if (now - viewer.lastSeen < VIEWER_TIMEOUT_MS) {
 				spawnViewer(ctx, viewer, viewer.xp, viewer.batteries, viewer.revives);
@@ -115,7 +115,7 @@ export async function bootstrapGame(
 			for (const entity of viewers) {
 				if (entity.viewer.userId === identity.userId) {
 					entity.viewer.user = identity.user;
-					entity.viewer.lastSeen = Date.now();
+					entity.viewer.lastSeen = ctx.now();
 					ctx.viewersDirty = true;
 					return;
 				}
@@ -123,8 +123,8 @@ export async function bootstrapGame(
 
 			spawnViewer(ctx, {
 				...identity,
-				lastSeen: Date.now(),
-				skin: Math.floor(Math.random() * SHIP_COUNT),
+				lastSeen: ctx.now(),
+				skin: Math.floor(ctx.rng() * SHIP_COUNT),
 			});
 			ctx.viewersDirty = true;
 		},
@@ -227,7 +227,7 @@ export async function bootstrapGame(
 				const valid = skin !== undefined && skin >= 1 && skin <= SHIP_COUNT;
 				entity.viewer.skin = valid
 					? skin - 1
-					: Math.floor(Math.random() * SHIP_COUNT);
+					: Math.floor(ctx.rng() * SHIP_COUNT);
 				ctx.viewersDirty = true;
 				return;
 			}

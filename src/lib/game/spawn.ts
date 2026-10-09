@@ -26,8 +26,9 @@ export function spawnEnemy(
 	screen: Size,
 	offset: { x: number; y: number },
 	size: Size,
+	rng: () => number,
 ) {
-	const speed = MIN_FLY_SPEED + Math.random() * (MAX_FLY_SPEED - MIN_FLY_SPEED);
+	const speed = MIN_FLY_SPEED + rng() * (MAX_FLY_SPEED - MIN_FLY_SPEED);
 
 	world.add({
 		position: { x: screen.width / 2, y: screen.height / 2 },
@@ -46,10 +47,10 @@ export function spawnViewer(
 	batteries = 0,
 	revives = 0,
 ) {
-	const { world, screen, settings } = ctx;
+	const { world, screen, settings, rng } = ctx;
 	const width = VIEWER_WIDTH * settings.viewerScale;
 	const halfWidth = width / 2;
-	const x = halfWidth + Math.random() * Math.max(1, screen.width - width);
+	const x = halfWidth + rng() * Math.max(1, screen.width - width);
 
 	const baseHp = settings.viewerBaseHp;
 
@@ -62,9 +63,9 @@ export function spawnViewer(
 		hp: { current: baseHp, max: baseHp },
 		position: { x, y: 0 },
 		walker: {
-			direction: Math.random() < 0.5 ? -1 : 1,
-			speed: WALK_MIN_SPEED + Math.random() * (WALK_MAX_SPEED - WALK_MIN_SPEED),
-			timer: Math.random() * WALK_MAX_TURN_TIME,
+			direction: rng() < 0.5 ? -1 : 1,
+			speed: WALK_MIN_SPEED + rng() * (WALK_MAX_SPEED - WALK_MIN_SPEED),
+			timer: rng() * WALK_MAX_TURN_TIME,
 		},
 	});
 }

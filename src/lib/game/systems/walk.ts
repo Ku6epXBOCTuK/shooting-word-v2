@@ -20,12 +20,12 @@ export const createWalkSystem: SystemFactory = (ctx) => {
 			entity.walker.timer -= dt;
 
 			if (entity.walker.timer <= 0) {
-				entity.walker.direction = Math.random() < 0.5 ? -1 : 1;
+				entity.walker.direction = ctx.rng() < 0.5 ? -1 : 1;
 				entity.walker.speed =
-					WALK_MIN_SPEED + Math.random() * (WALK_MAX_SPEED - WALK_MIN_SPEED);
+					WALK_MIN_SPEED + ctx.rng() * (WALK_MAX_SPEED - WALK_MIN_SPEED);
 				entity.walker.timer =
 					WALK_MIN_TURN_TIME +
-					Math.random() * (WALK_MAX_TURN_TIME - WALK_MIN_TURN_TIME);
+					ctx.rng() * (WALK_MAX_TURN_TIME - WALK_MIN_TURN_TIME);
 			}
 
 			entity.position.x += entity.walker.direction * entity.walker.speed * dt;

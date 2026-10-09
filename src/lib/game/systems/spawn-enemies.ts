@@ -31,18 +31,19 @@ export const createEnemySpawnSystem: SystemFactory = (ctx) => {
 
 		timer =
 			ENEMY_SPAWN_MIN_INTERVAL +
-			Math.random() * (ENEMY_SPAWN_MAX_INTERVAL - ENEMY_SPAWN_MIN_INTERVAL);
+			ctx.rng() * (ENEMY_SPAWN_MAX_INTERVAL - ENEMY_SPAWN_MIN_INTERVAL);
 
 		if (enemies.size >= MAX_ENEMIES) return;
 
 		const screen = ctx.screen;
-		const text = randomWord();
+		const text = randomWord(ctx.rng);
 		const size = estimateWordSize(text);
 		const offset = findPlacement(
 			screen,
 			size,
 			collectTakenRects(enemies, screen),
 			ENEMY_BOTTOM_MARGIN,
+			ctx.rng,
 		);
 
 		if (!offset) return;
@@ -53,6 +54,7 @@ export const createEnemySpawnSystem: SystemFactory = (ctx) => {
 			screen,
 			offset,
 			size,
+			ctx.rng,
 		);
 	};
 };

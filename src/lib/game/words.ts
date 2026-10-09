@@ -61,6 +61,6 @@ export const WORDS = [
 	"inferno",
 ];
 
-export function randomWord(): string {
-	return WORDS[Math.floor(Math.random() * WORDS.length)];
+export function randomWord(rng: () => number): string {
+	return WORDS[Math.floor(rng() * WORDS.length)];
 }

@@ -15,7 +15,7 @@ export const createViewerTimeoutSystem: SystemFactory = (ctx) => {
 		if (timer > 0) return;
 		timer = CHECK_INTERVAL;
 
-		const now = Date.now();
+		const now = ctx.now();
 		const expired: With<Entity, "viewer">[] = [];
 
 		for (const entity of viewers) {

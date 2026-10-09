@@ -16,7 +16,7 @@ export const createEnemyFireSystem: SystemFactory = (ctx) => {
 	const pickTarget = (): Entity | null => {
 		if (viewers.size === 0) return null;
 
-		let index = Math.floor(Math.random() * viewers.size);
+		let index = Math.floor(ctx.rng() * viewers.size);
 		for (const viewer of viewers) {
 			if (index === 0) return viewer;
 			index--;
@@ -25,14 +25,14 @@ export const createEnemyFireSystem: SystemFactory = (ctx) => {
 	};
 
 	return () => {
-		const now = Date.now();
+		const now = ctx.now();
 
 		for (const entity of armed) {
 			if (now - entity.armed.enqueuedAt < ARMED_FUSE_MS) continue;
 
 			const target = pickTarget();
 			if (target) {
-				const damage = Math.random() < ctx.settings.enemyDamageChance ? 1 : 0;
+				const damage = ctx.rng() < ctx.settings.enemyDamageChance ? 1 : 0;
 				ctx.world.add({
 					position: { x: entity.position.x, y: entity.position.y },
 					enemyShot: { damage },

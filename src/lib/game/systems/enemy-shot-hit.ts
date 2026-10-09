@@ -23,8 +23,8 @@ export const createEnemyShotHitSystem: SystemFactory = (ctx) => {
 			const sparkCount = isHit ? SPARK_HIT_COUNT : SPARK_COUNT;
 			const sparkTtl = isHit ? SPARK_HIT_TTL : SPARK_TTL;
 			for (let i = 0; i < sparkCount; i++) {
-				const angle = Math.random() * Math.PI * 2;
-				const speed = SPARK_SPEED * (0.5 + Math.random() * 0.5);
+				const angle = ctx.rng() * Math.PI * 2;
+				const speed = SPARK_SPEED * (0.5 + ctx.rng() * 0.5);
 				ctx.world.add({
 					position: { x: entity.position.x, y: entity.position.y },
 					spark: {
@@ -37,7 +37,7 @@ export const createEnemyShotHitSystem: SystemFactory = (ctx) => {
 			}
 
 			if (entity.enemyShot.damage === 0) {
-				const angle = -Math.PI / 4 - Math.random() * (Math.PI / 2);
+				const angle = -Math.PI / 4 - ctx.rng() * (Math.PI / 2);
 				const speed = ENEMY_SHOT_SPEED * RICOCHET_SPEED_FACTOR;
 				ctx.world.add({
 					position: { x: entity.position.x, y: entity.position.y },

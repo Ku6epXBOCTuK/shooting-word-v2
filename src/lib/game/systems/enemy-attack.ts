@@ -8,7 +8,7 @@ export const createEnemyAttackSystem: SystemFactory = (ctx) => {
 		.without("expired");
 
 	return () => {
-		const now = Date.now();
+		const now = ctx.now();
 		for (const entity of timedOut) {
 			ctx.world.addComponent(entity, "armed", { enqueuedAt: now });
 			ctx.world.removeComponent(entity, "timedOut");

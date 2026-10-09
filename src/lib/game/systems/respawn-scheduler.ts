@@ -20,7 +20,7 @@ export const createRespawnSchedulerSystem: SystemFactory = (ctx) => {
 				(entity.size?.width ?? VIEWER_WIDTH * ctx.settings.viewerScale) / 2;
 			const minX = halfWidth + WALK_EDGE_MARGIN;
 			const maxX = Math.max(minX, width - halfWidth - WALK_EDGE_MARGIN);
-			const x = minX + Math.random() * (maxX - minX);
+			const x = minX + ctx.rng() * (maxX - minX);
 
 			ctx.world.addComponent(entity, "respawning", {
 				elapsed: 0,

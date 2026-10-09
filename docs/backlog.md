@@ -30,9 +30,11 @@ enemy-attack) уходят в ctx.rng()/ctx.now() с настоящими деф
       реализация - pixi Text probe в bootstrap (кэш TextStyle), headless -
       estimateWordSize (добавлен параметр fontSize). Бонус: size больше не
       отстаёт на кадр после спавна
-- [ ] 3. rng()/now() по системам: walk, spawn-enemies, placement, enemy-fire,
-      spawn (Math.random); shield, enemy-attack, enemy-fire (Date.now -
-      ARMED_FUSE_MS, expiresAt)
+- [x] 3. rng()/now() по системам: walk, spawn-enemies, placement, enemy-fire,
+      spawn, respawn-scheduler, enemy-shot-hit (Math.random -> ctx.rng, у
+      randomWord/findPlacement/spawnEnemy rng - явный параметр); shield,
+      enemy-attack, enemy-fire, viewer-timeout (Date.now -> ctx.now);
+      bootstrap - skin/lastSeen/restoreViewers/changeSkin через ctx
 - [ ] 4. headless-раннер: фабрика createHeadlessGame(settings, rng) - world +
       только логические системы (без render-*), ручной step(dt) вместо ticker,
       stub viewerStore (no-op), без viewer-persistence; экспонировать те же
