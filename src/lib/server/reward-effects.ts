@@ -27,15 +27,58 @@ export interface RewardEffect {
 	rewardTitle: string;
 }
 
+export interface EffectPush {
+	shields: ActiveShield[];
+	effects: RewardEffect[];
+}
+
+export type EffectSubscriber = (push: EffectPush) => void;
+
 const globalScope = globalThis as typeof globalThis & {
 	__effectShields?: Map<string, Map<string, ActiveShield>>;
 	__effectQueue?: Map<string, RewardEffect[]>;
 	__effectsRegistered?: Set<string>;
+	__effectSubscribers?: Map<string, Set<EffectSubscriber>>;
 };
 
 const shields = (globalScope.__effectShields ??= new Map());
 const queues = (globalScope.__effectQueue ??= new Map());
 const registered = (globalScope.__effectsRegistered ??= new Set());
+const subscribers = (globalScope.__effectSubscribers ??= new Map());
+
+export function subscribeEffects(
+	broadcasterId: string,
+	subscriber: EffectSubscriber,
+): () => void {
+	let set = subscribers.get(broadcasterId);
+	if (!set) {
+		set = new Set();
+		subscribers.set(broadcasterId, set);
+	}
+	set.add(subscriber);
+	return () => {
+		set.delete(subscriber);
+		if (set.size === 0) subscribers.delete(broadcasterId);
+	};
+}
+
+export function hasEffectSubscribers(broadcasterId: string): boolean {
+	return (subscribers.get(broadcasterId)?.size ?? 0) > 0;
+}
+
+function notifySubscribers(broadcasterId: string, push: EffectPush): void {
+	const set = subscribers.get(broadcasterId);
+	if (!set) return;
+	for (const subscriber of set) {
+		try {
+			subscriber(push);
+		} catch (error) {
+			logger.warn(
+				`[effects] subscriber push failed: ${error instanceof Error ? error.message : String(error)}`,
+			);
+		}
+	}
+}
 
 function keyForRewardId(
 	broadcasterId: string,
@@ -122,11 +165,13 @@ function grantShield(broadcaster: Broadcaster, event: RedemptionEvent): void {
 		shieldMap = new Map();
 		shields.set(broadcaster.userId, shieldMap);
 	}
-	shieldMap.set(event.userId, {
+	const shield: ActiveShield = {
 		userId: event.userId,
 		userName: event.userName,
 		expiresAt: Date.now() + SHIELD_DURATION_MS,
-	});
+	};
+	shieldMap.set(event.userId, shield);
+	notifySubscribers(broadcaster.userId, { shields: [shield], effects: [] });
 	logger.info(
 		`[effects] ${event.userName} got shield for ${SHIELD_DURATION_MS / 60_000} min (${broadcaster.login})`,
 	);
@@ -137,17 +182,22 @@ function queueEffect(
 	key: string | null,
 	event: RedemptionEvent,
 ): void {
-	let queue = queues.get(broadcaster.userId);
-	if (!queue) {
-		queue = [];
-		queues.set(broadcaster.userId, queue);
-	}
-	queue.push({
+	const effect: RewardEffect = {
 		key,
 		userId: event.userId,
 		userName: event.userName,
 		rewardTitle: event.rewardTitle,
-	});
+	};
+	if (hasEffectSubscribers(broadcaster.userId)) {
+		notifySubscribers(broadcaster.userId, { shields: [], effects: [effect] });
+	} else {
+		let queue = queues.get(broadcaster.userId);
+		if (!queue) {
+			queue = [];
+			queues.set(broadcaster.userId, queue);
+		}
+		queue.push(effect);
+	}
 	logger.info(
 		`[effects] ${event.userName} redeemed "${event.rewardTitle}" key=${key ?? "unknown"} (${broadcaster.login})`,
 	);

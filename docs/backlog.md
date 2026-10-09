@@ -7,7 +7,7 @@
 при каждом poll щита освежает lastSeen (bootstrap.ts:101), зритель со щитом
 никогда не удаляется по VIEWER_TIMEOUT_MS.
 
-- [ ] 1. subscribers в reward-effects.ts: рядом с queues/shields в globalThis
+- [x] 1. subscribers в reward-effects.ts: рядом с queues/shields в globalThis
       добавить `subscribers: Map<broadcasterId, Set<controller>>`; queueEffect и
       grantShield пушат событие всем подписчикам broadcaster'а. Очередь НЕ
       убирать - от неё зависит проверка лимита батареек (pendingCount,
