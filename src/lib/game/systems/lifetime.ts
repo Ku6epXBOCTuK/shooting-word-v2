@@ -5,11 +5,11 @@ export const createLifetimeSystem: SystemFactory = (ctx) => {
 
 	return (dt) => {
 		for (const entity of living) {
-			if (entity.expired) continue;
+			if (entity.timedOut) continue;
 
 			entity.lifetime.age += dt;
 			if (entity.lifetime.age >= entity.lifetime.ttl) {
-				ctx.world.addComponent(entity, "expired", true);
+				ctx.world.addComponent(entity, "timedOut", true);
 			}
 		}
 	};

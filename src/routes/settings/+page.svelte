@@ -9,6 +9,7 @@
 	import TopBar from "#lib/cabinet/TopBar.svelte";
 	import { defaultSettings, serializeSettings } from "#lib/game/settings.js";
 	import { DEFAULT_CHANNEL, extractNick } from "#lib/landing/handle.js";
+	import { gameHost } from "#lib/landing/config.js";
 	import LaunchCard from "#lib/landing/LaunchCard.svelte";
 	import Button from "#lib/landing/ui/Button.svelte";
 	import CopyField from "#lib/landing/ui/CopyField.svelte";
@@ -28,7 +29,7 @@
 		for (const [key, value] of serializeSettings(settings, "static")) {
 			params.append(key, value);
 		}
-		return `${window.location.origin}${resolve("/game")}?${params.toString()}`;
+		return `${gameHost()}${resolve("/game")}?${params.toString()}`;
 	});
 
 	const reset = () => {

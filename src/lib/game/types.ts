@@ -161,6 +161,7 @@ export interface EntityComponents {
 	dead: boolean;
 	bot: boolean;
 	respawning: Respawning;
+	timedOut: boolean;
 	expired: boolean;
 	xp: number;
 	batteries: number;

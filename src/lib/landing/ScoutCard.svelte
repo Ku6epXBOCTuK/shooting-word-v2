@@ -9,6 +9,7 @@
 	import ShieldIcon from "~icons/lucide/shield";
 	import ZapIcon from "~icons/lucide/zap";
 	import LaunchCard from "./LaunchCard.svelte";
+	import { gameHost } from "./config.js";
 	import { DEFAULT_CHANNEL, extractNick } from "./handle.js";
 	import Button from "./ui/Button.svelte";
 	import CopyField from "./ui/CopyField.svelte";
@@ -18,14 +19,12 @@
 	import HandleInput from "./ui/HandleInput.svelte";
 	import Icon from "./ui/Icon.svelte";
 
-	const STATIC_HOST = "https://ku6epxboctuk.is-a.dev/shooting-word-v2";
-
 	let channel = $state("");
 	let copied = $state(false);
 
 	const nick = $derived(extractNick(channel));
 	const widgetLink = $derived(
-		`${STATIC_HOST}/game?channel=${encodeURIComponent(nick)}`,
+		`${gameHost()}/game?channel=${encodeURIComponent(nick)}`,
 	);
 
 	const copyLink = async () => {
