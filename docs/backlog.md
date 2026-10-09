@@ -43,9 +43,14 @@ enemy-attack) уходят в ctx.rng()/ctx.now() с настоящими деф
       headless.ts: stub ViewerStore, measureText = estimateWordSize, экран
       1920x1080 по умолчанию. Smoke-тест headless.spec.ts: 15 сек прогона без
       pixi - PLAYING, зритель и слова на месте
-- [ ] 5. драйвер ботов под режим !игра: печать (reaction + len/cps -> shoot),
-      расписания щитов/батареек -> вызовы api раннера, сбор SimStats из world
-      (deaths, wipeSec, shotsFired, avgHpFraction, expiredPct)
+- [x] 5. драйвер ботов под режим !игра: balance/driver.ts (runDriver) - печать
+      (reaction + len/cps -> shoot с реальным полётом пули), клейм старейшего
+      приземлившегося слова, расписания щитов (shieldUptime/duration) и батареек
+      (grantsPerHour + авто-repair ниже порога), SimStats из world через
+      onEntityAdded (words/armed/enemyShot) и переходы dead. Статы и вайп
+      считаются только в PLAYING (в STARTING сущности зрителей пересоздаются -
+      stale-снимок давал ложный вайп). driver.spec.ts: детерминизм по seed,
+      контроль слов активными ботами, вайп пассивного лобби при p=1
 - [ ] 6. переписать sim.ts/sim.spec.ts на раннер: сетка шанс урона x total
       игроков x баффы, детерминизм по seed, калибровка против
       docs/balance-targets.md, регенерация docs/balance.md
