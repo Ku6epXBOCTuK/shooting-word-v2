@@ -78,5 +78,6 @@ TTL = задержка + реакция (~1.5 сек) + печать (~2 сек)
 
 ## Инструмент
 
-Калибровка: `npx vitest run src/lib/game/balance/sim.spec.ts` → генерирует
-`docs/balance.md` (подбор шанса урона p под цели выше).
+Калибровка: `CALIBRATE=1 npx vitest run src/lib/game/balance/sim.spec.ts` →
+генерирует `docs/balance.md` (подбор шанса урона p под цели выше). Симуляция —
+headless-прогон реальных ECS-систем (`src/lib/game/balance/sim.ts`).

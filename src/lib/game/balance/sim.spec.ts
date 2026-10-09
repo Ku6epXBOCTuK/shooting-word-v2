@@ -3,6 +3,17 @@ import { resolve } from "node:path";
 import prettier from "prettier";
 import { describe, expect, it } from "vitest";
 import {
+	ARMED_FUSE_MS,
+	ENEMY_SPAWN_MAX_INTERVAL,
+	ENEMY_SPAWN_MIN_INTERVAL,
+	MAX_ENEMIES,
+} from "../config.js";
+import {
+	BATTERY_HEAL,
+	SHIELD_MAX_HP,
+	SHIELD_REGEN_INTERVAL,
+} from "../config.js";
+import {
 	averageStats,
 	DEFAULT_PARAMS,
 	runSimulation,
@@ -11,8 +22,9 @@ import {
 
 const RUNS = 10;
 const ACTIVE_RATIO = 0.5;
-const SPAWN_K = 1;
 const DURATION_SEC = 1800;
+const REACTION_SEC = 3;
+const WORD_TTL = 12;
 const WIPE_NOBUFF = { min: 120, max: 180 };
 const WIPE_BUFF = { min: 480, max: 720 };
 const BUFFS = {
@@ -22,20 +34,15 @@ const BUFFS = {
 };
 const OUTPUT_PATH = resolve(__dirname, "../../../../docs/balance.md");
 
-function baseParams(total: number): SimParams {
+function baseParams(total: number): Omit<SimParams, "seed"> {
 	const active = Math.max(1, Math.round(total * ACTIVE_RATIO));
 	return {
 		...DEFAULT_PARAMS,
-		reactionSec: 3,
+		reactionSec: REACTION_SEC,
 		activePlayers: active,
 		passivePlayers: total - active,
-		spawnScaleK: SPAWN_K,
-		fireIntervalSec: 0.1,
-		maxEnemiesBase: Math.round(1.5 * total),
-		maxEnemiesPerPlayer: 0,
-		wordTtl: 12,
 		durationSec: DURATION_SEC,
-		respawnDuration: Infinity,
+		settings: { wordTtl: WORD_TTL },
 	};
 }
 
@@ -66,11 +73,21 @@ function calibrate(): string {
 		const sep = `| --- | ${CALIB_TOTALS.map(() => "---").join(" | ")} |`;
 		const rows = CHANCE_GRID.map((chance) => {
 			const cells = CALIB_TOTALS.map((total) => {
+				const base = baseParams(total);
 				const stats = averageStats(
 					{
-						...baseParams(total),
-						enemyDamageChance: chance,
-						...(buff ? BUFFS : {}),
+						...base,
+						settings: {
+							...base.settings,
+							enemyDamageChance: chance,
+							...(buff ? { batteryHeal: BUFFS.batteryHeal } : {}),
+						},
+						...(buff
+							? {
+									shieldUptime: BUFFS.shieldUptime,
+									batteryGrantsPerHour: BUFFS.batteryGrantsPerHour,
+								}
+							: {}),
 					},
 					RUNS,
 				);
@@ -89,7 +106,7 @@ function calibrate(): string {
 function buildReport(): string {
 	return `# Balance simulation
 
-Сгенерировано: \`npx vitest run src/lib/game/balance/sim.spec.ts\`
+Сгенерировано: \`CALIBRATE=1 npx vitest run src/lib/game/balance/sim.spec.ts\`
 
 Цели: \`docs/balance-targets.md\`. Активный режим (!игра): смерть перманентна,
 конец раунда = вайп всех. Цель: вайп за ${
@@ -102,37 +119,42 @@ function buildReport(): string {
 		BUFFS.batteryHeal
 	} hp).
 
-Модель: \`src/lib/game/balance/sim.ts\`. Параметры: k = ${SPAWN_K}, hp ${DEFAULT_PARAMS.viewerHp}, урон 1 hp с шансом \`p\` (сетка),
-батарея +${DEFAULT_PARAMS.batteryHeal} hp (лимит ${
-		DEFAULT_PARAMS.batteryMax
-	}), щит ${DEFAULT_PARAMS.shieldHp} hp (реген 1 / ${
-		DEFAULT_PARAMS.shieldRegenInterval
-	} сек), печать ${DEFAULT_PARAMS.typingCharsPerSec} зн/сек + реакция 3 сек
-(включает стрим-задержку зрителя), активных ${ACTIVE_RATIO * 100}%,
-прогонов на ячейку: ${RUNS}.
+Модель: headless-прогон реальных ECS-систем (\`src/lib/game/balance/sim.ts\` на
+\`createHeadlessGame\`), без отдельного движка. Реальные константы: спавн
+${ENEMY_SPAWN_MIN_INTERVAL}–${ENEMY_SPAWN_MAX_INTERVAL} сек, кап MAX_ENEMIES
+${MAX_ENEMIES}, фьюз вооружённого слова ${ARMED_FUSE_MS} мс, урон 1 hp с шансом
+\`p\` (сетка), батарея +${BATTERY_HEAL} hp, щит ${SHIELD_MAX_HP} hp (реген 1 /
+${SHIELD_REGEN_INTERVAL} сек), печать ${
+		DEFAULT_PARAMS.typingCharsPerSec
+	} зн/сек + реакция ${REACTION_SEC} сек (включает стрим-задержку), ttl слова
+${WORD_TTL} сек, активных ${ACTIVE_RATIO * 100}%, прогонов на ячейку: ${RUNS}.
 
-Давление — натуральный огонь (истёкшее слово стреляет почти сразу, ttl 12,
-кап 1.5×total), дроссель минимален как предохранитель. Сетка подбирает шанс
-урона \`p\` под целевые окна.
 **Жирным** — попадание в целевое окно (без баффов ${
 		WIPE_NOBUFF.min / 60
 	}–${WIPE_NOBUFF.max / 60} мин, с баффами ${WIPE_BUFF.min / 60}–${
 		WIPE_BUFF.max / 60
-	} мин); «≥30» = не все прогоны завершились вайпом.
+	} мин); «≥${minutes(DURATION_SEC)}» = не все прогоны завершились вайпом.
 
 ${calibrate()}
 `;
 }
 
-describe("balance simulation", () => {
+describe("balance simulation (headless ecs)", () => {
+	const lobby: Omit<SimParams, "seed"> = {
+		...DEFAULT_PARAMS,
+		activePlayers: 10,
+		passivePlayers: 20,
+	};
+
 	it("single run is deterministic and sane", () => {
 		const params: SimParams = {
 			...DEFAULT_PARAMS,
 			activePlayers: 3,
 			passivePlayers: 2,
+			seed: 42,
 		};
-		const a = runSimulation(params, 42);
-		const b = runSimulation(params, 42);
+		const a = runSimulation(params);
+		const b = runSimulation(params);
 
 		expect(a).toEqual(b);
 		expect(Number.isFinite(a.deathsPerHourPerPlayer)).toBe(true);
@@ -140,9 +162,28 @@ describe("balance simulation", () => {
 		expect(a.wordsKilled + a.shotsFired).toBeLessThanOrEqual(a.wordsSpawned);
 	});
 
-	it(
+	it("active bots keep words under control", () => {
+		const stats = runSimulation({ ...lobby, seed: 3 });
+		expect(stats.wordsSpawned).toBeGreaterThan(0);
+		expect(stats.wordsKilled).toBeGreaterThan(0);
+		expect(stats.wipeSec).toBeNull();
+	});
+
+	it("passive lobby with max damage wipes", () => {
+		const stats = runSimulation({
+			...lobby,
+			activePlayers: 0,
+			passivePlayers: 5,
+			settings: { enemyDamageChance: 1 },
+			seed: 5,
+		});
+		expect(stats.wipeSec).not.toBeNull();
+		expect(stats.deaths).toBe(5);
+	});
+
+	it.skipIf(process.env.CALIBRATE !== "1")(
 		"writes calibration report to docs/balance.md",
-		{ timeout: 300000 },
+		{ timeout: 900000 },
 		async () => {
 			const report = buildReport();
 			const config = await prettier.resolveConfig(OUTPUT_PATH);

@@ -1,70 +1,11 @@
-import {
-	BATTERY_HEAL,
-	BATTERY_MAX,
-	ENEMY_SHOT_DAMAGE_CHANCE,
-	ENEMY_SPAWN_MAX_INTERVAL,
-	ENEMY_SPAWN_MIN_INTERVAL,
-	MAX_ENEMIES,
-	RESPAWN_DURATION,
-	SHIELD_MAX_HP,
-	SHIELD_REGEN_INTERVAL,
-	VIEWER_BASE_HP,
-	WORD_TTL,
-} from "../config.js";
-import { WORDS } from "../words.js";
+import { SHIELD_DURATION_MS } from "#lib/features/rewards/config.js";
+import type { With } from "miniplex";
+import { createHeadlessGame } from "../headless.js";
+import { defaultSettings, type GameSettings } from "../settings.js";
+import { SESSIONPHASE, type Entity } from "../types.js";
 
-export interface SimParams {
-	activePlayers: number;
-	passivePlayers: number;
-	durationSec: number;
-	spawnMinInterval: number;
-	spawnMaxInterval: number;
-	spawnScaleK: number;
-	maxEnemiesBase: number;
-	maxEnemiesPerPlayer: number;
-	wordTtl: number;
-	viewerHp: number;
-	respawnDuration: number;
-	typingCharsPerSec: number;
-	reactionSec: number;
-	shieldUptime: number;
-	shieldHp: number;
-	shieldRegenInterval: number;
-	shieldDurationSec: number;
-	batteryGrantsPerHour: number;
-	batteryHeal: number;
-	batteryMax: number;
-	batteryUseBelowHp: number;
-	enemyDamageChance: number;
-	fireIntervalSec: number;
-}
-
-export const DEFAULT_PARAMS: Omit<
-	SimParams,
-	"activePlayers" | "passivePlayers"
-> = {
-	durationSec: 600,
-	spawnMinInterval: ENEMY_SPAWN_MIN_INTERVAL,
-	spawnMaxInterval: ENEMY_SPAWN_MAX_INTERVAL,
-	spawnScaleK: 0,
-	maxEnemiesBase: MAX_ENEMIES,
-	maxEnemiesPerPlayer: 0,
-	wordTtl: WORD_TTL,
-	viewerHp: VIEWER_BASE_HP,
-	respawnDuration: RESPAWN_DURATION,
-	typingCharsPerSec: 3.5,
-	reactionSec: 1.5,
-	shieldUptime: 0,
-	shieldHp: SHIELD_MAX_HP,
-	shieldRegenInterval: SHIELD_REGEN_INTERVAL,
-	shieldDurationSec: 600,
-	batteryGrantsPerHour: 0,
-	batteryHeal: BATTERY_HEAL,
-	batteryMax: BATTERY_MAX,
-	batteryUseBelowHp: 4,
-	enemyDamageChance: ENEMY_SHOT_DAMAGE_CHANCE,
-	fireIntervalSec: 3,
-};
+type ViewerEntity = With<Entity, "viewer" | "hp">;
+type WordEntity = With<Entity, "word" | "lifetime">;
 
 export interface SimStats {
 	deaths: number;
@@ -78,6 +19,30 @@ export interface SimStats {
 	wipeSec: number | null;
 }
 
+export interface SimParams {
+	activePlayers: number;
+	passivePlayers: number;
+	durationSec: number;
+	typingCharsPerSec: number;
+	reactionSec: number;
+	shieldUptime: number;
+	shieldDurationSec: number;
+	batteryGrantsPerHour: number;
+	batteryUseBelowHp: number;
+	settings?: Partial<GameSettings>;
+	seed: number;
+}
+
+export const DEFAULT_PARAMS = {
+	durationSec: 600,
+	typingCharsPerSec: 3.5,
+	reactionSec: 1.5,
+	shieldUptime: 0,
+	shieldDurationSec: SHIELD_DURATION_MS / 1000,
+	batteryGrantsPerHour: 0,
+	batteryUseBelowHp: 4,
+};
+
 export function mulberry32(seed: number): () => number {
 	let a = seed >>> 0;
 	return () => {
@@ -89,252 +54,266 @@ export function mulberry32(seed: number): () => number {
 	};
 }
 
-interface SimWord {
-	expiresAt: number;
-	claimedBy: number;
-	killAt?: number;
-}
+const DT = 0.1;
 
-interface SimPlayer {
+type Game = ReturnType<typeof createHeadlessGame>;
+type ViewersById = Map<string, ViewerEntity>;
+type Claims = Map<string, { entity: WordEntity; fireAt: number }>;
+
+interface Bot {
+	userId: string;
 	active: boolean;
-	hp: number;
-	deadUntil: number;
-	busyUntil: number;
-	deaths: number;
-	shieldHp: number;
-	shieldUntil: number;
 	nextShieldAt: number;
-	shieldLastRegenAt: number;
-	batteries: number;
 	nextBatteryAt: number;
 }
 
-const DT = 0.1;
-
-export function runSimulation(params: SimParams, seed: number): SimStats {
-	const rng = mulberry32(seed);
+function createBots(params: SimParams, rng: () => number): Bot[] {
 	const n = params.activePlayers + params.passivePlayers;
-
-	const spawnIntervalScale =
-		1 + params.spawnScaleK * Math.max(0, params.activePlayers - 1);
-	const maxEnemies = Math.round(
-		params.maxEnemiesBase +
-			params.maxEnemiesPerPlayer * Math.max(0, params.activePlayers - 1),
-	);
-
 	const shieldPeriod =
 		params.shieldUptime > 0
 			? params.shieldDurationSec / params.shieldUptime
 			: Infinity;
-
 	const batteryInterval =
 		params.batteryGrantsPerHour > 0
 			? 3600 / params.batteryGrantsPerHour
 			: Infinity;
 
-	const players: SimPlayer[] = Array.from({ length: n }, (_, i) => {
-		const periodic = params.shieldUptime > 0 && params.shieldUptime < 1;
-		const startsShielded = periodic && rng() < params.shieldUptime;
-		return {
-			active: i < params.activePlayers,
-			hp: params.viewerHp,
-			deadUntil: 0,
-			busyUntil: 0,
-			deaths: 0,
-			shieldHp: params.shieldHp,
-			shieldUntil:
-				params.shieldUptime >= 1 || startsShielded
-					? params.shieldDurationSec
-					: 0,
-			nextShieldAt: periodic
-				? startsShielded
-					? shieldPeriod
-					: params.shieldDurationSec +
-						rng() * (shieldPeriod - params.shieldDurationSec)
-				: Infinity,
-			shieldLastRegenAt: 0,
-			batteries: 0,
-			nextBatteryAt: rng() * batteryInterval,
-		};
+	const bots = Array.from({ length: n }, (_, i) => ({
+		userId: `bot${i}`,
+		active: i < params.activePlayers,
+		nextShieldAt: Infinity,
+		nextBatteryAt: Infinity,
+	}));
+
+	for (const bot of bots) {
+		if (params.shieldUptime <= 0) continue;
+		bot.nextShieldAt =
+			params.shieldUptime >= 1
+				? 0
+				: rng() < params.shieldUptime
+					? 0
+					: rng() * shieldPeriod;
+	}
+	for (const bot of bots) {
+		bot.nextBatteryAt = rng() * batteryInterval;
+	}
+
+	return bots;
+}
+
+function tickBuffs(
+	game: Game,
+	bots: Bot[],
+	viewerById: ViewersById,
+	params: SimParams,
+	t: number,
+	nowMs: number,
+): void {
+	const shieldPeriod =
+		params.shieldUptime > 0
+			? params.shieldDurationSec / params.shieldUptime
+			: Infinity;
+	const batteryInterval =
+		params.batteryGrantsPerHour > 0
+			? 3600 / params.batteryGrantsPerHour
+			: Infinity;
+
+	for (const bot of bots) {
+		const viewer = viewerById.get(bot.userId);
+		if (!viewer) continue;
+
+		if (t >= bot.nextShieldAt) {
+			bot.nextShieldAt = t + shieldPeriod;
+			game.applyShields([
+				{
+					userId: bot.userId,
+					expiresAt: nowMs + params.shieldDurationSec * 1000,
+				},
+			]);
+		}
+
+		if (t >= bot.nextBatteryAt) {
+			bot.nextBatteryAt = t + batteryInterval;
+			game.grantBatteries([bot.userId]);
+		}
+
+		if (
+			!viewer.dead &&
+			(viewer.batteries ?? 0) > 0 &&
+			viewer.hp.current <= params.batteryUseBelowHp &&
+			viewer.hp.current < viewer.hp.max
+		) {
+			game.repair(bot.userId);
+		}
+	}
+}
+
+function releaseStaleClaims(
+	game: Game,
+	claims: Claims,
+	viewerById: ViewersById,
+): void {
+	for (const [userId, claim] of claims) {
+		const viewer = viewerById.get(userId);
+		if (!game.world.has(claim.entity) || !viewer || viewer.dead) {
+			claims.delete(userId);
+		}
+	}
+}
+
+function claimWords(
+	game: Game,
+	bots: Bot[],
+	claims: Claims,
+	viewerById: ViewersById,
+	params: SimParams,
+	t: number,
+): void {
+	for (const bot of bots) {
+		if (!bot.active || claims.has(bot.userId)) continue;
+		const viewer = viewerById.get(bot.userId);
+		if (!viewer || viewer.dead) continue;
+
+		let oldest: WordEntity | null = null;
+		let oldestRemaining = Infinity;
+		for (const entity of game.world.with("word", "lifetime")) {
+			if ([...claims.values()].some((c) => c.entity === entity)) continue;
+			const remaining = entity.lifetime.ttl - entity.lifetime.age;
+			if (remaining < oldestRemaining) {
+				oldestRemaining = remaining;
+				oldest = entity;
+			}
+		}
+		if (!oldest) continue;
+
+		const typeTime = oldest.word.text.length / params.typingCharsPerSec;
+		claims.set(bot.userId, {
+			entity: oldest,
+			fireAt: t + params.reactionSec + typeTime,
+		});
+	}
+}
+
+function fireDueShots(
+	game: Game,
+	claims: Claims,
+	viewerById: ViewersById,
+	t: number,
+): void {
+	for (const [userId, claim] of [...claims]) {
+		if (t < claim.fireAt) continue;
+		claims.delete(userId);
+		const viewer = viewerById.get(userId);
+		if (!viewer || viewer.dead || !game.world.has(claim.entity)) continue;
+		game.shoot({
+			channel: "sim",
+			userId,
+			user: viewer.viewer.user,
+			text: claim.entity.word.text,
+			isMod: false,
+		});
+	}
+}
+
+export function runSimulation(params: SimParams): SimStats {
+	const rng = mulberry32(params.seed);
+	let nowMs = 0;
+
+	const settings: GameSettings = defaultSettings();
+	Object.assign(settings, params.settings ?? {});
+	const game = createHeadlessGame({
+		settings,
+		rng,
+		now: () => nowMs,
 	});
 
-	const words: SimWord[] = [];
-	const armedQueue: number[] = [];
-	let nextFireAt = 0;
-	let nextSpawnAt =
-		params.spawnMinInterval +
-		rng() * (params.spawnMaxInterval - params.spawnMinInterval);
-	let shotsFired = 0;
+	const bots = createBots(params, rng);
+	for (const bot of bots) {
+		game.joinViewer({ userId: bot.userId, user: bot.userId });
+	}
+	game.startGame();
+
 	let wordsSpawned = 0;
-	let wordsKilled = 0;
+	let wordsArmed = 0;
+	let shotsFired = 0;
+	game.world.with("word").onEntityAdded.subscribe(() => wordsSpawned++);
+	game.world.with("armed").onEntityAdded.subscribe(() => wordsArmed++);
+	game.world.with("enemyShot").onEntityAdded.subscribe(() => shotsFired++);
+
+	const claims: Claims = new Map();
+	const prevDead = new Map<string, boolean>();
+	let deaths = 0;
 	let hpSum = 0;
 	let enemySum = 0;
 	let steps = 0;
-
-	const randomWordLength = () => WORDS[Math.floor(rng() * WORDS.length)].length;
-
 	let wipeSec: number | null = null;
 
 	for (let t = 0; t < params.durationSec; t += DT) {
+		nowMs += DT * 1000;
+
+		const viewerById: ViewersById = new Map();
+		for (const entity of game.world.with("viewer", "hp")) {
+			viewerById.set(entity.viewer.userId, entity);
+		}
+
+		tickBuffs(game, bots, viewerById, params, t, nowMs);
+		releaseStaleClaims(game, claims, viewerById);
+		claimWords(game, bots, claims, viewerById, params, t);
+		fireDueShots(game, claims, viewerById, t);
+
+		game.step(DT);
+
+		const session = [...game.world.with("session")][0];
+		const phase = session?.session.phase;
+		if (phase === SESSIONPHASE.GAMEOVER) break;
+		if (phase !== SESSIONPHASE.PLAYING) continue;
+
 		steps++;
 
-		if (t >= nextSpawnAt && words.length < maxEnemies) {
-			nextSpawnAt =
-				t +
-				(params.spawnMinInterval +
-					rng() * (params.spawnMaxInterval - params.spawnMinInterval)) /
-					spawnIntervalScale;
-			words.push({ expiresAt: t + params.wordTtl, claimedBy: -1 });
-			wordsSpawned++;
-		}
-
-		for (let i = words.length - 1; i >= 0; i--) {
-			const word = words[i];
-			if (word.expiresAt > t) continue;
-			words.splice(i, 1);
-			armedQueue.push(t);
-		}
-
-		if (t >= nextFireAt && armedQueue.length > 0) {
-			armedQueue.shift();
-			nextFireAt = t + params.fireIntervalSec;
-
-			let alive = 0;
-			for (const p of players) {
-				if (p.deadUntil <= t) alive++;
-			}
-			if (alive > 0) {
-				shotsFired++;
-			}
-
-			let roll = Math.floor(rng() * Math.max(1, alive));
-			for (const p of players) {
-				if (p.deadUntil > t) continue;
-				if (roll > 0) {
-					roll--;
-					continue;
-				}
-
-				if (rng() >= params.enemyDamageChance) break;
-
-				const damage = 1;
-
-				if (t < p.shieldUntil && p.shieldHp > 0) {
-					p.shieldHp = Math.max(0, p.shieldHp - damage);
-					break;
-				}
-
-				p.hp -= damage;
-				if (p.hp <= 0) {
-					p.deaths++;
-					p.deadUntil = t + params.respawnDuration;
-					p.hp = 0;
-					p.busyUntil = 0;
-					const pi = players.indexOf(p);
-					for (const w of words) {
-						if (w.claimedBy === pi) {
-							w.claimedBy = -1;
-							w.killAt = undefined;
-						}
-					}
-				}
-				break;
+		let hpStep = 0;
+		let alive = 0;
+		for (const entity of game.world.with("viewer", "hp")) {
+			const userId = entity.viewer.userId;
+			const dead = entity.dead === true;
+			const was = prevDead.get(userId) ?? false;
+			if (dead && !was) deaths++;
+			prevDead.set(userId, dead);
+			if (!dead) {
+				alive++;
+				hpStep += entity.hp.current;
 			}
 		}
+		hpSum += hpStep;
+		enemySum += game.world.with("word").size;
 
-		for (let pi = 0; pi < players.length; pi++) {
-			const p = players[pi];
-
-			if (p.deadUntil > 0 && p.deadUntil <= t) {
-				p.deadUntil = 0;
-				p.hp = params.viewerHp;
-			}
-
-			if (p.deadUntil > 0) {
-				hpSum += 0;
-				continue;
-			}
-			hpSum += p.hp;
-
-			if (t >= p.nextShieldAt) {
-				p.shieldHp = params.shieldHp;
-				p.shieldUntil = t + params.shieldDurationSec;
-				p.nextShieldAt = t + shieldPeriod;
-			}
-
-			if (t < p.shieldUntil && p.shieldHp < params.shieldHp) {
-				if (t - p.shieldLastRegenAt >= params.shieldRegenInterval) {
-					p.shieldHp += 1;
-					p.shieldLastRegenAt = t;
-				}
-			} else {
-				p.shieldLastRegenAt = t;
-			}
-
-			if (t >= p.nextBatteryAt) {
-				if (p.batteries < params.batteryMax) p.batteries += 1;
-				p.nextBatteryAt = t + batteryInterval;
-			}
-
-			if (p.batteries > 0 && p.hp > 0 && p.hp <= params.batteryUseBelowHp) {
-				p.batteries -= 1;
-				p.hp = Math.min(params.viewerHp, p.hp + params.batteryHeal);
-			}
-
-			if (!p.active || p.busyUntil > t) continue;
-
-			let oldest = -1;
-			for (let wi = 0; wi < words.length; wi++) {
-				if (words[wi].claimedBy !== -1) continue;
-				if (oldest === -1 || words[wi].expiresAt < words[oldest].expiresAt) {
-					oldest = wi;
-				}
-			}
-			if (oldest === -1) continue;
-
-			words[oldest].claimedBy = pi;
-			const typeTime = randomWordLength() / params.typingCharsPerSec;
-			p.busyUntil = t + params.reactionSec + typeTime;
-			words[oldest].killAt = p.busyUntil;
-		}
-
-		for (let i = words.length - 1; i >= 0; i--) {
-			const word = words[i];
-			if (word.killAt === undefined || word.killAt > t) continue;
-			words.splice(i, 1);
-			wordsKilled++;
-		}
-
-		enemySum += words.length + armedQueue.length;
-
-		let aliveTotal = 0;
-		for (const p of players) {
-			if (p.deadUntil <= t) aliveTotal++;
-		}
-		if (aliveTotal === 0) {
+		if (alive === 0) {
 			wipeSec = t;
 			break;
 		}
 	}
 
-	const deaths = players.reduce((sum, p) => sum + p.deaths, 0);
+	game.dispose();
+
 	const hours = params.durationSec / 3600;
+	const viewerHp = settings.viewerBaseHp;
 
 	return {
 		deaths,
-		deathsPerHourPerPlayer: n > 0 && hours > 0 ? deaths / n / hours : 0,
+		deathsPerHourPerPlayer:
+			bots.length > 0 && hours > 0 ? deaths / bots.length / hours : 0,
 		shotsFired,
 		wordsSpawned,
-		wordsKilled,
-		expiredPct: wordsSpawned > 0 ? (shotsFired / wordsSpawned) * 100 : 0,
-		avgHpFraction: steps > 0 && n > 0 ? hpSum / steps / n / params.viewerHp : 0,
+		wordsKilled: Math.max(0, wordsSpawned - wordsArmed),
+		expiredPct: wordsSpawned > 0 ? (wordsArmed / wordsSpawned) * 100 : 0,
+		avgHpFraction:
+			steps > 0 && bots.length > 0 ? hpSum / steps / bots.length / viewerHp : 0,
 		avgActiveEnemies: steps > 0 ? enemySum / steps : 0,
 		wipeSec,
 	};
 }
 
 export function averageStats(
-	params: SimParams,
+	base: Omit<SimParams, "seed">,
 	runs: number,
 	seedBase = 1,
 ): SimStats {
@@ -351,7 +330,7 @@ export function averageStats(
 	};
 
 	for (let i = 0; i < runs; i++) {
-		const stats = runSimulation(params, seedBase + i);
+		const stats = runSimulation({ ...base, seed: seedBase + i });
 		acc.deaths += stats.deaths;
 		acc.deathsPerHourPerPlayer += stats.deathsPerHourPerPlayer;
 		acc.shotsFired += stats.shotsFired;
@@ -360,7 +339,7 @@ export function averageStats(
 		acc.expiredPct += stats.expiredPct;
 		acc.avgHpFraction += stats.avgHpFraction;
 		acc.avgActiveEnemies += stats.avgActiveEnemies;
-		acc.wipeSec! += stats.wipeSec ?? params.durationSec;
+		acc.wipeSec! += stats.wipeSec ?? base.durationSec;
 	}
 
 	for (const key of Object.keys(acc) as (keyof SimStats)[]) {

@@ -1,60 +1,5 @@
 # Backlog
 
-## План: симуляция баланса на ECS (headless)
-
-Оценка: 10-14 ч. Сейчас sim.ts - отдельный движок, расходится с игрой (спавн,
-огонь, смерть, TTL, баффы). Переводим симуляцию на реальные логические системы
-без pixi. Калибруем ТОЛЬКО режим `!игра` (playing, перманентная смерть); афк и
-другие режимы - отдельно потом.
-
-Дизайн: никаких моков - pixi уходит из логики в 3 точках: ctx.app -> screen:
-Size (логике нужны только размеры), measure читает спрайт -> measureText(text):
-Size в контексте (в игре - pixi Text, в sim - estimateWordSize из spawn.ts;
-размер зрителя = константы x viewerScale), explosion.ts берёт кадры из
-assets.explosion.length -> константа в config.ts. Для детерминизма Math.random/
-Date.now (walk, spawn-enemies, placement, enemy-fire, spawn, shield,
-enemy-attack) уходят в ctx.rng()/ctx.now() с настоящими дефолтами; sim
-подсовывает seeded mulberry32 + виртуальные часы.
-
-- [x] 1. разделить контекст: GameContext = { world, screen: Size, settings,
-      viewerStore, viewersDirty, now(), rng() }; app/assets уходят в
-      RenderContext поверх него; поправлены flight, perspective, spawn-enemies,
-      walk, respawn-scheduler, spawn, bootstrap; systemGroups разделены на
-      logicGroups/renderGroups/cleanupGroups (порядок render перед cleanup
-      сохранён); render-системы на RenderSystemFactory; кадры взрыва -
-      EXPLOSION_FRAME_LABELS в config.ts (assets.ts и explosion.ts читают
-      оттуда)
-- [x] 2. measureText в контексте: measure.ts не читает sprite - size зрителя из
-      констант корабля + measureText(ник, VIEWER_LABEL_FONT_SIZE), кэш по (user,
-      scale) в WeakMap, перевычисление при смене ника/масштаба; игровая
-      реализация - pixi Text probe в bootstrap (кэш TextStyle), headless -
-      estimateWordSize (добавлен параметр fontSize). Бонус: size больше не
-      отстаёт на кадр после спавна
-- [x] 3. rng()/now() по системам: walk, spawn-enemies, placement, enemy-fire,
-      spawn, respawn-scheduler, enemy-shot-hit (Math.random -> ctx.rng, у
-      randomWord/findPlacement/spawnEnemy rng - явный параметр); shield,
-      enemy-attack, enemy-fire, viewer-timeout (Date.now -> ctx.now);
-      bootstrap - skin/lastSeen/restoreViewers/changeSkin через ctx
-- [x] 4. headless-раннер: ядро игры вынесено в core.ts (createGameCore: world +
-      ctx + группы + step(dt) + весь api bootstrap); render-группы -
-      опциональный параметр (без них pixi не импортируется, SHIP_SHEETS/
-      SHIP_COUNT переехали в pixi-free ships.ts); bootstrap - тонкая обёртка
-      (ticker, measureText на pixi, viewerStore). createHeadlessGame в
-      headless.ts: stub ViewerStore, measureText = estimateWordSize, экран
-      1920x1080 по умолчанию. Smoke-тест headless.spec.ts: 15 сек прогона без
-      pixi - PLAYING, зритель и слова на месте
-- [x] 5. драйвер ботов под режим !игра: balance/driver.ts (runDriver) - печать
-      (reaction + len/cps -> shoot с реальным полётом пули), клейм старейшего
-      приземлившегося слова, расписания щитов (shieldUptime/duration) и батареек
-      (grantsPerHour + авто-repair ниже порога), SimStats из world через
-      onEntityAdded (words/armed/enemyShot) и переходы dead. Статы и вайп
-      считаются только в PLAYING (в STARTING сущности зрителей пересоздаются -
-      stale-снимок давал ложный вайп). driver.spec.ts: детерминизм по seed,
-      контроль слов активными ботами, вайп пассивного лобби при p=1
-- [ ] 6. переписать sim.ts/sim.spec.ts на раннер: сетка шанс урона x total
-      игроков x баффы, детерминизм по seed, калибровка против
-      docs/balance-targets.md, регенерация docs/balance.md
-
 ## Технические задачи
 
 - [ ] писать в чат от имени бот-аккаунта (отдельный токен бота, не основного
@@ -107,6 +52,16 @@ enemy-attack) уходят в ctx.rng()/ctx.now() с настоящими деф
       190/total^1.5), no-buff окно 5-10 мин достигнуто на 10/30/50. Открытый
       вопрос: max_enemies и очередь красных слов на экране (плотность ~100-110
       слов на 1080p)
+- [ ] баланс: в ECS нет давления - сим на реальных системах (окт 2026,
+      docs/balance.md) показывает вайпа нет даже при p=1: спавн 2-4 сек фикс,
+      кап MAX_ENEMIES 30, чат успевает всё (5 активных ~= 1 слово/сек против
+      спавна 0.33/сек). Старое окно вайпа в отдельной симуляции достигалось
+      спавном с масштабом от активных (spawnScaleK=1: интервал делился на
+      1+активные). Записка "дроссель 190/total^1.5" относилась к старой симе - в
+      коде игры её нет. activeSpawnInterval/activeMaxEnemies в config.ts
+      существуют, но не подключены и слабые (масштаб от total, а не от
+      активных). Нужно: механика давления в PLAYING (спавн от числа активных
+      и/или кап по ним), потом рекалибровка CALIBRATE=1
 - [ ] пересмотреть ui\ux страниц настроек - сохранение при редактировании,
       индикатор изменений и т.д.
 
@@ -129,6 +84,64 @@ enemy-attack) уходят в ctx.rng()/ctx.now() с настоящими деф
       синхронизированная с add/remove.
 
 ## Архив
+
+## План: симуляция баланса на ECS (headless)
+
+Оценка: 10-14 ч. Сейчас sim.ts - отдельный движок, расходится с игрой (спавн,
+огонь, смерть, TTL, баффы). Переводим симуляцию на реальные логические системы
+без pixi. Калибруем ТОЛЬКО режим `!игра` (playing, перманентная смерть); афк и
+другие режимы - отдельно потом.
+
+Дизайн: никаких моков - pixi уходит из логики в 3 точках: ctx.app -> screen:
+Size (логике нужны только размеры), measure читает спрайт -> measureText(text):
+Size в контексте (в игре - pixi Text, в sim - estimateWordSize из spawn.ts;
+размер зрителя = константы x viewerScale), explosion.ts берёт кадры из
+assets.explosion.length -> константа в config.ts. Для детерминизма Math.random/
+Date.now (walk, spawn-enemies, placement, enemy-fire, spawn, shield,
+enemy-attack) уходят в ctx.rng()/ctx.now() с настоящими дефолтами; sim
+подсовывает seeded mulberry32 + виртуальные часы.
+
+- [x] 1. разделить контекст: GameContext = { world, screen: Size, settings,
+      viewerStore, viewersDirty, now(), rng() }; app/assets уходят в
+      RenderContext поверх него; поправлены flight, perspective, spawn-enemies,
+      walk, respawn-scheduler, spawn, bootstrap; systemGroups разделены на
+      logicGroups/renderGroups/cleanupGroups (порядок render перед cleanup
+      сохранён); render-системы на RenderSystemFactory; кадры взрыва -
+      EXPLOSION_FRAME_LABELS в config.ts (assets.ts и explosion.ts читают
+      оттуда)
+- [x] 2. measureText в контексте: measure.ts не читает sprite - size зрителя из
+      констант корабля + measureText(ник, VIEWER_LABEL_FONT_SIZE), кэш по (user,
+      scale) в WeakMap, перевычисление при смене ника/масштаба; игровая
+      реализация - pixi Text probe в bootstrap (кэш TextStyle), headless -
+      estimateWordSize (добавлен параметр fontSize). Бонус: size больше не
+      отстаёт на кадр после спавна
+- [x] 3. rng()/now() по системам: walk, spawn-enemies, placement, enemy-fire,
+      spawn, respawn-scheduler, enemy-shot-hit (Math.random -> ctx.rng, у
+      randomWord/findPlacement/spawnEnemy rng - явный параметр); shield,
+      enemy-attack, enemy-fire, viewer-timeout (Date.now -> ctx.now);
+      bootstrap - skin/lastSeen/restoreViewers/changeSkin через ctx
+- [x] 4. headless-раннер: ядро игры вынесено в core.ts (createGameCore: world +
+      ctx + группы + step(dt) + весь api bootstrap); render-группы -
+      опциональный параметр (без них pixi не импортируется, SHIP_SHEETS/
+      SHIP_COUNT переехали в pixi-free ships.ts); bootstrap - тонкая обёртка
+      (ticker, measureText на pixi, viewerStore). createHeadlessGame в
+      headless.ts: stub ViewerStore, measureText = estimateWordSize, экран
+      1920x1080 по умолчанию. Smoke-тест headless.spec.ts: 15 сек прогона без
+      pixi - PLAYING, зритель и слова на месте
+- [x] 5. драйвер ботов под режим !игра: balance/sim.ts (runSimulation) - печать
+      (reaction + len/cps -> shoot с реальным полётом пули), клейм старейшего
+      приземлившегося слова, расписания щитов (shieldUptime/duration) и батареек
+      (grantsPerHour + авто-repair ниже порога), SimStats из world через
+      onEntityAdded (words/armed/enemyShot) и переходы dead. Статы и вайп
+      считаются только в PLAYING (в STARTING сущности зрителей пересоздаются -
+      stale-снимок давал ложный вайп). Тесты в sim.spec.ts: детерминизм по seed,
+      контроль слов активными ботами, вайп пассивного лобби при p=1
+- [x] 6. sim.ts переписан на headless ECS (старая отдельная модель удалена),
+      averageStats там же; sim.spec.ts - sanity-тесты + генерация
+      docs/balance.md по требованию (CALIBRATE=1 npx vitest run ..., иначе
+      skip - npm test остаётся быстрым). Сетка 5 шансов x 3 total x баффы, 10
+      прогонов на ячейку (~8 мин на ECS). Находка: при текущих константах вайпа
+      НЕТ даже при p=1 - см. пункт в балансе ниже
 
 ### План: SSE вместо polling (выполнен)
 
