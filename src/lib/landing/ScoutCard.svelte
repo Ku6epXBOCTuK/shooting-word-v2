@@ -1,12 +1,15 @@
 <script lang="ts">
+	import { resolve } from "$app/paths";
 	import ArrowUpRightIcon from "~icons/lucide/arrow-up-right";
 	import CircleOffIcon from "~icons/lucide/circle-off";
 	import CrosshairIcon from "~icons/lucide/crosshair";
 	import LinkIcon from "~icons/lucide/link-2";
 	import RocketIcon from "~icons/lucide/rocket";
+	import SettingsIcon from "~icons/lucide/settings";
 	import ShieldIcon from "~icons/lucide/shield";
 	import ZapIcon from "~icons/lucide/zap";
 	import LaunchCard from "./LaunchCard.svelte";
+	import { DEFAULT_CHANNEL, extractNick } from "./handle.js";
 	import Button from "./ui/Button.svelte";
 	import CopyField from "./ui/CopyField.svelte";
 	import FeatureItem from "./ui/FeatureItem.svelte";
@@ -16,22 +19,9 @@
 	import Icon from "./ui/Icon.svelte";
 
 	const STATIC_HOST = "https://ku6epxboctuk.is-a.dev/shooting-word-v2";
-	const DEFAULT_CHANNEL = "Ku6epXBOCTuK";
 
 	let channel = $state("");
 	let copied = $state(false);
-
-	const extractNick = (raw: string): string => {
-		const trimmed = raw.trim();
-		if (!trimmed) return DEFAULT_CHANNEL;
-
-		const urlMatch = trimmed.match(
-			/(?:https?:\/\/)?(?:www\.|m\.)?twitch\.tv\/([a-z0-9_]+)/i,
-		);
-		if (urlMatch) return urlMatch[1];
-
-		return trimmed.replace(/^@/, "");
-	};
 
 	const nick = $derived(extractNick(channel));
 	const widgetLink = $derived(
@@ -77,6 +67,10 @@
 			<Button variant="pro" onclick={copyLink}>
 				<Icon as={LinkIcon} />
 				{copied ? "Ссылка скопирована" : "Ссылка для OBS"}
+			</Button>
+			<Button variant="pro" href={resolve("/settings")}>
+				<Icon as={SettingsIcon} />
+				Настройки
 			</Button>
 		</div>
 	{/snippet}
