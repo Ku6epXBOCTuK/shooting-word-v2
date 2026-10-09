@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.10.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/7cb466a20e357de3bf53c7245fd24fe22ca06990..0.10.0) - 2026-10-09
+#### Features
+- add auto fulfillment and auto refund setting - ([b7b8dc2](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/b7b8dc22dad53ae41d7359c3cd7f4f8783d9a25b)) - Ku6epXBOCTuK
+- add setting for full-feature build - ([2285b9e](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/2285b9eeff37207cbcd54d72d80a82b33955bceb)) - Ku6epXBOCTuK
+- add settings page for static version - ([59c19a2](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/59c19a26de4c8a9433b1f3cf679349bc52fe1194)) - Ku6epXBOCTuK
+- add settings schema, update to use scale from setting - ([8157167](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/81571670c6a96ac7b0f63fe55c004095e7f337d0)) - Ku6epXBOCTuK
+#### Bug Fixes
+- game start clearing, dev link - ([d874b12](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/d874b12b48d1c84c478445854e0e444b4878a070)) - Ku6epXBOCTuK
+#### Refactoring
+- separate static build, cut unused code, check rules - ([20053b0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/20053b06a7423ecebacfb61df709bf4ef9850e51)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.9.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/18077771d1aaeb30e41f5999680ab3f14b13ada9..0.9.0) - 2026-10-08
 #### Features
 - redesign cabinet page - ([98d7592](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/98d75924974d28311cb80479b883392cb92b89fc)) - Ku6epXBOCTuK
