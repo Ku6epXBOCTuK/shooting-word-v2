@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.12.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/f5c86603eb0daedcb29b7f99677e7ac235d2e11d..0.12.0) - 2026-10-09
+#### Features
+- move client from poller to stream - ([ed06b48](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/ed06b487625231a8007c0596dceaf1fc5eff2f42)) - Ku6epXBOCTuK
+- add heartbeat to sse - ([3f0eb02](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/3f0eb02bacf5031715a573566cc957ba0f83a8c5)) - Ku6epXBOCTuK
+- add sse endpoint - ([246deeb](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/246deebe3691247b9c4c29f2d5792a401d366592)) - Ku6epXBOCTuK
+- add effects subscribe flow - ([dd623a2](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/dd623a22926989e8f7d7dd36bbae2cfcc1b33c16)) - Ku6epXBOCTuK
+#### Bug Fixes
+- purge old viewers on backend side - ([1c147ad](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/1c147add8c858ca9b8254bb75fc068ca8873ba21)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.11.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/e25f52bfe7eb08fb5c26d05e64c9335b7bf89004..0.11.0) - 2026-10-09
 #### Features
 - add dev config overrides - ([e25f52b](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/e25f52bfe7eb08fb5c26d05e64c9335b7bf89004)) - Ku6epXBOCTuK
