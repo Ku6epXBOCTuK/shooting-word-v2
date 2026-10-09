@@ -1,12 +1,45 @@
 # Backlog
 
+## План: SSE вместо polling
+
+Оценка: 3-5 часов, ~120-180 новых строк. Push-канал сервер -> виджет вместо GET
+/api/effects раз в 10 сек. Бонус: чинится баг с таймаутом - сейчас joinViewer
+при каждом poll щита освежает lastSeen (bootstrap.ts:101), зритель со щитом
+никогда не удаляется по VIEWER_TIMEOUT_MS.
+
+- [ ] 1. subscribers в reward-effects.ts: рядом с queues/shields в globalThis
+      добавить `subscribers: Map<broadcasterId, Set<controller>>`; queueEffect и
+      grantShield пушат событие всем подписчикам broadcaster'а. Очередь НЕ
+      убирать - от неё зависит проверка лимита батареек (pendingCount,
+      reward-effects.ts:97-106), она остаётся буфером до коннекта
+- [ ] 2. эндпойнт src/routes/api/effects/stream/+server.ts: GET по ?uuid= (auth
+      через broadcasters.byUuid как сейчас), Response(ReadableStream) с
+      text/event-stream, no-cache и X-Accel-Buffering: no (nginx на VPS вне
+      репо - заголовок надёжнее правки конфига). При коннекте:
+      ensureRewardEffects (ленивая регистрация eventsub сохраняется) + снапшот
+      активных щитов (иначе щиты, выданные до загрузки виджета, потеряются) +
+      drain очереди. На abort request.signal - удалить controller из Set (OBS
+      перезагружает источник, Set не должен расти)
+- [ ] 3. heartbeat: ":"-комментарий каждые 25-30 сек, иначе прокси закроет
+      idle-соединение
+- [ ] 4. клиент: poller.ts - заменить setInterval+fetch на
+      EventSource("/api/effects/stream?uuid="), onmessage -> applyEffects
+      (реконнекты из коробки, retry из SSE-поля). GameWidget.svelte:20-38 -
+      source.close() в cleanup. После перехода joinViewer по щиту вызывается
+      один раз на событие, а не каждые 10 сек - lastSeen больше не освежается
+      щитом
+- [ ] 5. проверки: curl -N на эндпойнт в dev (vite) и prod (bun build-node -
+      первый streaming-ответ в проекте, flush проверить руками); редемпшен с
+      открытым виджетом - мгновенная доставка; редемпшен до открытия виджета -
+      доставка из снапшота/очереди; реконнект при убитом сервере; перезагрузка
+      источника в OBS - Set подписчиков не растёт; приёмка бага: зритель со
+      щитом молчит 12 ч - удаляется по таймауту
+- [ ] 6. если на VPS nginx режет SSE (буферизация/таймаут) - завести
+      deploy/nginx.conf в репо с proxy_buffering off и proxy_read_timeout >
+      heartbeat
+
 ## Технические задачи
 
-- [ ] sse вместо polling для щитов (и других событий сервер -> виджет): сейчас
-      виджет опрашивает /api/shields раз в 10 сек (задержка до 10 сек + ленивая
-      регистрация eventsub на первый запрос). Push по SSE даст мгновенную
-      доставку, но нужен канал с реконнектами. Не работает удаление пользователя
-      по таймауту
 - [ ] писать в чат от имени бот-аккаунта (отдельный токен бота, не основного
       стримера)
 - [ ] пересмотреть favicon, что я там вообще хочу?
