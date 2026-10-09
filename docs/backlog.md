@@ -1,42 +1,5 @@
 # Backlog
 
-## План: SSE вместо polling
-
-Оценка: 3-5 часов, ~120-180 новых строк. Push-канал сервер -> виджет вместо GET
-/api/effects раз в 10 сек. Бонус: чинится баг с таймаутом - сейчас joinViewer
-при каждом poll щита освежает lastSeen (bootstrap.ts:101), зритель со щитом
-никогда не удаляется по VIEWER_TIMEOUT_MS.
-
-- [x] 1. subscribers в reward-effects.ts: рядом с queues/shields в globalThis
-      добавить `subscribers: Map<broadcasterId, Set<controller>>`; queueEffect и
-      grantShield пушат событие всем подписчикам broadcaster'а. Очередь НЕ
-      убирать - от неё зависит проверка лимита батареек (pendingCount,
-      reward-effects.ts:97-106), она остаётся буфером до коннекта
-- [x] 2. эндпойнт src/routes/api/effects/stream/+server.ts: GET по ?uuid= (auth
-      через broadcasters.byUuid как сейчас), Response(ReadableStream) с
-      text/event-stream, no-cache и X-Accel-Buffering: no (nginx на VPS вне
-      репо - заголовок надёжнее правки конфига). При коннекте:
-      ensureRewardEffects (ленивая регистрация eventsub сохраняется) + снапшот
-      активных щитов (иначе щиты, выданные до загрузки виджета, потеряются) +
-      drain очереди. На abort request.signal - удалить controller из Set (OBS
-      перезагружает источник, Set не должен расти)
-- [x] 3. heartbeat: ":"-комментарий каждые 25-30 сек, иначе прокси закроет
-      idle-соединение
-- [x] 4. клиент: poller.ts удалён, stream.ts - EventSource на
-      /api/effects/stream?uuid=, onmessage -> applyEffects (реконнекты из
-      коробки). GameWidget - старт стрима после bootstrapGame (снапшот не падает
-      на неготовую игру), close() в cleanup. Старый GET /api/effects удалён.
-      joinViewer по щиту - раз на событие, lastSeen не освежается poll'ами
-- [~] 5. проверки: curl -N в dev (vite) и prod (bun build-node) - снапшот
-  мгновенно, heartbeat ":" каждые 25 сек, 404 на чужой uuid, flush под bun
-  работает. Осталось на живом канале: редемпшен с открытым виджетом - мгновенная
-  доставка; редемпшен до открытия виджета - из снапшота/очереди; реконнект при
-  убитом сервере; перезагрузка источника в OBS; приёмка бага: зритель со щитом
-  молчит 12 ч - удаляется по таймауту
-- [ ] 6. если на VPS nginx режет SSE (буферизация/таймаут) - завести
-      deploy/nginx.conf в репо с proxy_buffering off и proxy_read_timeout >
-      heartbeat
-
 ## Технические задачи
 
 - [ ] писать в чат от имени бот-аккаунта (отдельный токен бота, не основного
@@ -45,6 +8,9 @@
 
 ## Геймплей\Фичи\Идеи
 
+- [ ] при начале игры - сбрасывается щит, даже если был куплен за минуту до
+      начала
+- [ ] как работает щит? рикошеты учитываются или нет?
 - [ ] цикл разрушения корабля зрителя: взрыв - портал, слишком быстрый. нужен
       более длительный взрыв, паузу между взрывом и появлением портала и
       анимацию появления портала из точки
@@ -111,6 +77,37 @@
       синхронизированная с add/remove.
 
 ## Архив
+
+### План: SSE вместо polling (выполнен)
+
+Push-канал сервер -> виджет вместо GET /api/effects раз в 10 сек. Попутно
+починился баг с таймаутом: poll щита освежал lastSeen каждые 10 сек
+(bootstrap.ts), зритель со щитом не удалялся по VIEWER_TIMEOUT_MS - теперь
+joinViewer по щиту раз на событие.
+
+- [x] 1. subscribers в reward-effects.ts: `__effectSubscribers` в globalThis
+      рядом с queues/shields, subscribeEffects/hasEffectSubscribers + EffectPush
+      ({ shields, effects } - тот же shape, что был у GET). queueEffect пушит
+      вместо очереди, когда есть подписчики (иначе двойной грант батареек при
+      drain на реконнекте); без подписчиков - в очередь (буфер до коннекта,
+      pendingCount-лимиты не тронуты). grantShield пушит новый щит
+- [x] 2. эндпойнт /api/effects/stream: GET по ?uuid= (broadcasters.byUuid),
+      Response(ReadableStream), text/event-stream + no-cache +
+      X-Accel-Buffering: no. При коннекте: ensureRewardEffects, subscribe строго
+      до снапшота getRewardEffects (гонка без потерь), отписка на abort/cancel -
+      Set подписчиков не растёт при перезагрузке OBS
+- [x] 3. heartbeat ":"-комментарий каждые 25 сек, общий stop() гасит таймер и
+      подписку; упавший enqueue = мёртвый сокет
+- [x] 4. клиент: poller.ts -> stream.ts (EventSource, реконнекты из коробки),
+      старт после bootstrapGame (снапшот не падает на неготовую игру), close() в
+      cleanup GameWidget. Старый GET /api/effects удалён
+- [x] 5. проверки: curl -N в dev и prod (bun build-node) - снапшот мгновенно,
+      heartbeat каждые 25 сек, 404 на чужой uuid; подтверждено на живом канале
+- [x] 6. nginx не понадобился - X-Accel-Buffering: no из приложения достаточно
+
+Попутный фикс: 500 на PUT /api/storage - request.json() без catch падал на битом
+теле; readJson с try/catch -> 400, добавлен hooks.server.ts с handleError (стек
+5xx в stderr, logger в prod noop)
 
 - [x] коллизия смыслов expired: тег значил и "удалить в конце кадра" (cleanup),
       и "TTL слова кончился -> вооружить" - clearScene при !игра вооружал все
