@@ -1,6 +1,12 @@
 import { resolve } from "$app/paths";
+import type { AppRewardStatus } from "#lib/features/rewards/port.js";
 import { rewards } from "#lib/features/rewards/index.js";
 import { features } from "#lib/features/variant.js";
+import {
+	defaultSettings,
+	normalizeSettings,
+	type GameSettings,
+} from "#lib/game/settings.js";
 
 export interface CabinetSession {
 	login: string;
@@ -8,6 +14,8 @@ export interface CabinetSession {
 	widgetUuid: string | null;
 	rewardsAuthorized: boolean;
 	rewardsStatus: string | null;
+	appRewards: AppRewardStatus[];
+	settings: GameSettings;
 }
 
 export async function loadSession(): Promise<CabinetSession | null> {
@@ -22,6 +30,7 @@ export async function loadSession(): Promise<CabinetSession | null> {
 
 	let rewardsAuthorized = false;
 	let rewardsStatus: string | null = null;
+	let appRewards: AppRewardStatus[] = [];
 
 	if (features.rewards) {
 		const status = await rewards.status();
@@ -29,6 +38,9 @@ export async function loadSession(): Promise<CabinetSession | null> {
 		rewardsStatus = status.available
 			? "Twitch авторизован, награды доступны"
 			: (status.reason ?? "награды недоступны");
+		if (status.available) {
+			appRewards = await rewards.listAppRewards();
+		}
 	}
 
 	return {
@@ -37,7 +49,37 @@ export async function loadSession(): Promise<CabinetSession | null> {
 		widgetUuid: data.widgetUuid ?? null,
 		rewardsAuthorized,
 		rewardsStatus,
+		appRewards,
+		settings: await loadSettings(),
 	};
+}
+
+export async function loadSettings(): Promise<GameSettings> {
+	try {
+		const response = await fetch(
+			resolve("/api/storage/[key]", { key: "settings" }),
+		);
+		if (!response.ok) return defaultSettings();
+		return normalizeSettings(await response.json());
+	} catch {
+		return defaultSettings();
+	}
+}
+
+export async function saveSettings(settings: GameSettings): Promise<boolean> {
+	try {
+		const response = await fetch(
+			resolve("/api/storage/[key]", { key: "settings" }),
+			{
+				method: "PUT",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify(settings),
+			},
+		);
+		return response.ok;
+	} catch {
+		return false;
+	}
 }
 
 export async function rotateWidgetUuid(): Promise<string | null> {
@@ -62,9 +104,32 @@ export async function manageRewards(
 		return result.reason ?? "ошибка";
 	}
 
-	return action === "create"
-		? result.created.length > 0
-			? `Созданы: ${result.created.join(", ")}`
-			: "Все награды уже существуют"
-		: `Удалено наград: ${result.deleted}`;
+	if (action === "create") {
+		const parts: string[] = [];
+		if (result.created.length > 0) {
+			parts.push(`Созданы: ${result.created.join(", ")}`);
+		}
+		if (result.updated && result.updated.length > 0) {
+			parts.push(`Обновлены: ${result.updated.join(", ")}`);
+		}
+		return parts.length > 0 ? parts.join("; ") : "Все награды уже существуют";
+	}
+
+	return `Удалено наград: ${result.deleted}`;
+}
+
+export async function toggleReward(
+	key: string,
+	enabled: boolean,
+): Promise<boolean> {
+	const result = await rewards.toggleReward(key, enabled);
+	return result.ok;
+}
+
+export async function listAppRewards(): Promise<AppRewardStatus[]> {
+	try {
+		return await rewards.listAppRewards();
+	} catch {
+		return [];
+	}
 }

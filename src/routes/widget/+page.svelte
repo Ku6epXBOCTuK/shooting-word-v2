@@ -3,7 +3,12 @@
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 	import GameWidget from "#lib/GameWidget.svelte";
-	import { parseSettings, type GameSettings } from "#lib/game/settings.js";
+	import { loadServerSettings } from "#lib/features/persistence/index.js";
+	import {
+		defaultSettings,
+		parseSettings,
+		type GameSettings,
+	} from "#lib/game/settings.js";
 
 	const uuid = $derived(page.url.searchParams.get("uuid") ?? "");
 
@@ -12,7 +17,11 @@
 	let notFound = $state(false);
 
 	onMount(async () => {
-		settings = parseSettings(page.url.searchParams);
+		const serverSettings = uuid ? await loadServerSettings(uuid) : null;
+		settings = parseSettings(
+			page.url.searchParams,
+			serverSettings ?? defaultSettings(),
+		);
 		try {
 			const response = await fetch(
 				`${resolve("/api/broadcaster")}?uuid=${encodeURIComponent(uuid)}`,

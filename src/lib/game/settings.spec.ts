@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
 	defaultSettings,
+	normalizeSettings,
 	parseSettings,
 	serializeSettings,
 	SETTINGS_SCHEMA,
@@ -62,5 +63,24 @@ describe("serializeSettings", () => {
 		const settings = { ...defaultSettings(), viewerScale: 3 };
 		expect([...serializeSettings(settings, "full").entries()]).toEqual([]);
 		expect(serializeSettings(settings, "static").get("viewer_scale")).toBe("3");
+	});
+});
+
+describe("normalizeSettings", () => {
+	it("читает значения по ключам схемы", () => {
+		expect(normalizeSettings({ viewerScale: 3 }).viewerScale).toBe(3);
+	});
+
+	it("клампит числа и отбрасывает невалидные типы", () => {
+		expect(normalizeSettings({ viewerScale: 99 }).viewerScale).toBe(6);
+		expect(normalizeSettings({ viewerScale: "3" }).viewerScale).toBe(
+			defaultSettings().viewerScale,
+		);
+	});
+
+	it("игнорирует неизвестные ключи и не-объекты", () => {
+		expect("hacker" in normalizeSettings({ hacker: 1 })).toBe(false);
+		expect(normalizeSettings(null)).toEqual(defaultSettings());
+		expect(normalizeSettings("junk")).toEqual(defaultSettings());
 	});
 });

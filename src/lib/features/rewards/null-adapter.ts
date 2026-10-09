@@ -1,4 +1,5 @@
 import type {
+	AppRewardStatus,
 	ChannelReward,
 	RewardsManageResult,
 	RewardsPort,
@@ -24,11 +25,19 @@ export class NullRewardsAdapter implements RewardsPort {
 		return [];
 	}
 
+	async listAppRewards(): Promise<AppRewardStatus[]> {
+		return [];
+	}
+
 	async createRewards(): Promise<RewardsManageResult> {
 		return NOT_SUPPORTED;
 	}
 
 	async deleteAllRewards(): Promise<RewardsManageResult> {
+		return NOT_SUPPORTED;
+	}
+
+	async toggleReward(): Promise<RewardsManageResult> {
 		return NOT_SUPPORTED;
 	}
 }

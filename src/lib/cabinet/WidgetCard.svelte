@@ -1,10 +1,11 @@
 <script lang="ts">
+	import LinkIcon from "~icons/lucide/link-2";
+	import MonitorPlayIcon from "~icons/lucide/monitor-play";
+	import RefreshCwIcon from "~icons/lucide/refresh-cw";
 	import LaunchCard from "#lib/landing/LaunchCard.svelte";
 	import Button from "#lib/landing/ui/Button.svelte";
 	import FieldLabel from "#lib/landing/ui/FieldLabel.svelte";
 	import Icon from "#lib/landing/ui/Icon.svelte";
-	import MonitorPlayIcon from "~icons/lucide/monitor-play";
-	import RefreshCwIcon from "~icons/lucide/refresh-cw";
 	import { rotateWidgetUuid } from "./api.js";
 	import SecretLinkField from "./SecretLinkField.svelte";
 
@@ -16,7 +17,20 @@
 	let { link, onrotated }: Props = $props();
 
 	let rotating = $state(false);
+	let copied = $state(false);
 	let result = $state<string | null>(null);
+
+	const copy = async () => {
+		try {
+			await navigator.clipboard.writeText(link);
+			copied = true;
+			setTimeout(() => {
+				copied = false;
+			}, 1800);
+		} catch {
+			result = "не удалось скопировать ссылку";
+		}
+	};
 
 	const rotate = async () => {
 		rotating = true;
@@ -29,7 +43,7 @@
 				return;
 			}
 			onrotated(uuid);
-			result = "Ссылка виджета обновлена";
+			result = "Ссылка виджета обновлена, старая больше не работает";
 		} finally {
 			rotating = false;
 		}
@@ -47,10 +61,16 @@
 
 	{#snippet bottom()}
 		<div class="bottom-row">
-			<Button variant="pro" disabled={rotating} onclick={rotate}>
-				<Icon as={RefreshCwIcon} />
-				Сбросить ссылку
-			</Button>
+			<div class="actions-row">
+				<Button variant="pro" onclick={copy}>
+					<Icon as={LinkIcon} />
+					{copied ? "Ссылка скопирована" : "Скопировать ссылку для OBS"}
+				</Button>
+				<Button variant="pro" disabled={rotating} onclick={rotate}>
+					<Icon as={RefreshCwIcon} />
+					Сбросить ссылку
+				</Button>
+			</div>
 			{#if result}
 				<p class="result">{result}</p>
 			{/if}
@@ -64,6 +84,12 @@
 		flex-direction: column;
 		gap: 12px;
 		align-items: flex-start;
+	}
+
+	.actions-row {
+		display: flex;
+		gap: 12px;
+		flex-wrap: wrap;
 	}
 
 	.result {

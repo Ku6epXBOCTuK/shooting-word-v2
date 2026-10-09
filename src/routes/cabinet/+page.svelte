@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { loadSession, type CabinetSession } from "#lib/cabinet/api.js";
-	import RewardsCard from "#lib/cabinet/RewardsCard.svelte";
+	import SettingsCard from "#lib/cabinet/SettingsCard.svelte";
 	import TopBar from "#lib/cabinet/TopBar.svelte";
 	import UnauthorizedCard from "#lib/cabinet/UnauthorizedCard.svelte";
 	import WidgetCard from "#lib/cabinet/WidgetCard.svelte";
-	import { features } from "#lib/features/variant.js";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import { onMount } from "svelte";
@@ -57,12 +56,12 @@
 						/>
 					{/if}
 
-					{#if features.rewards}
-						<RewardsCard
-							authorized={session.rewardsAuthorized}
-							status={session.rewardsStatus}
-						/>
-					{/if}
+					<SettingsCard
+						initial={session.settings}
+						rewardsAuthorized={session.rewardsAuthorized}
+						rewardsStatus={session.rewardsStatus}
+						appRewards={session.appRewards}
+					/>
 				</div>
 			{/if}
 		</div>
@@ -150,7 +149,7 @@
 
 	.cards {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: 1fr;
 		gap: 20px;
 		align-items: stretch;
 	}

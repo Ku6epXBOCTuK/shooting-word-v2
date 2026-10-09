@@ -42,7 +42,6 @@
 		border: 1px solid rgba(255, 255, 255, 0.42);
 		background: var(--panel);
 		padding: 27px;
-		min-height: 355px;
 		position: relative;
 		display: flex;
 		flex-direction: column;
@@ -135,6 +134,7 @@
 
 	.card-bottom {
 		margin-top: auto;
+		padding-top: 24px;
 	}
 
 	@media (max-width: 760px) {
