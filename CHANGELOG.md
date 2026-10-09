@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.12.1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/5e38c750722f84b3239b506f4b7b84642dea4cdd..0.12.1) - 2026-10-09
+#### Bug Fixes
+- put 500 error - ([5e38c75](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/5e38c750722f84b3239b506f4b7b84642dea4cdd)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.12.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/f5c86603eb0daedcb29b7f99677e7ac235d2e11d..0.12.0) - 2026-10-09
 #### Features
 - move client from poller to stream - ([ed06b48](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/ed06b487625231a8007c0596dceaf1fc5eff2f42)) - Ku6epXBOCTuK
