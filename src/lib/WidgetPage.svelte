@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { dev } from "$app/env";
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 	import GameWidget from "#lib/GameWidget.svelte";
@@ -21,6 +22,7 @@
 		settings = parseSettings(
 			page.url.searchParams,
 			serverSettings ?? defaultSettings(),
+			dev,
 		);
 		try {
 			const response = await fetch(

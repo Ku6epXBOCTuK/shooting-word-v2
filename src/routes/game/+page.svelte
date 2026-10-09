@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { dev } from "$app/env";
 	import { page } from "$app/state";
 	import GameWidget from "#lib/GameWidget.svelte";
 	import { parseSettings, type GameSettings } from "#lib/game/settings.js";
@@ -14,7 +15,7 @@
 	onMount(() => {
 		channel = page.url.searchParams.get("channel") ?? DEFAULT_CHANNEL;
 		uuid = page.url.searchParams.get("uuid") ?? undefined;
-		settings = parseSettings(page.url.searchParams);
+		settings = parseSettings(page.url.searchParams, undefined, dev);
 		ready = true;
 	});
 </script>

@@ -1,5 +1,13 @@
 import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
-import { VIEWER_SCALE } from "./config.js";
+import {
+	BATTERY_HEAL,
+	BATTERY_MAX,
+	ENEMY_SHOT_DAMAGE_CHANCE,
+	RESPAWN_DURATION,
+	VIEWER_BASE_HP,
+	VIEWER_SCALE,
+	WORD_TTL,
+} from "./config.js";
 
 export type SettingValue = number | string | boolean;
 export type SettingScope = "static" | "full";
@@ -10,6 +18,7 @@ export interface SettingDef {
 	label: string;
 	type: "number" | "string" | "boolean";
 	scope: SettingScope;
+	dev?: boolean;
 	group?: string;
 	min?: number;
 	max?: number;
@@ -20,6 +29,12 @@ export interface SettingDef {
 
 export interface GameSettings {
 	viewerScale: number;
+	viewerBaseHp: number;
+	enemyDamageChance: number;
+	wordTtl: number;
+	batteryHeal: number;
+	batteryMax: number;
+	respawnDuration: number;
 	[key: string]: SettingValue;
 }
 
@@ -50,6 +65,73 @@ export const SETTINGS_SCHEMA: SettingDef[] = [
 		type: "boolean",
 		scope: "full",
 		default: true,
+	},
+	{
+		key: "viewerBaseHp",
+		param: "viewer_base_hp",
+		label: "Базовое hp зрителя",
+		type: "number",
+		scope: "full",
+		dev: true,
+		min: 1,
+		max: 20,
+		default: VIEWER_BASE_HP,
+	},
+	{
+		key: "enemyDamageChance",
+		param: "enemy_damage_chance",
+		label: "Шанс урона вражеского выстрела",
+		type: "number",
+		scope: "full",
+		dev: true,
+		min: 0,
+		max: 1,
+		step: 0.05,
+		default: ENEMY_SHOT_DAMAGE_CHANCE,
+	},
+	{
+		key: "wordTtl",
+		param: "word_ttl",
+		label: "Время жизни слова, сек",
+		type: "number",
+		scope: "full",
+		dev: true,
+		min: 5,
+		max: 120,
+		default: WORD_TTL,
+	},
+	{
+		key: "batteryHeal",
+		param: "battery_heal",
+		label: "Лечение батареей, hp",
+		type: "number",
+		scope: "full",
+		dev: true,
+		min: 1,
+		max: 10,
+		default: BATTERY_HEAL,
+	},
+	{
+		key: "batteryMax",
+		param: "battery_max",
+		label: "Лимит батарей",
+		type: "number",
+		scope: "full",
+		dev: true,
+		min: 1,
+		max: 20,
+		default: BATTERY_MAX,
+	},
+	{
+		key: "respawnDuration",
+		param: "respawn_duration",
+		label: "Длительность респавна, сек",
+		type: "number",
+		scope: "full",
+		dev: true,
+		min: 5,
+		max: 120,
+		default: RESPAWN_DURATION,
 	},
 ];
 
@@ -128,9 +210,11 @@ function coerce(raw: string, def: SettingDef): SettingValue | undefined {
 export function parseSettings(
 	params: Pick<URLSearchParams, "get">,
 	base: GameSettings = defaultSettings(),
+	includeDev = false,
 ): GameSettings {
 	const settings = { ...base };
 	for (const def of SETTINGS_SCHEMA) {
+		if (def.dev && !includeDev) continue;
 		const raw = params.get(def.param);
 		if (raw === null) continue;
 		const value = coerce(raw, def);
@@ -145,6 +229,7 @@ export function serializeSettings(
 ): URLSearchParams {
 	const params = new URLSearchParams();
 	for (const def of SETTINGS_SCHEMA) {
+		if (def.dev) continue;
 		if (scope && def.scope !== scope) continue;
 		const value = settings[def.key];
 		if (value === undefined || value === def.default) continue;
@@ -175,11 +260,13 @@ function validateStored(
 export function normalizeSettings(
 	raw: unknown,
 	base: GameSettings = defaultSettings(),
+	includeDev = false,
 ): GameSettings {
 	const settings = { ...base };
 	if (typeof raw !== "object" || raw === null) return settings;
 
 	for (const def of SETTINGS_SCHEMA) {
+		if (def.dev && !includeDev) continue;
 		const value = (raw as Record<string, unknown>)[def.key];
 		if (value === undefined) continue;
 		const valid = validateStored(value, def);

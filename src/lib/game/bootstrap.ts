@@ -4,8 +4,6 @@ import { World } from "miniplex";
 import type { Application, Ticker } from "pixi.js";
 import { loadAssets, SHIP_COUNT } from "./assets.js";
 import {
-	BATTERY_HEAL,
-	BATTERY_MAX,
 	BULLET_HIT_DISTANCE,
 	BULLET_SPEED,
 	REVIVE_MAX,
@@ -134,7 +132,10 @@ export async function bootstrapGame(
 			for (const userId of userIds) {
 				for (const entity of viewers) {
 					if (entity.viewer.userId !== userId) continue;
-					entity.batteries = Math.min(BATTERY_MAX, (entity.batteries ?? 0) + 1);
+					entity.batteries = Math.min(
+						settings.batteryMax,
+						(entity.batteries ?? 0) + 1,
+					);
 					changed = true;
 					break;
 				}
@@ -178,7 +179,7 @@ export async function bootstrapGame(
 			healer.batteries = (healer.batteries ?? 0) - 1;
 			target.hp.current = Math.min(
 				target.hp.max,
-				target.hp.current + BATTERY_HEAL,
+				target.hp.current + settings.batteryHeal,
 			);
 			ctx.viewersDirty = true;
 			return true;

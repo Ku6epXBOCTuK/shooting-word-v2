@@ -1,5 +1,5 @@
 import type { With } from "miniplex";
-import { WORD_TTL, Z_NEAR } from "../config.js";
+import { Z_NEAR } from "../config.js";
 import type { Entity } from "../types.js";
 import { projectPoint } from "./perspective.js";
 import type { SystemFactory } from "./types.js";
@@ -32,7 +32,10 @@ export const createFlightSystem: SystemFactory = (ctx) => {
 
 			ctx.world.removeComponent(entity, "position3");
 			ctx.world.removeComponent(entity, "velocity3");
-			ctx.world.addComponent(entity, "lifetime", { age: 0, ttl: WORD_TTL });
+			ctx.world.addComponent(entity, "lifetime", {
+				age: 0,
+				ttl: ctx.settings.wordTtl,
+			});
 		}
 	};
 };

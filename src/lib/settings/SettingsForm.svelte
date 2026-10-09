@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { dev } from "$app/env";
 	import {
 		SETTING_GROUPS,
 		SETTINGS_SCHEMA,
@@ -18,10 +19,14 @@
 
 	const defs = $derived(
 		SETTINGS_SCHEMA.filter(
-			(def) => (!scope || def.scope === scope) && (!flat || !def.group),
+			(def) =>
+				(!scope || def.scope === scope) &&
+				(!flat || !def.group) &&
+				(!def.dev || dev),
 		),
 	);
-	const ungrouped = $derived(defs.filter((def) => !def.group));
+	const ungrouped = $derived(defs.filter((def) => !def.group && !def.dev));
+	const devDefs = $derived(defs.filter((def) => def.dev));
 	const groups = $derived([
 		...new Set(defs.map((def) => def.group).filter(Boolean)),
 	] as string[]);
@@ -32,6 +37,13 @@
 {#each ungrouped as def (def.key)}
 	<SettingsField {def} {settings} />
 {/each}
+
+{#if devDefs.length > 0}
+	<h3 class="group-title">Dev-параметры</h3>
+	{#each devDefs as def (def.key)}
+		<SettingsField {def} {settings} />
+	{/each}
+{/if}
 
 {#each groups as group (group)}
 	<h3 class="group-title">{SETTING_GROUPS[group] ?? group}</h3>

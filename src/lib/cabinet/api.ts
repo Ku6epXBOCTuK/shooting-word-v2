@@ -1,4 +1,5 @@
 import { resolve } from "$app/paths";
+import { dev } from "$app/env";
 import type { AppRewardStatus } from "#lib/features/rewards/port.js";
 import { rewards } from "#lib/features/rewards/index.js";
 import { REWARDS_ENABLED } from "#lib/features/variant.js";
@@ -62,7 +63,7 @@ export async function loadSettings(): Promise<GameSettings> {
 			resolve("/api/storage/[key]", { key: "settings" }),
 		);
 		if (!response.ok) return defaultSettings();
-		return normalizeSettings(await response.json());
+		return normalizeSettings(await response.json(), undefined, dev);
 	} catch {
 		return defaultSettings();
 	}

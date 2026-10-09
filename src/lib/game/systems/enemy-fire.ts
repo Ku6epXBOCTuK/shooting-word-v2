@@ -1,6 +1,5 @@
 import {
 	ARMED_FUSE_MS,
-	ENEMY_SHOT_DAMAGE_CHANCE,
 	ENEMY_SHOT_HIT_DISTANCE,
 	ENEMY_SHOT_SPEED,
 } from "../config.js";
@@ -33,7 +32,7 @@ export const createEnemyFireSystem: SystemFactory = (ctx) => {
 
 			const target = pickTarget();
 			if (target) {
-				const damage = Math.random() < ENEMY_SHOT_DAMAGE_CHANCE ? 1 : 0;
+				const damage = Math.random() < ctx.settings.enemyDamageChance ? 1 : 0;
 				ctx.world.add({
 					position: { x: entity.position.x, y: entity.position.y },
 					enemyShot: { damage },

@@ -4,7 +4,6 @@ import {
 	FONT_SIZE,
 	MAX_FLY_SPEED,
 	MIN_FLY_SPEED,
-	VIEWER_BASE_HP,
 	VIEWER_WIDTH,
 	WALK_MAX_SPEED,
 	WALK_MAX_TURN_TIME,
@@ -53,13 +52,15 @@ export function spawnViewer(
 	const halfWidth = width / 2;
 	const x = halfWidth + Math.random() * Math.max(1, screen.width - width);
 
+	const baseHp = settings.viewerBaseHp;
+
 	world.add({
 		viewer,
 		xp,
 		batteries,
 		revives,
 		...(viewer.bot ? { bot: true } : {}),
-		hp: { current: VIEWER_BASE_HP, max: VIEWER_BASE_HP },
+		hp: { current: baseHp, max: baseHp },
 		position: { x, y: 0 },
 		walker: {
 			direction: Math.random() < 0.5 ? -1 : 1,

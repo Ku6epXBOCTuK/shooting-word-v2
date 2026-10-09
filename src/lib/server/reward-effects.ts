@@ -1,3 +1,4 @@
+import { dev } from "$app/env";
 import {
 	BATTERY_REWARD,
 	REVIVE_REWARD,
@@ -6,7 +7,7 @@ import {
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
 import type { StoredViewer } from "#lib/features/persistence/index.js";
-import { BATTERY_MAX, REVIVE_MAX } from "#lib/game/config.js";
+import { REVIVE_MAX } from "#lib/game/config.js";
 import { normalizeSettings } from "#lib/game/settings.js";
 import { logger } from "#lib/logger.js";
 import type { Broadcaster } from "./broadcasters/index.js";
@@ -152,21 +153,23 @@ function queueEffect(
 	);
 }
 
-const LIMITS = {
-	[BATTERY_REWARD.key]: { max: BATTERY_MAX, field: "batteries" as const },
-	[REVIVE_REWARD.key]: { max: REVIVE_MAX, field: "revives" as const },
-};
-
 async function handleRedemption(
 	broadcaster: Broadcaster,
 	event: RedemptionEvent & { rewardId: string },
 ): Promise<void> {
 	const settings = normalizeSettings(
 		storage.load(broadcaster.userId, "settings"),
+		undefined,
+		dev,
 	);
 	const key = keyForRewardId(broadcaster.userId, event.rewardId);
 
-	const limit = key !== null ? LIMITS[key as keyof typeof LIMITS] : undefined;
+	const limit =
+		key === BATTERY_REWARD.key
+			? { max: settings.batteryMax, field: "batteries" as const }
+			: key === REVIVE_REWARD.key
+				? { max: REVIVE_MAX, field: "revives" as const }
+				: undefined;
 
 	if (limit && key !== null) {
 		const total =

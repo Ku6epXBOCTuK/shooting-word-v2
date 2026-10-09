@@ -1,3 +1,4 @@
+import { dev } from "$app/env";
 import { normalizeSettings, type GameSettings } from "#lib/game/settings.js";
 import { REWARDS_ENABLED } from "../variant.js";
 import { HttpStorageAdapter } from "./http-adapter.js";
@@ -20,5 +21,5 @@ export async function loadServerSettings(
 ): Promise<GameSettings | null> {
 	if (!REWARDS_ENABLED) return null;
 	const raw = await new HttpStorageAdapter(uuid).load("settings");
-	return raw ? normalizeSettings(raw) : null;
+	return raw ? normalizeSettings(raw, undefined, dev) : null;
 }

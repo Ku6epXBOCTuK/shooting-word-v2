@@ -1,3 +1,4 @@
+import { dev } from "$app/env";
 import { normalizeSettings } from "#lib/game/settings.js";
 import { resolveBroadcaster } from "#lib/server/resolve-broadcaster.js";
 import { storage } from "#lib/server/storage/index.js";
@@ -61,7 +62,11 @@ export const PUT: RequestHandler = async ({
 			return Response.json(null, { status: 400 });
 		}
 
-		storage.save(broadcaster.userId, "settings", normalizeSettings(body));
+		storage.save(
+			broadcaster.userId,
+			"settings",
+			normalizeSettings(body, undefined, dev),
+		);
 
 		return Response.json({ ok: true });
 	}

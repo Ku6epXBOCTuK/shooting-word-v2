@@ -84,3 +84,41 @@ describe("normalizeSettings", () => {
 		expect(normalizeSettings("junk")).toEqual(defaultSettings());
 	});
 });
+
+describe("dev-параметры", () => {
+	it("без includeDev отбрасываются из url", () => {
+		const settings = parseSettings(new URLSearchParams("viewer_base_hp=10"));
+		expect(settings.viewerBaseHp).toBe(defaultSettings().viewerBaseHp);
+	});
+
+	it("с includeDev читаются из url и клампятся", () => {
+		expect(
+			parseSettings(new URLSearchParams("viewer_base_hp=10"), undefined, true)
+				.viewerBaseHp,
+		).toBe(10);
+		expect(
+			parseSettings(new URLSearchParams("viewer_base_hp=99"), undefined, true)
+				.viewerBaseHp,
+		).toBe(20);
+	});
+
+	it("без includeDev отбрасываются из сохранённых настроек", () => {
+		expect(normalizeSettings({ viewerBaseHp: 10 }).viewerBaseHp).toBe(
+			defaultSettings().viewerBaseHp,
+		);
+		expect(
+			normalizeSettings({ viewerBaseHp: 10 }, undefined, true).viewerBaseHp,
+		).toBe(10);
+	});
+
+	it("не сериализуются в ссылку", () => {
+		const settings = {
+			...defaultSettings(),
+			viewerBaseHp: 10,
+			viewerScale: 3,
+		};
+		const params = serializeSettings(settings);
+		expect(params.get("viewer_base_hp")).toBe(null);
+		expect(params.get("viewer_scale")).toBe("3");
+	});
+});

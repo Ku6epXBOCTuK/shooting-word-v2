@@ -1,4 +1,4 @@
-import { RESPAWN_DURATION, VIEWER_WIDTH, WALK_EDGE_MARGIN } from "../config.js";
+import { VIEWER_WIDTH, WALK_EDGE_MARGIN } from "../config.js";
 import { SESSIONPHASE } from "../types.js";
 import type { SystemFactory } from "./types.js";
 
@@ -24,7 +24,7 @@ export const createRespawnSchedulerSystem: SystemFactory = (ctx) => {
 
 			ctx.world.addComponent(entity, "respawning", {
 				elapsed: 0,
-				duration: RESPAWN_DURATION,
+				duration: ctx.settings.respawnDuration,
 				x,
 			});
 		}
