@@ -35,10 +35,14 @@ enemy-attack) уходят в ctx.rng()/ctx.now() с настоящими деф
       randomWord/findPlacement/spawnEnemy rng - явный параметр); shield,
       enemy-attack, enemy-fire, viewer-timeout (Date.now -> ctx.now);
       bootstrap - skin/lastSeen/restoreViewers/changeSkin через ctx
-- [ ] 4. headless-раннер: фабрика createHeadlessGame(settings, rng) - world +
-      только логические системы (без render-*), ручной step(dt) вместо ticker,
-      stub viewerStore (no-op), без viewer-persistence; экспонировать те же
-      joinViewer/shoot/applyShields/grantBatteries/startGame
+- [x] 4. headless-раннер: ядро игры вынесено в core.ts (createGameCore: world +
+      ctx + группы + step(dt) + весь api bootstrap); render-группы -
+      опциональный параметр (без них pixi не импортируется, SHIP_SHEETS/
+      SHIP_COUNT переехали в pixi-free ships.ts); bootstrap - тонкая обёртка
+      (ticker, measureText на pixi, viewerStore). createHeadlessGame в
+      headless.ts: stub ViewerStore, measureText = estimateWordSize, экран
+      1920x1080 по умолчанию. Smoke-тест headless.spec.ts: 15 сек прогона без
+      pixi - PLAYING, зритель и слова на месте
 - [ ] 5. драйвер ботов под режим !игра: печать (reaction + len/cps -> shoot),
       расписания щитов/батареек -> вызовы api раннера, сбор SimStats из world
       (deaths, wipeSec, shotsFired, avgHpFraction, expiredPct)

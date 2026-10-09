@@ -1,28 +1,8 @@
-import type { ChatMessage } from "#lib/chat/port.js";
 import { createViewerStore } from "#lib/features/persistence/index.js";
-import { logger } from "#lib/logger.js";
-import { World } from "miniplex";
 import { Text, TextStyle, type Application, type Ticker } from "pixi.js";
-import { loadAssets, SHIP_COUNT } from "./assets.js";
-import {
-	BULLET_HIT_DISTANCE,
-	BULLET_SPEED,
-	REVIVE_MAX,
-	SHIELD_MAX_HP,
-	VIEWER_GROUND_MARGIN,
-	VIEWER_HEIGHT,
-	VIEWER_TIMEOUT_MS,
-} from "./config.js";
-import type { RenderContext } from "./context.js";
+import { loadAssets } from "./assets.js";
+import { createGameCore } from "./core.js";
 import { defaultSettings, type GameSettings } from "./settings.js";
-import { spawnViewer } from "./spawn.js";
-import { cleanupGroups, logicGroups, renderGroups } from "./systems/index.js";
-import {
-	SESSIONPHASE,
-	type Entity,
-	type SessionPhase,
-	type ViewerIdentity,
-} from "./types.js";
 
 const MAX_FRAME_MS = 50;
 
@@ -46,235 +26,41 @@ export async function bootstrapGame(
 		return size;
 	};
 
-	const world = new World<Entity>();
-	const viewers = world.with("viewer");
-	const viewersWithPosition = world.with("viewer", "position");
-	const wordsWithPosition = world.with("word", "position");
-	const ctx: RenderContext = {
-		world,
-		screen: app.screen,
-		settings,
-		viewerStore: createViewerStore(uuid),
-		viewersDirty: false,
-		now: Date.now,
-		rng: Math.random,
-		measureText,
-		app,
-		assets,
-	};
-
-	const createGroups = () =>
-		[...logicGroups(), ...renderGroups(), ...cleanupGroups()].map((group) =>
-			group.factories.map((factory) => factory(ctx)),
-		);
-
-	let groups = createGroups();
-
-	const createSession = () =>
-		world.add({
-			session: {
-				phase: SESSIONPHASE.IDLE as SessionPhase,
-				timer: 0,
-				afk: false as boolean,
-			},
-		});
-	let session = createSession();
-
-	const restoreViewers = async () => {
-		const now = ctx.now();
-		for (const viewer of await ctx.viewerStore.load()) {
-			if (now - viewer.lastSeen < VIEWER_TIMEOUT_MS) {
-				spawnViewer(ctx, viewer, viewer.xp, viewer.batteries, viewer.revives);
-			} else {
-				logger.info(
-					`[viewers] skip stale ${viewer.user} (${viewer.userId}), idle ${Math.round((now - viewer.lastSeen) / 3_600_000)}h`,
-				);
-			}
-		}
-	};
-	void restoreViewers();
+	const core = createGameCore(
+		{
+			screen: app.screen,
+			settings,
+			viewerStore: createViewerStore(uuid),
+			measureText,
+		},
+		{ app, assets },
+	);
 
 	let timeScale = 1;
 	let isDestroyed = false;
 
 	const update = (ticker: Ticker) => {
 		const dt = (Math.min(ticker.deltaMS, MAX_FRAME_MS) / 1000) * timeScale;
-		for (const group of groups) {
-			for (const system of group) {
-				system(dt);
-			}
-		}
+		core.step(dt);
 	};
 
 	app.ticker.add(update);
 
 	return {
-		world,
+		world: core.world,
 
-		joinViewer: (identity: ViewerIdentity) => {
-			for (const entity of viewers) {
-				if (entity.viewer.userId === identity.userId) {
-					entity.viewer.user = identity.user;
-					entity.viewer.lastSeen = ctx.now();
-					ctx.viewersDirty = true;
-					return;
-				}
-			}
-
-			spawnViewer(ctx, {
-				...identity,
-				lastSeen: ctx.now(),
-				skin: Math.floor(ctx.rng() * SHIP_COUNT),
-			});
-			ctx.viewersDirty = true;
-		},
-
-		applyShields: (shields: { userId: string; expiresAt: number }[]) => {
-			const map = new Map(
-				shields.map((shield) => [shield.userId, shield.expiresAt]),
-			);
-
-			for (const entity of viewers) {
-				const expiresAt = map.get(entity.viewer.userId);
-				if (expiresAt === undefined) continue;
-
-				if (!entity.shield) {
-					world.addComponent(entity, "shield", {
-						expiresAt,
-						hp: SHIELD_MAX_HP,
-					});
-				} else if (entity.shield.expiresAt < expiresAt) {
-					entity.shield.expiresAt = expiresAt;
-				}
-			}
-		},
-
-		grantBatteries: (userIds: string[]) => {
-			let changed = false;
-			for (const userId of userIds) {
-				for (const entity of viewers) {
-					if (entity.viewer.userId !== userId) continue;
-					entity.batteries = Math.min(
-						settings.batteryMax,
-						(entity.batteries ?? 0) + 1,
-					);
-					changed = true;
-					break;
-				}
-			}
-			if (changed) ctx.viewersDirty = true;
-		},
-
-		grantRevives: (userIds: string[]) => {
-			let changed = false;
-			for (const userId of userIds) {
-				for (const entity of viewers) {
-					if (entity.viewer.userId !== userId) continue;
-					entity.revives = Math.min(REVIVE_MAX, (entity.revives ?? 0) + 1);
-					changed = true;
-					break;
-				}
-			}
-			if (changed) ctx.viewersDirty = true;
-		},
-
-		repair: (userId: string, targetUser?: string) => {
-			const wanted = targetUser?.toLowerCase();
-			let healer: Entity | undefined;
-			let target: Entity | undefined;
-			for (const entity of viewers) {
-				if (entity.viewer.userId === userId) healer = entity;
-				if (
-					wanted !== undefined &&
-					entity.viewer.user.toLowerCase() === wanted
-				) {
-					target = entity;
-				}
-			}
-			if (!healer || (healer.batteries ?? 0) <= 0) return false;
-
-			target ??= healer;
-			if (!target.hp || target.dead || target.hp.current >= target.hp.max) {
-				return false;
-			}
-
-			healer.batteries = (healer.batteries ?? 0) - 1;
-			target.hp.current = Math.min(
-				target.hp.max,
-				target.hp.current + settings.batteryHeal,
-			);
-			ctx.viewersDirty = true;
-			return true;
-		},
-
-		removeBots: () => {
-			const toRemove: Entity[] = [];
-			for (const entity of viewers) {
-				if (entity.bot) {
-					toRemove.push(entity);
-				}
-			}
-			for (const entity of toRemove) {
-				world.remove(entity);
-			}
-			if (toRemove.length > 0) ctx.viewersDirty = true;
-		},
-
-		changeSkin: (userId: string, skin?: number) => {
-			for (const entity of viewers) {
-				if (entity.viewer.userId !== userId) continue;
-
-				const valid = skin !== undefined && skin >= 1 && skin <= SHIP_COUNT;
-				entity.viewer.skin = valid
-					? skin - 1
-					: Math.floor(ctx.rng() * SHIP_COUNT);
-				ctx.viewersDirty = true;
-				return;
-			}
-		},
-
-		shoot: (message: ChatMessage) => {
-			const text = message.text.trim().toLowerCase();
-			if (!text) return;
-
-			const targets: Entity[] = [];
-			for (const entity of wordsWithPosition) {
-				if (entity.word.text.toLowerCase() === text) {
-					targets.push(entity);
-				}
-			}
-			if (targets.length === 0) return;
-
-			let from: { x: number; y: number } | undefined;
-			for (const entity of viewersWithPosition) {
-				if (entity.viewer.userId === message.userId) {
-					if (entity.dead) return;
-					const halfHeight =
-						(entity.size?.height ?? VIEWER_HEIGHT * settings.viewerScale) / 2;
-					from = {
-						x: entity.position.x,
-						y: entity.position.y - halfHeight,
-					};
-					break;
-				}
-			}
-			from ??= {
-				x: ctx.screen.width / 2,
-				y: ctx.screen.height - VIEWER_GROUND_MARGIN,
-			};
-
-			for (const target of targets) {
-				world.add({
-					bullet: { shooterId: message.userId },
-					homing: {
-						target,
-						speed: BULLET_SPEED,
-						hitDistance: BULLET_HIT_DISTANCE,
-					},
-					position: { x: from.x, y: from.y },
-				});
-			}
-		},
+		joinViewer: core.joinViewer,
+		applyShields: core.applyShields,
+		grantBatteries: core.grantBatteries,
+		grantRevives: core.grantRevives,
+		repair: core.repair,
+		removeBots: core.removeBots,
+		changeSkin: core.changeSkin,
+		shoot: core.shoot,
+		startGame: core.startGame,
+		setAfk: core.setAfk,
+		respawn: core.respawn,
+		reset: core.reset,
 
 		start() {
 			if (isDestroyed) return;
@@ -289,55 +75,8 @@ export async function bootstrapGame(
 			return app.ticker.started;
 		},
 
-		startGame() {
-			if (session.session.phase !== SESSIONPHASE.IDLE) return;
-			session.session.phase = SESSIONPHASE.STARTING;
-			session.session.timer = 0;
-		},
-
-		setAfk(enabled: boolean) {
-			session.session.afk = enabled;
-			session.session.timer = 0;
-			const phase = session.session.phase;
-			if (
-				enabled &&
-				viewers.size > 0 &&
-				(phase === SESSIONPHASE.IDLE || phase === SESSIONPHASE.INTERMISSION)
-			) {
-				session.session.phase = SESSIONPHASE.STARTING;
-			}
-		},
-
-		respawn(userId: string) {
-			for (const entity of viewers) {
-				if (entity.viewer.userId !== userId || !entity.dead) continue;
-
-				world.removeComponent(entity, "dead");
-				if (entity.hp) {
-					entity.hp.current = entity.hp.max;
-				}
-				ctx.viewersDirty = true;
-				return;
-			}
-		},
-
 		setTimeScale(scale: number) {
 			timeScale = scale;
-		},
-
-		reset() {
-			world.clear();
-
-			for (const group of groups) {
-				for (const system of group) {
-					system.dispose?.();
-				}
-			}
-
-			groups = createGroups();
-			session = createSession();
-			void restoreViewers();
-			timeScale = 1;
 		},
 
 		destroy() {
@@ -345,13 +84,7 @@ export async function bootstrapGame(
 			isDestroyed = true;
 
 			app.ticker?.remove(update);
-			world.clear();
-
-			for (const group of groups) {
-				for (const system of group) {
-					system.dispose?.();
-				}
-			}
+			core.dispose();
 		},
 	};
 }

@@ -1,4 +1,6 @@
 export { bootstrapGame } from "./bootstrap.js";
+export { createGameCore, type GameCore } from "./core.js";
+export { createHeadlessGame, type HeadlessGameOptions } from "./headless.js";
 export type { GameContext } from "./context.js";
 export type {
 	Entity,
