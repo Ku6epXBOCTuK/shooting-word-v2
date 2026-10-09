@@ -1,5 +1,7 @@
 import { dev } from "$app/env";
+import { VIEWER_TIMEOUT_MS } from "#lib/game/config.js";
 import { normalizeSettings } from "#lib/game/settings.js";
+import { logger } from "#lib/logger.js";
 import { resolveBroadcaster } from "#lib/server/resolve-broadcaster.js";
 import { storage } from "#lib/server/storage/index.js";
 import { viewers } from "#lib/server/viewers/index.js";
@@ -9,7 +11,35 @@ export const prerender = false;
 
 interface StoredViewer {
 	userId: string;
+	lastSeen?: number;
 	[key: string]: unknown;
+}
+
+function purgeStale(
+	broadcasterId: string,
+	stored: StoredViewer[],
+): StoredViewer[] {
+	const now = Date.now();
+	const fresh = stored.filter(
+		(viewer) =>
+			typeof viewer.lastSeen !== "number" ||
+			now - viewer.lastSeen < VIEWER_TIMEOUT_MS,
+	);
+
+	if (fresh.length !== stored.length) {
+		viewers.save(
+			broadcasterId,
+			fresh.map((viewer) => ({ userId: viewer.userId, data: viewer })),
+		);
+		logger.info(
+			`[viewers] purged ${stored.length - fresh.length} stale: ${stored
+				.filter((viewer) => !fresh.includes(viewer))
+				.map((viewer) => viewer.userId)
+				.join(", ")}`,
+		);
+	}
+
+	return fresh;
 }
 
 export const GET: RequestHandler = ({ params, url, cookies }) => {
@@ -19,7 +49,12 @@ export const GET: RequestHandler = ({ params, url, cookies }) => {
 	}
 
 	if (params.key === "viewers") {
-		return Response.json(viewers.load(broadcaster.userId));
+		return Response.json(
+			purgeStale(
+				broadcaster.userId,
+				viewers.load<StoredViewer>(broadcaster.userId),
+			),
+		);
 	}
 
 	if (params.key === "settings") {
