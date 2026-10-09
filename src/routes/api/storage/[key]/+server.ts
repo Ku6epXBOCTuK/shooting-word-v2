@@ -64,6 +64,17 @@ export const GET: RequestHandler = ({ params, url, cookies }) => {
 	return Response.json(null, { status: 400 });
 };
 
+async function readJson(request: Request): Promise<unknown | null> {
+	try {
+		return await request.json();
+	} catch (error) {
+		logger.warn(
+			`[storage] bad json body: ${error instanceof Error ? error.message : String(error)}`,
+		);
+		return null;
+	}
+}
+
 export const PUT: RequestHandler = async ({
 	params,
 	url,
@@ -76,7 +87,7 @@ export const PUT: RequestHandler = async ({
 	}
 
 	if (params.key === "viewers") {
-		const body = (await request.json()) as StoredViewer[];
+		const body = (await readJson(request)) as StoredViewer[] | null;
 		if (!Array.isArray(body)) {
 			return Response.json(null, { status: 400 });
 		}
@@ -92,7 +103,7 @@ export const PUT: RequestHandler = async ({
 	}
 
 	if (params.key === "settings") {
-		const body = (await request.json()) as unknown;
+		const body = await readJson(request);
 		if (typeof body !== "object" || body === null || Array.isArray(body)) {
 			return Response.json(null, { status: 400 });
 		}
