@@ -4,14 +4,6 @@
 
 - [x] иногда дублируется зритель - из-за ошибки 500 при put. вроде исправлено,
       была проблема из-за деплоя. надо потестировать
-- [ ] dev: vitest (mode=test) и svelte-kit sync перезаписывают
-      .svelte-kit/generated/dev/env/config.js без TWITCH_* (они в .env.dev, в
-      mode=test не грузятся) -> isConfigured()=false в twitch-auth, getApiClient
-      null, /api/rewards и другие twitch-ручки отдают 503 "not authorized", а
-      кабинет работает (sqlite, twitch не нужен). лечится перезапуском
-      dev-сервера. та же дыра, что чинилась для APP_VARIANT через .env.test -
-      приватные ключи она не закрывает. варианты: vitest --mode dev, подгружать
-      .env.dev в test-режиме, читать process.env лениво
 
 ## Баланс
 
@@ -110,6 +102,8 @@
 
 ## Архив
 
+- [x] dev: после прогона vitest twitch-ручки (/api/rewards и др.) отдавали 503
+      до перезапуска dev-сервера - починено
 - [x] авто-удаление наград-сирот: pruneOrphanRewards в GET/POST /api/rewards
       удаляет manageable-награды, чьих id нет в reward_ids под ключами
       REWARD_CONFIGS (сироты + дубли); гард в keyForRewardId

@@ -1,12 +1,12 @@
 import { redirect } from "@sveltejs/kit";
 import { ApiClient } from "@twurple/api";
 import { exchangeCode, getTokenInfo, StaticAuthProvider } from "@twurple/auth";
-import {
-	TWITCH_CLIENT_ID,
-	TWITCH_CLIENT_SECRET,
-	TWITCH_REDIRECT_URI,
-} from "$app/env/private";
 import { broadcasters } from "#lib/server/broadcasters/index.js";
+import {
+	twitchClientId,
+	twitchClientSecret,
+	twitchRedirectUri,
+} from "#lib/server/twitch-env.js";
 import { SESSION_COOKIE, sessions } from "#lib/server/sessions/index.js";
 import { SESSION_TTL_MS } from "#lib/server/sessions/sqlite-adapter.js";
 import { logger } from "#lib/logger.js";
@@ -27,22 +27,19 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 	let broadcasterUserId: string;
 	try {
 		const token = await exchangeCode(
-			TWITCH_CLIENT_ID ?? "",
-			TWITCH_CLIENT_SECRET ?? "",
+			twitchClientId(),
+			twitchClientSecret(),
 			code,
-			TWITCH_REDIRECT_URI ?? `${url.origin}/auth/twitch/callback`,
+			twitchRedirectUri(`${url.origin}/auth/twitch/callback`),
 		);
 
-		const info = await getTokenInfo(token.accessToken, TWITCH_CLIENT_ID);
+		const info = await getTokenInfo(token.accessToken, twitchClientId());
 		if (!info.userId) {
 			throw new Error("token validation failed");
 		}
 
 		const api = new ApiClient({
-			authProvider: new StaticAuthProvider(
-				TWITCH_CLIENT_ID ?? "",
-				token.accessToken,
-			),
+			authProvider: new StaticAuthProvider(twitchClientId(), token.accessToken),
 		});
 		const user = await api.users.getUserById(info.userId);
 

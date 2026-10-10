@@ -1,9 +1,9 @@
 import { ApiClient } from "@twurple/api";
 import { RefreshingAuthProvider } from "@twurple/auth";
-import { TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET } from "$app/env/private";
 import { logger } from "#lib/logger.js";
 import type { Broadcaster } from "./broadcasters/index.js";
 import { broadcasters } from "./broadcasters/index.js";
+import { twitchClientId, twitchClientSecret } from "./twitch-env.js";
 
 export const TWITCH_SCOPES = ["channel:manage:redemptions", "user:write:chat"];
 
@@ -15,14 +15,14 @@ const globalScope = globalThis as typeof globalThis & {
 const registeredUsers = (globalScope.__authRegisteredUsers ??= new Set());
 
 export function isConfigured(): boolean {
-	return Boolean(TWITCH_CLIENT_ID && TWITCH_CLIENT_SECRET);
+	return Boolean(twitchClientId() && twitchClientSecret());
 }
 
 function getProvider(): RefreshingAuthProvider {
 	if (!globalScope.__authProvider) {
 		globalScope.__authProvider = new RefreshingAuthProvider({
-			clientId: TWITCH_CLIENT_ID ?? "",
-			clientSecret: TWITCH_CLIENT_SECRET ?? "",
+			clientId: twitchClientId(),
+			clientSecret: twitchClientSecret(),
 		});
 		globalScope.__authProvider.onRefresh((userId, token) => {
 			try {
