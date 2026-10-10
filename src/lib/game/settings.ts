@@ -30,6 +30,7 @@ export interface SettingDef {
 
 export interface GameSettings {
 	viewerScale: number;
+	viewerMisses: boolean;
 	viewerBaseHp: number;
 	enemyDamageChance: number;
 	pressureSpawnK: number;
@@ -51,6 +52,14 @@ export const SETTINGS_SCHEMA: SettingDef[] = [
 		max: 6,
 		step: 0.5,
 		default: VIEWER_SCALE,
+	},
+	{
+		key: "viewerMisses",
+		param: "viewer_misses",
+		label: "Показывать промахи зрителей",
+		type: "boolean",
+		scope: "static",
+		default: true,
 	},
 	{
 		key: "autoFulfillment",
@@ -94,7 +103,7 @@ export const SETTINGS_SCHEMA: SettingDef[] = [
 	{
 		key: "pressureSpawnK",
 		param: "pressure_spawn_k",
-		label: "Давление спавна, k (интервал делится на 1 + k × живые)",
+		label: "Коэффициент давления спавна",
 		type: "number",
 		scope: "full",
 		dev: true,

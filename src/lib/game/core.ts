@@ -243,16 +243,8 @@ export function createGameCore(
 		},
 
 		shoot: (message: ChatMessage) => {
-			const text = message.text.trim().toLowerCase();
+			const text = message.text.trim().split(/\s+/, 1)[0].toLowerCase();
 			if (!text) return;
-
-			const targets: Entity[] = [];
-			for (const entity of wordsWithPosition) {
-				if (entity.word.text.toLowerCase() === text) {
-					targets.push(entity);
-				}
-			}
-			if (targets.length === 0) return;
 
 			let from: { x: number; y: number } | undefined;
 			for (const entity of viewersWithPosition) {
@@ -272,6 +264,34 @@ export function createGameCore(
 				x: ctx.screen.width / 2,
 				y: ctx.screen.height - VIEWER_GROUND_MARGIN,
 			};
+
+			const targets: Entity[] = [];
+			for (const entity of wordsWithPosition) {
+				if (entity.word.text.toLowerCase() === text) {
+					targets.push(entity);
+				}
+			}
+
+			if (targets.length === 0) {
+				if (!ctx.settings.viewerMisses) return;
+
+				const target = world.add({
+					position: {
+						x: ctx.rng() * ctx.screen.width,
+						y: ctx.rng() * ctx.screen.height,
+					},
+				});
+				world.add({
+					bullet: { shooterId: message.userId, miss: true },
+					homing: {
+						target,
+						speed: BULLET_SPEED,
+						hitDistance: BULLET_HIT_DISTANCE,
+					},
+					position: { x: from.x, y: from.y },
+				});
+				return;
+			}
 
 			for (const target of targets) {
 				world.add({

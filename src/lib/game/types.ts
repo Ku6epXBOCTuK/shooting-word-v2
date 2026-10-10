@@ -57,6 +57,7 @@ export interface Homing {
 
 export interface Bullet {
 	shooterId: string;
+	miss?: boolean;
 }
 
 export interface Explosion {
