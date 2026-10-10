@@ -12,6 +12,7 @@ export class TwurpleChatAdapter implements ChatPort {
 				channel: chan,
 				userId: msg.userInfo.userId,
 				user: msg.userInfo.displayName,
+				login: msg.userInfo.userName,
 				text,
 				isMod: msg.userInfo.isMod || msg.userInfo.isBroadcaster,
 			};

@@ -12,7 +12,7 @@ test("headless game steps without pixi", () => {
 	};
 
 	const game = createHeadlessGame({ now: () => now, rng });
-	game.joinViewer({ userId: "u1", user: "alice" });
+	game.joinViewer({ userId: "u1", user: "alice", login: "alice" });
 	game.startGame();
 
 	for (let i = 0; i < 150; i++) {
@@ -33,12 +33,13 @@ test("misses disabled: unmatched shot does not fire", () => {
 	settings.viewerMisses = false;
 
 	const game = createHeadlessGame({ settings });
-	game.joinViewer({ userId: "u1", user: "alice" });
+	game.joinViewer({ userId: "u1", user: "alice", login: "alice" });
 
 	game.shoot({
 		channel: "c",
 		userId: "u1",
 		user: "alice",
+		login: "alice",
 		text: "неттакогослова",
 		isMod: false,
 	});
@@ -57,12 +58,13 @@ test("missed shot flies to a random point and explodes", () => {
 	};
 
 	const game = createHeadlessGame({ now: () => now, rng });
-	game.joinViewer({ userId: "u1", user: "alice" });
+	game.joinViewer({ userId: "u1", user: "alice", login: "alice" });
 
 	game.shoot({
 		channel: "c",
 		userId: "u1",
 		user: "alice",
+		login: "alice",
 		text: "неттакогослова и ещё слова",
 		isMod: false,
 	});
@@ -97,7 +99,7 @@ test("doomsday freezes words, destroys them and cleans up", () => {
 	};
 
 	const game = createHeadlessGame({ now: () => now, rng });
-	game.joinViewer({ userId: "u1", user: "alice" });
+	game.joinViewer({ userId: "u1", user: "alice", login: "alice" });
 	game.startGame();
 
 	for (let i = 0; i < 150; i++) {
@@ -157,8 +159,8 @@ test("doomsday rejected for dead viewer or while device active", () => {
 	};
 
 	const game = createHeadlessGame({ now: () => now, rng });
-	game.joinViewer({ userId: "u1", user: "alice" });
-	game.joinViewer({ userId: "u2", user: "bob" });
+	game.joinViewer({ userId: "u1", user: "alice", login: "alice" });
+	game.joinViewer({ userId: "u2", user: "bob", login: "bob" });
 	game.startGame();
 
 	for (let i = 0; i < 150; i++) {
@@ -192,7 +194,7 @@ test("time stop freezes word ttl for its duration", () => {
 	};
 
 	const game = createHeadlessGame({ now: () => now, rng });
-	game.joinViewer({ userId: "u1", user: "alice" });
+	game.joinViewer({ userId: "u1", user: "alice", login: "alice" });
 	game.startGame();
 
 	for (let i = 0; i < 150; i++) {
@@ -229,6 +231,45 @@ test("time stop freezes word ttl for its duration", () => {
 		game.step(0.1);
 		expect(word.lifetime.age).toBeGreaterThan(resumed);
 	}
+
+	game.dispose();
+});
+
+test("repair resolves @login to userId even when displayName differs", () => {
+	const game = createHeadlessGame({});
+	game.joinViewer({ userId: "u1", user: "Alice", login: "alice" });
+	game.joinViewer({ userId: "u2", user: "소피아", login: "sophia_kr" });
+
+	const target = [...game.world.with("viewer")].find(
+		(entity) => entity.viewer.userId === "u2",
+	);
+	if (!target?.hp) throw new Error("target viewer missing");
+	target.hp.current = 1;
+	game.grantBatteries(["u1"]);
+
+	expect(game.repair("u1", "Sophia_KR")).toBe(true);
+	expect(target.hp.current).toBeGreaterThan(1);
+	expect(
+		[...game.world.with("viewer")].find(
+			(entity) => entity.viewer.userId === "u1",
+		)?.batteries,
+	).toBe(0);
+
+	game.dispose();
+});
+
+test("repair with unknown nick fails without spending a battery", () => {
+	const game = createHeadlessGame({});
+	game.joinViewer({ userId: "u1", user: "alice", login: "alice" });
+
+	const healer = [...game.world.with("viewer")][0];
+	if (!healer.hp) throw new Error("healer viewer missing");
+	healer.hp.current = 1;
+	game.grantBatteries(["u1"]);
+
+	expect(game.repair("u1", "ghost")).toBe(false);
+	expect(healer.batteries).toBe(1);
+	expect(healer.hp.current).toBe(1);
 
 	game.dispose();
 });

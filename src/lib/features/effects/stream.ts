@@ -21,7 +21,7 @@ interface EffectsResponse {
 }
 
 interface EffectsGame {
-	joinViewer(identity: { userId: string; user: string }): void;
+	joinViewer(identity: { userId: string; user: string; login: string }): void;
 	applyShields(shields: ActiveShield[]): void;
 	grantBatteries(userIds: string[]): void;
 	grantRevives(userIds: string[]): void;
@@ -35,12 +35,20 @@ export function applyEffects(
 	reject?: (effect: RewardEffect) => void,
 ): void {
 	for (const shield of response.shields) {
-		game.joinViewer({ userId: shield.userId, user: shield.userName });
+		game.joinViewer({
+			userId: shield.userId,
+			user: shield.userName,
+			login: shield.userName,
+		});
 	}
 	game.applyShields(response.shields);
 
 	for (const effect of response.effects) {
-		game.joinViewer({ userId: effect.userId, user: effect.userName });
+		game.joinViewer({
+			userId: effect.userId,
+			user: effect.userName,
+			login: effect.userName,
+		});
 	}
 
 	const batteryUserIds = response.effects

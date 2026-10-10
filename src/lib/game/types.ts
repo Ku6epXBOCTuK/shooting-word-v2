@@ -36,12 +36,13 @@ export interface Word {
 export interface Viewer {
 	userId: string;
 	user: string;
+	login: string;
 	lastSeen: number;
 	skin: number;
 	bot?: boolean;
 }
 
-export type ViewerIdentity = Pick<Viewer, "userId" | "user" | "bot">;
+export type ViewerIdentity = Pick<Viewer, "userId" | "user" | "login" | "bot">;
 
 export interface Walker {
 	direction: 1 | -1;

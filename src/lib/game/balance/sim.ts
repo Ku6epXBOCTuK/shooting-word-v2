@@ -212,6 +212,7 @@ function fireDueShots(
 			channel: "sim",
 			userId,
 			user: viewer.viewer.user,
+			login: viewer.viewer.login,
 			text: claim.entity.word.text,
 			isMod: false,
 		});
@@ -232,7 +233,11 @@ export async function runSimulation(params: SimParams): Promise<SimStats> {
 
 	const bots = createBots(params, rng);
 	for (const bot of bots) {
-		game.joinViewer({ userId: bot.userId, user: bot.userId });
+		game.joinViewer({
+			userId: bot.userId,
+			user: bot.userId,
+			login: bot.userId,
+		});
 	}
 	game.startGame();
 

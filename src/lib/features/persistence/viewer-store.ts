@@ -16,6 +16,7 @@ function isStoredViewer(value: unknown): value is StoredViewer {
 	return (
 		typeof viewer.userId === "string" &&
 		typeof viewer.user === "string" &&
+		typeof viewer.login === "string" &&
 		typeof viewer.lastSeen === "number" &&
 		(viewer.xp === undefined || typeof viewer.xp === "number") &&
 		(viewer.batteries === undefined || typeof viewer.batteries === "number") &&

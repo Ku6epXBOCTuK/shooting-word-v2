@@ -2,6 +2,7 @@ export interface ChatMessage {
 	channel: string;
 	userId: string;
 	user: string;
+	login: string;
 	text: string;
 	isMod: boolean;
 }

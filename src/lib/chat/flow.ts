@@ -45,7 +45,12 @@ const COMMANDS: Command[] = [
 			);
 			for (let i = 0; i < count; i++) {
 				const id = Math.random().toString(36).slice(2, 8);
-				game.joinViewer({ userId: `bot-${id}`, user: `бот-${id}`, bot: true });
+				game.joinViewer({
+					userId: `bot-${id}`,
+					user: `бот-${id}`,
+					login: `bot-${id}`,
+					bot: true,
+				});
 			}
 		},
 	},
@@ -88,7 +93,11 @@ export function handleChatMessage(
 	game: Game | null,
 	message: ChatMessage,
 ): void {
-	game?.joinViewer({ userId: message.userId, user: message.user });
+	game?.joinViewer({
+		userId: message.userId,
+		user: message.user,
+		login: message.login,
+	});
 
 	const text = message.text.trim();
 	const matched = matchCommand(text);

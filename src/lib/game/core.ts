@@ -130,6 +130,7 @@ export function createGameCore(
 			for (const entity of viewers) {
 				if (entity.viewer.userId === identity.userId) {
 					entity.viewer.user = identity.user;
+					entity.viewer.login = identity.login;
 					entity.viewer.lastSeen = ctx.now();
 					ctx.viewersDirty = true;
 					return;
@@ -260,14 +261,22 @@ export function createGameCore(
 
 		repair: (userId: string, targetUser?: string) => {
 			const wanted = targetUser?.toLowerCase();
+			let targetId: string | undefined;
+			if (wanted !== undefined) {
+				for (const entity of viewers) {
+					if (entity.viewer.login.toLowerCase() === wanted) {
+						targetId = entity.viewer.userId;
+						break;
+					}
+				}
+				if (targetId === undefined) return false;
+			}
+
 			let healer: Entity | undefined;
 			let target: Entity | undefined;
 			for (const entity of viewers) {
 				if (entity.viewer.userId === userId) healer = entity;
-				if (
-					wanted !== undefined &&
-					entity.viewer.user.toLowerCase() === wanted
-				) {
+				if (targetId !== undefined && entity.viewer.userId === targetId) {
 					target = entity;
 				}
 			}

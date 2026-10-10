@@ -19,7 +19,7 @@ test("perf: 10 min of PLAYING with 10 instant-typing bots", () => {
 	const game = createHeadlessGame({ now: () => now, rng });
 
 	for (let i = 0; i < 10; i++) {
-		game.joinViewer({ userId: `u${i}`, user: `bot${i}` });
+		game.joinViewer({ userId: `u${i}`, user: `bot${i}`, login: `bot${i}` });
 	}
 	game.startGame();
 
@@ -42,6 +42,7 @@ test("perf: 10 min of PLAYING with 10 instant-typing bots", () => {
 						channel: "test",
 						userId: viewer.viewer.userId,
 						user: viewer.viewer.user,
+						login: viewer.viewer.login,
 						text: words[0].word.text,
 						isMod: false,
 					});
