@@ -6,7 +6,10 @@ import {
 	ARMED_FUSE_MS,
 	ENEMY_SPAWN_MAX_INTERVAL,
 	ENEMY_SPAWN_MIN_INTERVAL,
-	MAX_ENEMIES,
+	PRESSURE_MAX_ENEMIES_BASE,
+	PRESSURE_MAX_ENEMIES_CAP,
+	PRESSURE_MAX_ENEMIES_PER_PLAYER,
+	PRESSURE_SPAWN_SCALE_K,
 } from "../config.js";
 import {
 	BATTERY_HEAL,
@@ -25,13 +28,29 @@ const ACTIVE_RATIO = 0.5;
 const DURATION_SEC = 1800;
 const REACTION_SEC = 3;
 const WORD_TTL = 12;
-const WIPE_NOBUFF = { min: 120, max: 180 };
-const WIPE_BUFF = { min: 480, max: 720 };
-const BUFFS = {
-	shieldUptime: 0.6,
-	batteryGrantsPerHour: 12,
-	batteryHeal: 5,
-};
+const BUFF_LEVELS = [
+	{
+		label: "без баффов",
+		shieldUptime: 0,
+		batteryGrantsPerHour: 0,
+		batteryHeal: BATTERY_HEAL,
+		window: { min: 120, max: 180 },
+	},
+	{
+		label: "баффы 50%",
+		shieldUptime: 0.5,
+		batteryGrantsPerHour: 12,
+		batteryHeal: 5,
+		window: { min: 360, max: 480 },
+	},
+	{
+		label: "баффы 100%",
+		shieldUptime: 1,
+		batteryGrantsPerHour: 12,
+		batteryHeal: 5,
+		window: { min: 480, max: 720 },
+	},
+];
 const OUTPUT_PATH = resolve(__dirname, "../../../../docs/balance.md");
 
 function baseParams(total: number): Omit<SimParams, "seed"> {
@@ -48,94 +67,112 @@ function baseParams(total: number): Omit<SimParams, "seed"> {
 
 const minutes = (sec: number) => (sec / 60).toFixed(1);
 
-function wipeCell(stats: { wipeSec: number | null }): string {
+function wipeCell(
+	stats: { wipeSec: number | null },
+	window: { min: number; max: number },
+): string {
 	const sec = stats.wipeSec ?? DURATION_SEC;
 	const text = sec >= DURATION_SEC ? `≥${minutes(DURATION_SEC)}` : minutes(sec);
-	if (sec >= WIPE_BUFF.min && sec <= WIPE_BUFF.max) return `**${text}**`;
-	return text;
-}
-
-function noBuffCell(wipeSec: number | null): string {
-	const sec = wipeSec ?? DURATION_SEC;
-	const text = sec >= DURATION_SEC ? `≥${minutes(DURATION_SEC)}` : minutes(sec);
-	if (sec >= WIPE_NOBUFF.min && sec <= WIPE_NOBUFF.max) return `**${text}**`;
+	if (sec >= window.min && sec <= window.max) return `**${text}**`;
 	return text;
 }
 
 const CHANCE_GRID = [0.4, 0.5, 0.6, 0.75, 1];
+const K_GRID = [0.6, 0.9, 1.2, 1.5, 2.0];
 const CALIB_TOTALS = [10, 30, 50];
 
-function calibrate(): string {
+async function calibrate(): Promise<string> {
 	const sections: string[] = [];
 
-	for (const buff of [false, true] as const) {
-		const header = `| шанс урона \\ total | ${CALIB_TOTALS.join(" | ")} |`;
+	{
+		const window = { min: 120, max: 180 };
+		const header = `| k \\ total | ${CALIB_TOTALS.join(" | ")} |`;
 		const sep = `| --- | ${CALIB_TOTALS.map(() => "---").join(" | ")} |`;
-		const rows = CHANCE_GRID.map((chance) => {
-			const cells = CALIB_TOTALS.map((total) => {
+		const rows: string[] = [];
+		for (const k of K_GRID) {
+			const cells: string[] = [];
+			for (const total of CALIB_TOTALS) {
 				const base = baseParams(total);
-				const stats = averageStats(
+				const stats = await averageStats(
 					{
 						...base,
 						settings: {
 							...base.settings,
-							enemyDamageChance: chance,
-							...(buff ? { batteryHeal: BUFFS.batteryHeal } : {}),
+							enemyDamageChance: 0.6,
+							pressureSpawnK: k,
 						},
-						...(buff
-							? {
-									shieldUptime: BUFFS.shieldUptime,
-									batteryGrantsPerHour: BUFFS.batteryGrantsPerHour,
-								}
-							: {}),
 					},
 					RUNS,
 				);
-				return buff ? wipeCell(stats) : noBuffCell(stats.wipeSec);
-			});
-			return `| ${chance} | ${cells.join(" | ")} |`;
-		});
+				cells.push(wipeCell(stats, window));
+			}
+			rows.push(`| ${k} | ${cells.join(" | ")} |`);
+		}
 		sections.push(
-			`## Вайп (мин), ${buff ? "баффы 60%" : "без баффов"}\n\n${[header, sep, ...rows].join("\n")}`,
+			`## Подбор k давления (без баффов, p=0.6, цель 2–3 мин)\n\n${[header, sep, ...rows].join("\n")}`,
+		);
+	}
+
+	for (const buff of BUFF_LEVELS) {
+		const header = `| шанс урона \\ total | ${CALIB_TOTALS.join(" | ")} |`;
+		const sep = `| --- | ${CALIB_TOTALS.map(() => "---").join(" | ")} |`;
+		const rows: string[] = [];
+		for (const chance of CHANCE_GRID) {
+			const cells: string[] = [];
+			for (const total of CALIB_TOTALS) {
+				const base = baseParams(total);
+				const stats = await averageStats(
+					{
+						...base,
+						shieldUptime: buff.shieldUptime,
+						batteryGrantsPerHour: buff.batteryGrantsPerHour,
+						settings: {
+							...base.settings,
+							enemyDamageChance: chance,
+							batteryHeal: buff.batteryHeal,
+						},
+					},
+					RUNS,
+				);
+				cells.push(wipeCell(stats, buff.window));
+			}
+			rows.push(`| ${chance} | ${cells.join(" | ")} |`);
+		}
+		sections.push(
+			`## Вайп (мин), ${buff.label} (цель ${buff.window.min / 60}–${buff.window.max / 60} мин)\n\n${[header, sep, ...rows].join("\n")}`,
 		);
 	}
 
 	return sections.join("\n\n");
 }
 
-function buildReport(): string {
+async function buildReport(): Promise<string> {
 	return `# Balance simulation
 
 Сгенерировано: \`CALIBRATE=1 npx vitest run src/lib/game/balance/sim.spec.ts\`
 
 Цели: \`docs/balance-targets.md\`. Активный режим (!игра): смерть перманентна,
-конец раунда = вайп всех. Цель: вайп за ${
-		WIPE_NOBUFF.min / 60
-	}–${WIPE_NOBUFF.max / 60} мин без баффов, ${
-		WIPE_BUFF.min / 60
-	}–${WIPE_BUFF.max / 60} мин с баффами 60% времени (щит uptime ${
-		BUFFS.shieldUptime
-	} + ${BUFFS.batteryGrantsPerHour} батареи/час, ремонт +${
-		BUFFS.batteryHeal
-	} hp).
+конец раунда = вайп всех. Цели по покрытию баффов: ${BUFF_LEVELS.map(
+		(b) => `${b.label} — ${b.window.min / 60}–${b.window.max / 60} мин`,
+	).join(", ")} (баффы = щит uptime + батареи/час, ремонт +5 hp; выше ~60%
+покрытия — плато, овербафф не продлевает раунд).
 
 Модель: headless-прогон реальных ECS-систем (\`src/lib/game/balance/sim.ts\` на
-\`createHeadlessGame\`), без отдельного движка. Реальные константы: спавн
-${ENEMY_SPAWN_MIN_INTERVAL}–${ENEMY_SPAWN_MAX_INTERVAL} сек, кап MAX_ENEMIES
-${MAX_ENEMIES}, фьюз вооружённого слова ${ARMED_FUSE_MS} мс, урон 1 hp с шансом
-\`p\` (сетка), батарея +${BATTERY_HEAL} hp, щит ${SHIELD_MAX_HP} hp (реген 1 /
-${SHIELD_REGEN_INTERVAL} сек), печать ${
+\`createHeadlessGame\`), без отдельного движка. Реальные константы: спавн в idle
+${ENEMY_SPAWN_MIN_INTERVAL}–${ENEMY_SPAWN_MAX_INTERVAL} сек, в playing —
+давление: интервал / (1 + ${PRESSURE_SPAWN_SCALE_K} × пик живых за раунд), кап
+${PRESSURE_MAX_ENEMIES_BASE} + ${PRESSURE_MAX_ENEMIES_PER_PLAYER} × живые (≤
+${PRESSURE_MAX_ENEMIES_CAP}), фьюз вооружённого слова ${ARMED_FUSE_MS} мс, урон
+1 hp с шансом \`p\` (сетка), батарея +${BATTERY_HEAL} hp, щит ${SHIELD_MAX_HP}
+hp (реген 1 / ${SHIELD_REGEN_INTERVAL} сек), печать ${
 		DEFAULT_PARAMS.typingCharsPerSec
 	} зн/сек + реакция ${REACTION_SEC} сек (включает стрим-задержку), ttl слова
 ${WORD_TTL} сек, активных ${ACTIVE_RATIO * 100}%, прогонов на ячейку: ${RUNS}.
 
-**Жирным** — попадание в целевое окно (без баффов ${
-		WIPE_NOBUFF.min / 60
-	}–${WIPE_NOBUFF.max / 60} мин, с баффами ${WIPE_BUFF.min / 60}–${
-		WIPE_BUFF.max / 60
-	} мин); «≥${minutes(DURATION_SEC)}» = не все прогоны завершились вайпом.
+**Жирным** — попадание в целевое окно своего уровня баффов;
+«≥${minutes(DURATION_SEC)}» = не все прогоны завершились вайпом.
 
-${calibrate()}
+${await calibrate()}
 `;
 }
 
@@ -146,15 +183,15 @@ describe("balance simulation (headless ecs)", () => {
 		passivePlayers: 20,
 	};
 
-	it("single run is deterministic and sane", () => {
+	it("single run is deterministic and sane", async () => {
 		const params: SimParams = {
 			...DEFAULT_PARAMS,
 			activePlayers: 3,
 			passivePlayers: 2,
 			seed: 42,
 		};
-		const a = runSimulation(params);
-		const b = runSimulation(params);
+		const a = await runSimulation(params);
+		const b = await runSimulation(params);
 
 		expect(a).toEqual(b);
 		expect(Number.isFinite(a.deathsPerHourPerPlayer)).toBe(true);
@@ -162,15 +199,33 @@ describe("balance simulation (headless ecs)", () => {
 		expect(a.wordsKilled + a.shotsFired).toBeLessThanOrEqual(a.wordsSpawned);
 	});
 
-	it("active bots keep words under control", () => {
-		const stats = runSimulation({ ...lobby, seed: 3 });
-		expect(stats.wordsSpawned).toBeGreaterThan(0);
-		expect(stats.wordsKilled).toBeGreaterThan(0);
-		expect(stats.wipeSec).toBeNull();
+	it("spawn pressure scales with alive viewers", async () => {
+		const base: Omit<SimParams, "seed"> = {
+			...DEFAULT_PARAMS,
+			activePlayers: 0,
+			passivePlayers: 0,
+			durationSec: 120,
+			settings: { enemyDamageChance: 0 },
+		};
+		const small = await runSimulation({ ...base, passivePlayers: 5, seed: 3 });
+		const large = await runSimulation({ ...base, passivePlayers: 20, seed: 3 });
+		expect(small.wordsSpawned).toBeGreaterThan(0);
+		expect(large.wordsSpawned).toBeGreaterThan(small.wordsSpawned * 1.5);
 	});
 
-	it("passive lobby with max damage wipes", () => {
-		const stats = runSimulation({
+	it("pressure wipes active lobby eventually", async () => {
+		const stats = await runSimulation({
+			...lobby,
+			reactionSec: REACTION_SEC,
+			durationSec: 1800,
+			settings: { wordTtl: WORD_TTL },
+			seed: 3,
+		});
+		expect(stats.wipeSec).not.toBeNull();
+	});
+
+	it("passive lobby with max damage wipes", async () => {
+		const stats = await runSimulation({
 			...lobby,
 			activePlayers: 0,
 			passivePlayers: 5,
@@ -183,9 +238,9 @@ describe("balance simulation (headless ecs)", () => {
 
 	it.skipIf(process.env.CALIBRATE !== "1")(
 		"writes calibration report to docs/balance.md",
-		{ timeout: 900000 },
+		{ timeout: 1500000 },
 		async () => {
-			const report = buildReport();
+			const report = await buildReport();
 			const config = await prettier.resolveConfig(OUTPUT_PATH);
 			const formatted = await prettier.format(report, {
 				...config,

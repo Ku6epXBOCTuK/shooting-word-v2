@@ -176,7 +176,10 @@ function claimWords(
 
 		let oldest: WordEntity | null = null;
 		let oldestRemaining = Infinity;
-		for (const entity of game.world.with("word", "lifetime")) {
+		for (const entity of game.world
+			.with("word", "lifetime")
+			.without("armed")
+			.without("timedOut")) {
 			if ([...claims.values()].some((c) => c.entity === entity)) continue;
 			const remaining = entity.lifetime.ttl - entity.lifetime.age;
 			if (remaining < oldestRemaining) {
@@ -215,7 +218,7 @@ function fireDueShots(
 	}
 }
 
-export function runSimulation(params: SimParams): SimStats {
+export async function runSimulation(params: SimParams): Promise<SimStats> {
 	const rng = mulberry32(params.seed);
 	let nowMs = 0;
 
@@ -248,8 +251,13 @@ export function runSimulation(params: SimParams): SimStats {
 	let steps = 0;
 	let wipeSec: number | null = null;
 
+	let stepCount = 0;
 	for (let t = 0; t < params.durationSec; t += DT) {
 		nowMs += DT * 1000;
+		// viewerStore.save() ставит микрозадачи на каждый dirty-тик; синхронный
+		// цикл не даёт им выполниться, и они копятся, удерживая контексты (OOM на
+		// калибровке). Периодически даём очереди дренироваться.
+		if (++stepCount % 100 === 0) await Promise.resolve();
 
 		const viewerById: ViewersById = new Map();
 		for (const entity of game.world.with("viewer", "hp")) {
@@ -312,11 +320,11 @@ export function runSimulation(params: SimParams): SimStats {
 	};
 }
 
-export function averageStats(
+export async function averageStats(
 	base: Omit<SimParams, "seed">,
 	runs: number,
 	seedBase = 1,
-): SimStats {
+): Promise<SimStats> {
 	const acc: SimStats = {
 		deaths: 0,
 		deathsPerHourPerPlayer: 0,
@@ -330,7 +338,7 @@ export function averageStats(
 	};
 
 	for (let i = 0; i < runs; i++) {
-		const stats = runSimulation({ ...base, seed: seedBase + i });
+		const stats = await runSimulation({ ...base, seed: seedBase + i });
 		acc.deaths += stats.deaths;
 		acc.deathsPerHourPerPlayer += stats.deathsPerHourPerPlayer;
 		acc.shotsFired += stats.shotsFired;

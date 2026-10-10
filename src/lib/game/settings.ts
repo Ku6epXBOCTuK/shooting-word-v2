@@ -3,6 +3,7 @@ import {
 	BATTERY_HEAL,
 	BATTERY_MAX,
 	ENEMY_SHOT_DAMAGE_CHANCE,
+	PRESSURE_SPAWN_SCALE_K,
 	RESPAWN_DURATION,
 	VIEWER_BASE_HP,
 	VIEWER_SCALE,
@@ -31,6 +32,7 @@ export interface GameSettings {
 	viewerScale: number;
 	viewerBaseHp: number;
 	enemyDamageChance: number;
+	pressureSpawnK: number;
 	wordTtl: number;
 	batteryHeal: number;
 	batteryMax: number;
@@ -88,6 +90,18 @@ export const SETTINGS_SCHEMA: SettingDef[] = [
 		max: 1,
 		step: 0.05,
 		default: ENEMY_SHOT_DAMAGE_CHANCE,
+	},
+	{
+		key: "pressureSpawnK",
+		param: "pressure_spawn_k",
+		label: "Давление спавна, k (интервал делится на 1 + k × живые)",
+		type: "number",
+		scope: "full",
+		dev: true,
+		min: 0,
+		max: 3,
+		step: 0.1,
+		default: PRESSURE_SPAWN_SCALE_K,
 	},
 	{
 		key: "wordTtl",
