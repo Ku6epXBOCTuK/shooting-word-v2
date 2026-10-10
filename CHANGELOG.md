@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.13.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/990ca7581c0b345c1f5edf10521f68409e4dda42..0.13.0) - 2026-10-10
+#### Features
+- intial balance for game round - ([803f9d7](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/803f9d772eb91ad088b6b6b2d62acc32ae71dbce)) - Ku6epXBOCTuK
+- update sim with new ecs core - ([0277976](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/0277976115e0d7bce249431162d1b09d9820784a)) - Ku6epXBOCTuK
+- bot driver for simulation - ([6772b8b](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/6772b8ba717e8db8cf5816f9e1767fb574c357e1)) - Ku6epXBOCTuK
+- measure text in game context - ([477d9e5](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/477d9e5312e8f8e0f80e581d386277919edcf011)) - Ku6epXBOCTuK
+#### Refactoring
+- headless core, optional render - ([625caa6](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/625caa627b6fb30d49fce3d9687fd7d002d77fc8)) - Ku6epXBOCTuK
+- date now and rng use from game context - ([4f70cbc](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/4f70cbc7b7d0b5c03fe0af835885707188d20fb5)) - Ku6epXBOCTuK
+- separate systems, game context without pixi - ([98d87f3](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/98d87f34c9a19440ff49c61d0a7aa32d8b651aac)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.12.1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/5e38c750722f84b3239b506f4b7b84642dea4cdd..0.12.1) - 2026-10-09
 #### Bug Fixes
 - put 500 error - ([5e38c75](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/5e38c750722f84b3239b506f4b7b84642dea4cdd)) - Ku6epXBOCTuK
