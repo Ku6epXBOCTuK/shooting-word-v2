@@ -8,7 +8,10 @@ import {
 	TIME_STOP_REWARD,
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
-import type { StoredViewer } from "#lib/features/persistence/index.js";
+import type {
+	ConsumableField,
+	StoredViewer,
+} from "#lib/features/persistence/index.js";
 import { REVIVE_MAX, TIME_STOP_DURATION } from "#lib/game/config.js";
 import { normalizeSettings, type GameSettings } from "#lib/game/settings.js";
 import { logger } from "#lib/logger.js";
@@ -41,14 +44,14 @@ const globalScope = globalThis as typeof globalThis & {
 	__effectQueue?: Map<string, RewardEffect[]>;
 	__effectsRegistered?: Set<string>;
 	__effectSubscribers?: Map<string, Set<EffectSubscriber>>;
-	__effectTimeStops?: Map<string, number>;
+	__effectTimers?: Map<string, Map<string, number>>;
 };
 
 const shields = (globalScope.__effectShields ??= new Map());
 const queues = (globalScope.__effectQueue ??= new Map());
 const registered = (globalScope.__effectsRegistered ??= new Set());
 const subscribers = (globalScope.__effectSubscribers ??= new Map());
-const timeStops = (globalScope.__effectTimeStops ??= new Map());
+const timers = (globalScope.__effectTimers ??= new Map());
 
 export function subscribeEffects(
 	broadcasterId: string,
@@ -160,30 +163,12 @@ function pendingCount(
 function storedCount(
 	broadcasterId: string,
 	userId: string,
-	field: "batteries" | "revives",
+	field: ConsumableField,
 ): number {
 	const stored = viewers
 		.load<StoredViewer>(broadcasterId)
 		.find((viewer) => viewer.userId === userId);
 	return stored?.[field] ?? 0;
-}
-
-function grantShield(broadcaster: Broadcaster, event: RedemptionEvent): void {
-	let shieldMap = shields.get(broadcaster.userId);
-	if (!shieldMap) {
-		shieldMap = new Map();
-		shields.set(broadcaster.userId, shieldMap);
-	}
-	const shield: ActiveShield = {
-		userId: event.userId,
-		userName: event.userName,
-		expiresAt: Date.now() + SHIELD_DURATION_MS,
-	};
-	shieldMap.set(event.userId, shield);
-	notifySubscribers(broadcaster.userId, { shields: [shield], effects: [] });
-	logger.info(
-		`[effects] ${event.userName} got shield for ${SHIELD_DURATION_MS / 60_000} min (${broadcaster.login})`,
-	);
 }
 
 function queueEffect(
@@ -239,28 +224,32 @@ async function rejectRedemption(
 
 type RewardEvent = RedemptionEvent & { rewardId: string };
 
-type RewardCheck = (
-	broadcaster: Broadcaster,
-	event: RewardEvent,
-	settings: GameSettings,
-) => string | null;
+interface CheckContext {
+	storedCount(field: ConsumableField): number;
+	pendingCount(key: string): number;
+	effectActive(key: string): boolean;
+}
+
+interface GrantContext {
+	queueEffect(key: string): void;
+	pushShield(shield: ActiveShield): void;
+	markActive(key: string, ttlMs: number): void;
+}
 
 interface RewardHandler {
-	check?: RewardCheck;
-	grant?: (broadcaster: Broadcaster, event: RewardEvent) => void;
+	check?: (ctx: CheckContext, settings: GameSettings) => string | null;
+	grant?: (ctx: GrantContext, event: RewardEvent) => void;
 }
 
 function overLimit(
 	key: string,
-	field: "batteries" | "revives",
+	field: ConsumableField,
 	max: (settings: GameSettings) => number,
-): RewardCheck {
-	return (broadcaster, event, settings) => {
-		const total =
-			storedCount(broadcaster.userId, event.userId, field) +
-			pendingCount(broadcaster.userId, key, event.userId);
-		return total >= max(settings) ? "over limit" : null;
-	};
+): RewardHandler["check"] {
+	return (ctx, settings) =>
+		ctx.storedCount(field) + ctx.pendingCount(key) >= max(settings)
+			? "over limit"
+			: null;
 }
 
 const REWARD_HANDLERS: Record<string, RewardHandler> = {
@@ -275,16 +264,21 @@ const REWARD_HANDLERS: Record<string, RewardHandler> = {
 		check: overLimit(REVIVE_REWARD.key, "revives", () => REVIVE_MAX),
 	},
 	[SHIELD_REWARD.key]: {
-		grant: (broadcaster, event) => grantShield(broadcaster, event),
+		grant: (ctx, event) =>
+			ctx.pushShield({
+				userId: event.userId,
+				userName: event.userName,
+				expiresAt: Date.now() + SHIELD_DURATION_MS,
+			}),
 	},
 	[TIME_STOP_REWARD.key]: {
-		check: (broadcaster) =>
-			(timeStops.get(broadcaster.userId) ?? 0) > Date.now()
+		check: (ctx) =>
+			ctx.effectActive(TIME_STOP_REWARD.key)
 				? "time stop already active"
 				: null,
-		grant: (broadcaster, event) => {
-			timeStops.set(broadcaster.userId, Date.now() + TIME_STOP_DURATION * 1000);
-			queueEffect(broadcaster, TIME_STOP_REWARD.key, event);
+		grant: (ctx) => {
+			ctx.markActive(TIME_STOP_REWARD.key, TIME_STOP_DURATION * 1000);
+			ctx.queueEffect(TIME_STOP_REWARD.key);
 		},
 	},
 };
@@ -301,7 +295,43 @@ async function handleRedemption(
 	const key = keyForRewardId(broadcaster.userId, event.rewardId);
 	const handler = key !== null ? REWARD_HANDLERS[key] : undefined;
 
-	const reason = handler?.check?.(broadcaster, event, settings) ?? null;
+	const checkCtx: CheckContext = {
+		storedCount: (field) =>
+			storedCount(broadcaster.userId, event.userId, field),
+		pendingCount: (effectKey) =>
+			pendingCount(broadcaster.userId, effectKey, event.userId),
+		effectActive: (effectKey) =>
+			(timers.get(broadcaster.userId)?.get(effectKey) ?? 0) > Date.now(),
+	};
+
+	const grantCtx: GrantContext = {
+		queueEffect: (effectKey) => queueEffect(broadcaster, effectKey, event),
+		pushShield: (shield) => {
+			let shieldMap = shields.get(broadcaster.userId);
+			if (!shieldMap) {
+				shieldMap = new Map();
+				shields.set(broadcaster.userId, shieldMap);
+			}
+			shieldMap.set(shield.userId, shield);
+			notifySubscribers(broadcaster.userId, {
+				shields: [shield],
+				effects: [],
+			});
+			logger.info(
+				`[effects] ${shield.userName} got shield for ${SHIELD_DURATION_MS / 60_000} min (${broadcaster.login})`,
+			);
+		},
+		markActive: (effectKey, ttlMs) => {
+			let map = timers.get(broadcaster.userId);
+			if (!map) {
+				map = new Map();
+				timers.set(broadcaster.userId, map);
+			}
+			map.set(effectKey, Date.now() + ttlMs);
+		},
+	};
+
+	const reason = handler?.check?.(checkCtx, settings) ?? null;
 	if (reason !== null) {
 		const rejected = await rejectRedemption(
 			broadcaster,
@@ -313,7 +343,7 @@ async function handleRedemption(
 	}
 
 	if (handler?.grant) {
-		handler.grant(broadcaster, event);
+		handler.grant(grantCtx, event);
 	} else {
 		queueEffect(broadcaster, key, event);
 	}

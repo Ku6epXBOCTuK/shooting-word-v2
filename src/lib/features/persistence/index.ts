@@ -6,8 +6,8 @@ import { LocalStorageAdapter } from "./local-storage-adapter.js";
 import { ViewerStore } from "./viewer-store.js";
 
 export type { StoragePort } from "./port.js";
-export { ViewerStore } from "./viewer-store.js";
-export type { StoredViewer } from "./viewer-store.js";
+export { CONSUMABLE_FIELDS, ViewerStore } from "./viewer-store.js";
+export type { ConsumableField, StoredViewer } from "./viewer-store.js";
 
 export function createViewerStore(uuid?: string): ViewerStore {
 	if (REWARDS_ENABLED && uuid) {

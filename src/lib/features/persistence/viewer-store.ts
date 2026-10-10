@@ -3,11 +3,12 @@ import type { StoragePort } from "./port.js";
 
 const KEY = "viewers";
 
+export const CONSUMABLE_FIELDS = ["batteries", "revives"] as const;
+export type ConsumableField = (typeof CONSUMABLE_FIELDS)[number];
+
 export type StoredViewer = Viewer & {
 	xp: number;
-	batteries: number;
-	revives: number;
-};
+} & Record<ConsumableField, number>;
 
 function isStoredViewer(value: unknown): value is StoredViewer {
 	if (typeof value !== "object" || value === null) return false;
