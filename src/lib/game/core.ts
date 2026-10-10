@@ -9,6 +9,7 @@ import {
 	BULLET_HIT_DISTANCE,
 	BULLET_SPEED,
 	DOOMSDAY_DURATION,
+	TIME_STOP_DURATION,
 	REVIVE_MAX,
 	SHIELD_MAX_HP,
 	VIEWER_GROUND_MARGIN,
@@ -52,6 +53,7 @@ export function createGameCore(
 	const viewersWithPosition = world.with("viewer", "position");
 	const wordsWithPosition = world.with("word", "position");
 	const doomsdayDevices = world.with("doomsday");
+	const timeStops = world.with("timeStop");
 
 	const ctx: GameContext = {
 		world,
@@ -243,6 +245,14 @@ export function createGameCore(
 					hitDistance: BULLET_HIT_DISTANCE,
 				},
 				position: { x: from.x, y: from.y },
+			});
+		},
+
+		timeStop: () => {
+			if (timeStops.size > 0) return;
+
+			world.add({
+				timeStop: { elapsed: 0, duration: TIME_STOP_DURATION },
 			});
 		},
 

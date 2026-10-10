@@ -5,6 +5,7 @@ import { createFlightSystem } from "./flight.js";
 import { createPerspectiveSystem } from "./perspective.js";
 import { createLifetimeSystem } from "./lifetime.js";
 import { createDoomsdaySystem } from "./doomsday.js";
+import { createTimeStopSystem } from "./time-stop.js";
 import { createDoomsdayRenderSystem } from "./doomsday-render.js";
 import { createWalkSystem } from "./walk.js";
 import { createMeasureSystem } from "./measure.js";
@@ -72,6 +73,7 @@ export function logicGroups(): SystemGroup[] {
 				createSparkSystem,
 				createStarSystem,
 				createDoomsdaySystem,
+				createTimeStopSystem,
 				createExplosionSystem,
 			],
 		},

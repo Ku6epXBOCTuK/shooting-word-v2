@@ -145,6 +145,11 @@ export interface DoomsdayBolt {
 	intro: boolean;
 }
 
+export interface TimeStop {
+	elapsed: number;
+	duration: number;
+}
+
 export interface Banner {
 	text: string;
 	scale?: number;
@@ -189,6 +194,7 @@ export interface EntityComponents {
 	doomsday: Doomsday;
 	doomsdayBolt: DoomsdayBolt;
 	doomsdayed: boolean;
+	timeStop: TimeStop;
 	banner: Banner;
 	dead: boolean;
 	bot: boolean;

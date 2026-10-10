@@ -11,6 +11,7 @@ const PLATE_ALPHA = 0.7;
 
 export const createRenderSystem: RenderSystemFactory = (ctx) => {
 	const words = ctx.world.with("word", "position");
+	const stops = ctx.world.with("timeStop");
 	const style = new TextStyle({ fill: "#ffffff", fontSize: FONT_SIZE });
 
 	const unsubscribeAdded = words.onEntityAdded.subscribe((entity) => {
@@ -44,7 +45,11 @@ export const createRenderSystem: RenderSystemFactory = (ctx) => {
 			view.x = entity.position.x;
 			view.y = entity.position.y;
 			view.scale.set(entity.scale ?? 1);
-			view.tint = entity.armed ? 0xff4444 : 0xffffff;
+			view.tint = entity.armed
+				? 0xff4444
+				: stops.size > 0
+					? 0x66ccff
+					: 0xffffff;
 
 			const barZone = entity.lifetime ? BAR_GAP + BAR_HEIGHT + PLATE_PAD_Y : 0;
 			plate

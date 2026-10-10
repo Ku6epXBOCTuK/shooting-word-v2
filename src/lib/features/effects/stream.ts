@@ -3,6 +3,7 @@ import {
 	BATTERY_REWARD,
 	DOOMSDAY_REWARD,
 	REVIVE_REWARD,
+	TIME_STOP_REWARD,
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
 
@@ -23,6 +24,7 @@ interface EffectsGame {
 	grantBatteries(userIds: string[]): void;
 	grantRevives(userIds: string[]): void;
 	doomsday(userId: string): void;
+	timeStop(): void;
 }
 
 export function applyEffects(
@@ -55,6 +57,9 @@ export function applyEffects(
 	for (const effect of response.effects) {
 		if (effect.key === DOOMSDAY_REWARD.key) {
 			game.doomsday(effect.userId);
+		}
+		if (effect.key === TIME_STOP_REWARD.key) {
+			game.timeStop();
 		}
 	}
 }

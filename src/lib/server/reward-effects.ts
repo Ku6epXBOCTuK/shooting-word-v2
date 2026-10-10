@@ -5,11 +5,12 @@ import {
 	REVIVE_REWARD,
 	SHIELD_DURATION_MS,
 	SHIELD_REWARD,
+	TIME_STOP_REWARD,
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
 import type { StoredViewer } from "#lib/features/persistence/index.js";
-import { REVIVE_MAX } from "#lib/game/config.js";
-import { normalizeSettings } from "#lib/game/settings.js";
+import { REVIVE_MAX, TIME_STOP_DURATION } from "#lib/game/config.js";
+import { normalizeSettings, type GameSettings } from "#lib/game/settings.js";
 import { logger } from "#lib/logger.js";
 import type { Broadcaster } from "./broadcasters/index.js";
 import {
@@ -40,12 +41,14 @@ const globalScope = globalThis as typeof globalThis & {
 	__effectQueue?: Map<string, RewardEffect[]>;
 	__effectsRegistered?: Set<string>;
 	__effectSubscribers?: Map<string, Set<EffectSubscriber>>;
+	__effectTimeStops?: Map<string, number>;
 };
 
 const shields = (globalScope.__effectShields ??= new Map());
 const queues = (globalScope.__effectQueue ??= new Map());
 const registered = (globalScope.__effectsRegistered ??= new Set());
 const subscribers = (globalScope.__effectSubscribers ??= new Map());
+const timeStops = (globalScope.__effectTimeStops ??= new Map());
 
 export function subscribeEffects(
 	broadcasterId: string,
@@ -209,9 +212,86 @@ function queueEffect(
 	);
 }
 
-async function handleRedemption(
+async function rejectRedemption(
 	broadcaster: Broadcaster,
 	event: RedemptionEvent & { rewardId: string },
+	settings: GameSettings,
+	reason: string,
+): Promise<boolean> {
+	if (settings.autoRefund) {
+		await setRedemptionStatus(
+			broadcaster,
+			event.rewardId,
+			event.id,
+			"CANCELED",
+		);
+		logger.info(
+			`[effects] refunded ${event.userName} "${event.rewardTitle}" - ${reason} (${broadcaster.login})`,
+		);
+		return true;
+	}
+
+	logger.info(
+		`[effects] ${event.userName} redeemed "${event.rewardTitle}" - ${reason}, no refund (${broadcaster.login})`,
+	);
+	return false;
+}
+
+type RewardEvent = RedemptionEvent & { rewardId: string };
+
+type RewardCheck = (
+	broadcaster: Broadcaster,
+	event: RewardEvent,
+	settings: GameSettings,
+) => string | null;
+
+interface RewardHandler {
+	check?: RewardCheck;
+	grant?: (broadcaster: Broadcaster, event: RewardEvent) => void;
+}
+
+function overLimit(
+	key: string,
+	field: "batteries" | "revives",
+	max: (settings: GameSettings) => number,
+): RewardCheck {
+	return (broadcaster, event, settings) => {
+		const total =
+			storedCount(broadcaster.userId, event.userId, field) +
+			pendingCount(broadcaster.userId, key, event.userId);
+		return total >= max(settings) ? "over limit" : null;
+	};
+}
+
+const REWARD_HANDLERS: Record<string, RewardHandler> = {
+	[BATTERY_REWARD.key]: {
+		check: overLimit(
+			BATTERY_REWARD.key,
+			"batteries",
+			(settings) => settings.batteryMax,
+		),
+	},
+	[REVIVE_REWARD.key]: {
+		check: overLimit(REVIVE_REWARD.key, "revives", () => REVIVE_MAX),
+	},
+	[SHIELD_REWARD.key]: {
+		grant: (broadcaster, event) => grantShield(broadcaster, event),
+	},
+	[TIME_STOP_REWARD.key]: {
+		check: (broadcaster) =>
+			(timeStops.get(broadcaster.userId) ?? 0) > Date.now()
+				? "time stop already active"
+				: null,
+		grant: (broadcaster, event) => {
+			timeStops.set(broadcaster.userId, Date.now() + TIME_STOP_DURATION * 1000);
+			queueEffect(broadcaster, TIME_STOP_REWARD.key, event);
+		},
+	},
+};
+
+async function handleRedemption(
+	broadcaster: Broadcaster,
+	event: RewardEvent,
 ): Promise<void> {
 	const settings = normalizeSettings(
 		storage.load(broadcaster.userId, "settings"),
@@ -219,41 +299,21 @@ async function handleRedemption(
 		dev,
 	);
 	const key = keyForRewardId(broadcaster.userId, event.rewardId);
+	const handler = key !== null ? REWARD_HANDLERS[key] : undefined;
 
-	const limit =
-		key === BATTERY_REWARD.key
-			? { max: settings.batteryMax, field: "batteries" as const }
-			: key === REVIVE_REWARD.key
-				? { max: REVIVE_MAX, field: "revives" as const }
-				: undefined;
-
-	if (limit && key !== null) {
-		const total =
-			storedCount(broadcaster.userId, event.userId, limit.field) +
-			pendingCount(broadcaster.userId, key, event.userId);
-
-		if (total >= limit.max) {
-			if (settings.autoRefund) {
-				await setRedemptionStatus(
-					broadcaster,
-					event.rewardId,
-					event.id,
-					"CANCELED",
-				);
-				logger.info(
-					`[effects] refunded ${event.userName} "${event.rewardTitle}" - over limit (${broadcaster.login})`,
-				);
-				return;
-			}
-
-			logger.info(
-				`[effects] ${event.userName} redeemed "${event.rewardTitle}" over limit, no refund (${broadcaster.login})`,
-			);
-		}
+	const reason = handler?.check?.(broadcaster, event, settings) ?? null;
+	if (reason !== null) {
+		const rejected = await rejectRedemption(
+			broadcaster,
+			event,
+			settings,
+			reason,
+		);
+		if (rejected) return;
 	}
 
-	if (key === SHIELD_REWARD.key) {
-		grantShield(broadcaster, event);
+	if (handler?.grant) {
+		handler.grant(broadcaster, event);
 	} else {
 		queueEffect(broadcaster, key, event);
 	}

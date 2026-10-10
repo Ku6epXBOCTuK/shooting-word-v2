@@ -147,3 +147,53 @@ test("doomsday freezes words, destroys them and cleans up", () => {
 
 	game.dispose();
 });
+
+test("time stop freezes word ttl for its duration", () => {
+	let now = 1_000_000;
+	let seed = 42;
+	const rng = () => {
+		seed = (seed * 1103515245 + 12345) % 2147483648;
+		return seed / 2147483648;
+	};
+
+	const game = createHeadlessGame({ now: () => now, rng });
+	game.joinViewer({ userId: "u1", user: "alice" });
+	game.startGame();
+
+	for (let i = 0; i < 150; i++) {
+		now += 100;
+		game.step(0.1);
+	}
+
+	const word = [...game.world.with("word", "lifetime")].find(
+		(entity) => !entity.timedOut,
+	);
+	if (!word) throw new Error("no live word spawned");
+
+	game.timeStop();
+	game.timeStop();
+	expect([...game.world.with("timeStop")]).toHaveLength(1);
+
+	const age = word.lifetime.age;
+	for (let i = 0; i < 50; i++) {
+		now += 100;
+		game.step(0.1);
+	}
+	expect(word.lifetime.age).toBe(age);
+	expect([...game.world.with("timeStop")]).toHaveLength(1);
+
+	for (let i = 0; i < 70 && [...game.world.with("timeStop")].length > 0; i++) {
+		now += 100;
+		game.step(0.1);
+	}
+	expect([...game.world.with("timeStop")]).toHaveLength(0);
+
+	if (game.world.has(word) && !word.timedOut) {
+		const resumed = word.lifetime.age;
+		now += 100;
+		game.step(0.1);
+		expect(word.lifetime.age).toBeGreaterThan(resumed);
+	}
+
+	game.dispose();
+});

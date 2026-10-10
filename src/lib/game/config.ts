@@ -109,3 +109,5 @@ export const DOOMSDAY_BOLT_INTERVAL = 0.3;
 export const DOOMSDAY_BOLT_SPEED = 900;
 export const DOOMSDAY_SPARK_INTERVAL_INTRO = 0.05;
 export const DOOMSDAY_SPARK_INTERVAL = 0.15;
+
+export const TIME_STOP_DURATION = 10;
