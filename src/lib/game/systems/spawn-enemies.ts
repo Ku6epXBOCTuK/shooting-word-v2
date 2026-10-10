@@ -17,6 +17,7 @@ export const createEnemySpawnSystem: SystemFactory = (ctx) => {
 	const sessions = ctx.world.with("session");
 	const enemies = ctx.world.with("word", "position");
 	const aliveViewers = ctx.world.with("viewer").without("dead");
+	const doomsdays = ctx.world.with("doomsday");
 	let timer = ENEMY_SPAWN_MIN_INTERVAL;
 	let peakAlive = 0;
 
@@ -67,7 +68,7 @@ export const createEnemySpawnSystem: SystemFactory = (ctx) => {
 
 		if (!offset) return;
 
-		spawnEnemy(
+		const enemy = spawnEnemy(
 			ctx.world,
 			{ text, userId: "enemy", user: "enemy" },
 			screen,
@@ -75,5 +76,8 @@ export const createEnemySpawnSystem: SystemFactory = (ctx) => {
 			size,
 			ctx.rng,
 		);
+		if (doomsdays.size > 0) {
+			ctx.world.addComponent(enemy, "doomsdayed", true);
+		}
 	};
 };

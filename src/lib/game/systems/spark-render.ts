@@ -8,7 +8,9 @@ export const createSparkRenderSystem: RenderSystemFactory = (ctx) => {
 	const sparks = ctx.world.with("spark", "position");
 
 	const unsubscribeAdded = sparks.onEntityAdded.subscribe((entity) => {
-		const body = new Graphics().circle(0, 0, SPARK_RADIUS).fill(SPARK_COLOR);
+		const body = new Graphics()
+			.circle(0, 0, entity.spark.radius ?? SPARK_RADIUS)
+			.fill(SPARK_COLOR);
 		ctx.app.stage.addChild(body);
 		entity.body = body;
 	});

@@ -8,6 +8,7 @@ import { SHIP_COUNT } from "./ships.js";
 import {
 	BULLET_HIT_DISTANCE,
 	BULLET_SPEED,
+	DOOMSDAY_DURATION,
 	REVIVE_MAX,
 	SHIELD_MAX_HP,
 	VIEWER_GROUND_MARGIN,
@@ -50,6 +51,7 @@ export function createGameCore(
 	const viewers = world.with("viewer");
 	const viewersWithPosition = world.with("viewer", "position");
 	const wordsWithPosition = world.with("word", "position");
+	const doomsdayDevices = world.with("doomsday");
 
 	const ctx: GameContext = {
 		world,
@@ -187,6 +189,61 @@ export function createGameCore(
 				}
 			}
 			if (changed) ctx.viewersDirty = true;
+		},
+
+		doomsday: (userId: string) => {
+			if (doomsdayDevices.size > 0) return;
+
+			let user: string | undefined;
+			let from: { x: number; y: number } | undefined;
+			for (const entity of viewersWithPosition) {
+				if (entity.viewer.userId === userId) {
+					user = entity.viewer.user;
+					const halfHeight =
+						(entity.size?.height ?? VIEWER_HEIGHT * ctx.settings.viewerScale) /
+						2;
+					from = {
+						x: entity.position.x,
+						y: entity.position.y - halfHeight,
+					};
+					break;
+				}
+			}
+			user ??= userId;
+			from ??= {
+				x: ctx.screen.width / 2,
+				y: ctx.screen.height - VIEWER_GROUND_MARGIN,
+			};
+
+			for (const entity of wordsWithPosition) {
+				world.addComponent(entity, "doomsdayed", true);
+			}
+
+			const device = world.add({
+				doomsday: {
+					shooterId: userId,
+					user,
+					elapsed: 0,
+					duration: DOOMSDAY_DURATION,
+					active: false,
+					sparkTimer: 0,
+					boltTimer: 0,
+				},
+				position: {
+					x: ctx.screen.width / 2,
+					y: ctx.screen.height / 2,
+				},
+			});
+
+			world.add({
+				doomsdayBolt: { intro: true },
+				homing: {
+					target: device,
+					speed: BULLET_SPEED,
+					hitDistance: BULLET_HIT_DISTANCE,
+				},
+				position: { x: from.x, y: from.y },
+			});
 		},
 
 		repair: (userId: string, targetUser?: string) => {

@@ -87,3 +87,63 @@ test("missed shot flies to a random point and explodes", () => {
 
 	game.dispose();
 });
+
+test("doomsday freezes words, destroys them and cleans up", () => {
+	let now = 1_000_000;
+	let seed = 42;
+	const rng = () => {
+		seed = (seed * 1103515245 + 12345) % 2147483648;
+		return seed / 2147483648;
+	};
+
+	const game = createHeadlessGame({ now: () => now, rng });
+	game.joinViewer({ userId: "u1", user: "alice" });
+	game.startGame();
+
+	for (let i = 0; i < 150; i++) {
+		now += 100;
+		game.step(0.1);
+	}
+
+	expect([...game.world.with("word")].length).toBeGreaterThan(0);
+
+	game.doomsday("u1");
+
+	for (const word of game.world.with("word")) {
+		expect(word.doomsdayed).toBe(true);
+	}
+	expect([...game.world.with("doomsday")]).toHaveLength(1);
+	expect([...game.world.with("doomsdayBolt")]).toHaveLength(1);
+
+	const isActive = () =>
+		[...game.world.with("doomsday")][0]?.doomsday.active ?? false;
+	for (let i = 0; i < 50 && !isActive(); i++) {
+		now += 100;
+		game.step(0.1);
+	}
+	expect(isActive()).toBe(true);
+
+	const frozen = [...game.world.with("word", "lifetime")][0];
+	if (frozen) {
+		const age = frozen.lifetime.age;
+		now += 100;
+		game.step(0.1);
+		if (game.world.has(frozen)) {
+			expect(frozen.lifetime.age).toBe(age);
+		}
+	}
+
+	for (let i = 0; i < 300; i++) {
+		now += 100;
+		game.step(0.1);
+	}
+
+	expect([...game.world.with("doomsday")]).toHaveLength(0);
+	expect([...game.world.with("doomsdayed")]).toHaveLength(0);
+
+	const session = [...game.world.with("session", "roundStats")][0];
+	expect(session.roundStats.doomsday.u1.count).toBeGreaterThan(0);
+	expect(session.roundStats.kills.u1).toBeUndefined();
+
+	game.dispose();
+});

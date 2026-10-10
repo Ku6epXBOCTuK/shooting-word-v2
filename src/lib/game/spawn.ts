@@ -30,7 +30,7 @@ export function spawnEnemy(
 ) {
 	const speed = MIN_FLY_SPEED + rng() * (MAX_FLY_SPEED - MIN_FLY_SPEED);
 
-	world.add({
+	return world.add({
 		position: { x: screen.width / 2, y: screen.height / 2 },
 		position3: { x: offset.x, y: offset.y, z: Z_FAR },
 		velocity3: { x: 0, y: 0, z: -speed },

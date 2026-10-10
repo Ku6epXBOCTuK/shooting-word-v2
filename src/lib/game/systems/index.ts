@@ -4,6 +4,8 @@ import { createEnemySpawnSystem } from "./spawn-enemies.js";
 import { createFlightSystem } from "./flight.js";
 import { createPerspectiveSystem } from "./perspective.js";
 import { createLifetimeSystem } from "./lifetime.js";
+import { createDoomsdaySystem } from "./doomsday.js";
+import { createDoomsdayRenderSystem } from "./doomsday-render.js";
 import { createWalkSystem } from "./walk.js";
 import { createMeasureSystem } from "./measure.js";
 import { createShieldSystem } from "./shield.js";
@@ -69,6 +71,7 @@ export function logicGroups(): SystemGroup[] {
 				createRicochetSystem,
 				createSparkSystem,
 				createStarSystem,
+				createDoomsdaySystem,
 				createExplosionSystem,
 			],
 		},
@@ -103,6 +106,7 @@ export function renderGroups(): RenderSystemGroup[] {
 				createRicochetRenderSystem,
 				createSparkRenderSystem,
 				createStarRenderSystem,
+				createDoomsdayRenderSystem,
 				createExplosionRenderSystem,
 			],
 		},

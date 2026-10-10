@@ -84,6 +84,7 @@ export interface Spark {
 	vy: number;
 	age: number;
 	ttl: number;
+	radius?: number;
 }
 
 export interface Hitpoints {
@@ -127,6 +128,21 @@ export interface RoundStats {
 	kills: Record<string, RoundStatEntry>;
 	misses: Record<string, RoundStatEntry>;
 	heals: Record<string, RoundStatEntry>;
+	doomsday: Record<string, RoundStatEntry>;
+}
+
+export interface Doomsday {
+	shooterId: string;
+	user: string;
+	elapsed: number;
+	duration: number;
+	active: boolean;
+	sparkTimer: number;
+	boltTimer: number;
+}
+
+export interface DoomsdayBolt {
+	intro: boolean;
 }
 
 export interface Banner {
@@ -170,6 +186,9 @@ export interface EntityComponents {
 	hitBy: HitBy;
 	session: Session;
 	roundStats: RoundStats;
+	doomsday: Doomsday;
+	doomsdayBolt: DoomsdayBolt;
+	doomsdayed: boolean;
 	banner: Banner;
 	dead: boolean;
 	bot: boolean;

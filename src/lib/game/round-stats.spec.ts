@@ -32,9 +32,11 @@ test("formatRoundStats shows top 3 kills, top misser, top healer", () => {
 	bumpRoundStat(stats, "misses", "u4", "dave");
 	bumpRoundStat(stats, "heals", "u2", "bob");
 	bumpRoundStat(stats, "heals", "u2", "bob");
+	bumpRoundStat(stats, "doomsday", "u1", "alice", 27);
 
 	expect(formatRoundStats(stats)).toBe(
 		"\nсбито слов: alice — 5, bob — 4, carol — 3" +
+			"\ndoomsday: alice — 27" +
 			"\nпромахи: dave — 1" +
 			"\nпочинка: bob — 2",
 	);

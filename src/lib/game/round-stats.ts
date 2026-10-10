@@ -4,6 +4,7 @@ export const createRoundStats = (): RoundStats => ({
 	kills: {},
 	misses: {},
 	heals: {},
+	doomsday: {},
 });
 
 export const bumpRoundStat = (
@@ -11,11 +12,12 @@ export const bumpRoundStat = (
 	kind: keyof RoundStats,
 	userId: string,
 	user: string,
+	amount = 1,
 ) => {
 	const table = stats[kind];
 	const entry = table[userId] ?? (table[userId] = { user, count: 0 });
 	entry.user = user;
-	entry.count += 1;
+	entry.count += amount;
 };
 
 const topLine = (
@@ -33,6 +35,7 @@ const topLine = (
 export const formatRoundStats = (stats: RoundStats): string => {
 	const lines = [
 		topLine("сбито слов", stats.kills, 3),
+		topLine("doomsday", stats.doomsday, 1),
 		topLine("промахи", stats.misses, 1),
 		topLine("починка", stats.heals, 1),
 	].filter((line): line is string => line !== undefined);

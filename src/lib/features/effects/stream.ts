@@ -1,6 +1,7 @@
 import { resolve } from "$app/paths";
 import {
 	BATTERY_REWARD,
+	DOOMSDAY_REWARD,
 	REVIVE_REWARD,
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
@@ -21,6 +22,7 @@ interface EffectsGame {
 	applyShields(shields: ActiveShield[]): void;
 	grantBatteries(userIds: string[]): void;
 	grantRevives(userIds: string[]): void;
+	doomsday(userId: string): void;
 }
 
 export function applyEffects(
@@ -48,6 +50,12 @@ export function applyEffects(
 		.map((effect) => effect.userId);
 	if (reviveUserIds.length > 0) {
 		game.grantRevives(reviveUserIds);
+	}
+
+	for (const effect of response.effects) {
+		if (effect.key === DOOMSDAY_REWARD.key) {
+			game.doomsday(effect.userId);
+		}
 	}
 }
 

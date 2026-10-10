@@ -53,6 +53,7 @@ export async function bootstrapGame(
 		applyShields: core.applyShields,
 		grantBatteries: core.grantBatteries,
 		grantRevives: core.grantRevives,
+		doomsday: core.doomsday,
 		repair: core.repair,
 		removeBots: core.removeBots,
 		changeSkin: core.changeSkin,

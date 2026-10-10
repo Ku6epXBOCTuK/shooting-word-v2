@@ -26,10 +26,18 @@ export const REVIVE_REWARD: RewardConfig = {
 	cooldown: 0,
 };
 
+export const DOOMSDAY_REWARD: RewardConfig = {
+	key: "doomsday",
+	title: "doomsday device",
+	cost: 2000,
+	cooldown: 0,
+};
+
 export const REWARD_CONFIGS: RewardConfig[] = [
 	SHIELD_REWARD,
 	BATTERY_REWARD,
 	REVIVE_REWARD,
+	DOOMSDAY_REWARD,
 ];
 
 export const SHIELD_DURATION_MS = 10 * 60 * 1000;

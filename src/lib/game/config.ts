@@ -102,3 +102,10 @@ export const RESPAWN_DURATION = 30;
 export const ROUND_COUNTDOWN_DURATION = 9;
 export const ROUND_INTRO_DURATION = 1.5;
 export const AFK_RESTART_DELAY = 30;
+
+export const DOOMSDAY_DURATION = 25;
+export const DOOMSDAY_INTRO_SPARK_DURATION = 5;
+export const DOOMSDAY_BOLT_INTERVAL = 0.3;
+export const DOOMSDAY_BOLT_SPEED = 900;
+export const DOOMSDAY_SPARK_INTERVAL_INTRO = 0.05;
+export const DOOMSDAY_SPARK_INTERVAL = 0.15;
