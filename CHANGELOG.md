@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.14.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/ef1efa4304be324e0a68be9730366e601118cb16..0.14.0) - 2026-10-10
+#### Features
+- prune orphan and doubled rewards - ([ef6575d](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/ef6575d861c3267fa966a81a87ac157e2ef16f6f)) - Ku6epXBOCTuK
+- add doomsday device - ([49556e3](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/49556e33e76feb760dfff77cadc0ece32c7c3b90)) - Ku6epXBOCTuK
+- add game round statistics to game over banner - ([8887649](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/888764954fe2196afd06ec4c06c4dd1252fdde76)) - Ku6epXBOCTuK
+- add viewers miss shots and settings - ([18ef62c](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/18ef62c943501438af22950163cec0ed887f335d)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.13.1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/150add64850e568c8e0992bb60135400fc3a6993..0.13.1) - 2026-10-10
 #### Bug Fixes
 - update grace period to round intro - ([cd846fe](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/cd846feb0e0d806cea84059beab9f6f75b693948)) - Ku6epXBOCTuK
