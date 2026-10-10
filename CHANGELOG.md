@@ -2,6 +2,21 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.15.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/a6ce7937a628c16ebeb8a7fe6ab4fd48c92ffcdd..0.15.0) - 2026-10-10
+#### Features
+- add descriptions to reward - ([d45127d](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/d45127d01227a11a17242b40560d3ecbc81cc97c)) - Ku6epXBOCTuK
+- add overcharge reward - ([cfc6613](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/cfc6613b8255b266314d030746d7c854256dc499)) - Ku6epXBOCTuK
+- doomsday and shield reward refunds - ([14554cf](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/14554cf4fb1f16657afa3b299fec782fb2efda41)) - Ku6epXBOCTuK
+- add time stop reward - ([7a8449c](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/7a8449cacdd627b07984165f659398502f775408)) - Ku6epXBOCTuK
+#### Bug Fixes
+- update repair command - ([f465480](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/f46548019143ac8ab7695095e7f7bffa19ef960f)) - Ku6epXBOCTuK
+- update username\id flow - ([1febaf4](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/1febaf45d553eea29c6a2e3f54c1640a2c98870a)) - Ku6epXBOCTuK
+- dev env variables leak from other instance - ([a6ce793](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/a6ce7937a628c16ebeb8a7fe6ab4fd48c92ffcdd)) - Ku6epXBOCTuK
+#### Refactoring
+- rewards: check\grant functions - ([f0c474a](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/f0c474a7166638ac5481200cd4ede1aaf6f0e448)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.14.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/ef1efa4304be324e0a68be9730366e601118cb16..0.14.0) - 2026-10-10
 #### Features
 - prune orphan and doubled rewards - ([ef6575d](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/ef6575d861c3267fa966a81a87ac157e2ef16f6f)) - Ku6epXBOCTuK
