@@ -62,12 +62,8 @@ const COMMANDS: Command[] = [
 		},
 	},
 	{
-		name: "!rep",
-		aliases: ["!рем"],
-		run: (game, message) => game.repair(message.userId),
-	},
-	{
 		name: "!repair",
+		aliases: ["!rep", "!рем"],
 		run: (game, message, argument) => {
 			game.repair(message.userId, argument.replace(/^@/, "") || undefined);
 		},

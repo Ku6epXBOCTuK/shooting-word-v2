@@ -19,7 +19,7 @@ export const BATTERY_REWARD: RewardConfig = {
 	key: "battery",
 	title: "Энергоячейка для ремонта",
 	description:
-		"+1 Энергоячейка для ремонта (максимум 5). Потратить: !rep — +3 hp себе, !repair @ник — +3 hp другому игроку",
+		"+1 Энергоячейка для ремонта (максимум 5). Потратить: !repair — +3 hp себе, !repair @ник — +3 hp другому игроку",
 	cost: 200,
 	cooldown: 0,
 };
