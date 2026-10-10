@@ -148,6 +148,41 @@ test("doomsday freezes words, destroys them and cleans up", () => {
 	game.dispose();
 });
 
+test("doomsday rejected for dead viewer or while device active", () => {
+	let now = 1_000_000;
+	let seed = 42;
+	const rng = () => {
+		seed = (seed * 1103515245 + 12345) % 2147483648;
+		return seed / 2147483648;
+	};
+
+	const game = createHeadlessGame({ now: () => now, rng });
+	game.joinViewer({ userId: "u1", user: "alice" });
+	game.joinViewer({ userId: "u2", user: "bob" });
+	game.startGame();
+
+	for (let i = 0; i < 150; i++) {
+		now += 100;
+		game.step(0.1);
+	}
+
+	const dead = [...game.world.with("viewer")].find(
+		(entity) => entity.viewer.userId === "u1",
+	);
+	expect(dead).toBeDefined();
+	game.world.addComponent(dead!, "dead", true);
+
+	expect(game.doomsday("u1")).toBe(false);
+	expect([...game.world.with("doomsday")]).toHaveLength(0);
+	expect([...game.world.with("doomsdayed")]).toHaveLength(0);
+
+	expect(game.doomsday("u2")).toBe(true);
+	expect(game.doomsday("u2")).toBe(false);
+	expect([...game.world.with("doomsday")]).toHaveLength(1);
+
+	game.dispose();
+});
+
 test("time stop freezes word ttl for its duration", () => {
 	let now = 1_000_000;
 	let seed = 42;

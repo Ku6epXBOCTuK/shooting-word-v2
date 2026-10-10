@@ -193,13 +193,14 @@ export function createGameCore(
 			if (changed) ctx.viewersDirty = true;
 		},
 
-		doomsday: (userId: string) => {
-			if (doomsdayDevices.size > 0) return;
+		doomsday: (userId: string): boolean => {
+			if (doomsdayDevices.size > 0) return false;
 
 			let user: string | undefined;
 			let from: { x: number; y: number } | undefined;
 			for (const entity of viewersWithPosition) {
 				if (entity.viewer.userId === userId) {
+					if (entity.dead) return false;
 					user = entity.viewer.user;
 					const halfHeight =
 						(entity.size?.height ?? VIEWER_HEIGHT * ctx.settings.viewerScale) /
@@ -246,6 +247,7 @@ export function createGameCore(
 				},
 				position: { x: from.x, y: from.y },
 			});
+			return true;
 		},
 
 		timeStop: () => {

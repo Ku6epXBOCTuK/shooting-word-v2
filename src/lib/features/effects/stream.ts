@@ -11,6 +11,8 @@ interface RewardEffect {
 	key: string | null;
 	userId: string;
 	userName: string;
+	redemptionId?: string;
+	rewardId?: string;
 }
 
 interface EffectsResponse {
@@ -23,13 +25,14 @@ interface EffectsGame {
 	applyShields(shields: ActiveShield[]): void;
 	grantBatteries(userIds: string[]): void;
 	grantRevives(userIds: string[]): void;
-	doomsday(userId: string): void;
+	doomsday(userId: string): boolean;
 	timeStop(): void;
 }
 
 export function applyEffects(
 	game: EffectsGame,
 	response: EffectsResponse,
+	reject?: (effect: RewardEffect) => void,
 ): void {
 	for (const shield of response.shields) {
 		game.joinViewer({ userId: shield.userId, user: shield.userName });
@@ -56,7 +59,8 @@ export function applyEffects(
 
 	for (const effect of response.effects) {
 		if (effect.key === DOOMSDAY_REWARD.key) {
-			game.doomsday(effect.userId);
+			const fired = game.doomsday(effect.userId);
+			if (!fired) reject?.(effect);
 		}
 		if (effect.key === TIME_STOP_REWARD.key) {
 			game.timeStop();
@@ -68,12 +72,27 @@ export function startEffectsStream(
 	game: EffectsGame,
 	uuid: string,
 ): () => void {
+	const reject = (effect: RewardEffect) => {
+		if (!effect.redemptionId || !effect.rewardId) return;
+		void fetch(
+			`${resolve("/api/effects/reject")}?uuid=${encodeURIComponent(uuid)}`,
+			{
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({
+					redemptionId: effect.redemptionId,
+					rewardId: effect.rewardId,
+					reason: "ship destroyed or doomsday already active",
+				}),
+			},
+		);
+	};
 	const source = new EventSource(
 		`${resolve("/api/effects/stream")}?uuid=${encodeURIComponent(uuid)}`,
 	);
 	source.onmessage = (message: MessageEvent<string>) => {
 		try {
-			applyEffects(game, JSON.parse(message.data) as EffectsResponse);
+			applyEffects(game, JSON.parse(message.data) as EffectsResponse, reject);
 		} catch {
 			// malformed event - ignore, stream stays open
 		}

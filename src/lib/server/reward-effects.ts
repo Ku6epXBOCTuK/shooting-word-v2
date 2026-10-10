@@ -30,6 +30,8 @@ export interface RewardEffect {
 	userId: string;
 	userName: string;
 	rewardTitle: string;
+	redemptionId: string;
+	rewardId: string;
 }
 
 export interface EffectPush {
@@ -149,6 +151,42 @@ async function setRedemptionStatus(
 	}
 }
 
+async function cancelRedemption(
+	broadcaster: Broadcaster,
+	rewardId: string,
+	redemptionId: string,
+	settings: GameSettings,
+	reason: string,
+): Promise<boolean> {
+	if (!settings.autoRefund) {
+		logger.info(`[effects] ${reason}, no refund (${broadcaster.login})`);
+		return false;
+	}
+	await setRedemptionStatus(broadcaster, rewardId, redemptionId, "CANCELED");
+	logger.info(`[effects] refunded ${reason} (${broadcaster.login})`);
+	return true;
+}
+
+export async function refundRedemption(
+	broadcaster: Broadcaster,
+	rewardId: string,
+	redemptionId: string,
+	reason: string,
+): Promise<boolean> {
+	const settings = normalizeSettings(
+		storage.load(broadcaster.userId, "settings"),
+		undefined,
+		dev,
+	);
+	return cancelRedemption(
+		broadcaster,
+		rewardId,
+		redemptionId,
+		settings,
+		reason,
+	);
+}
+
 function pendingCount(
 	broadcasterId: string,
 	key: string,
@@ -174,13 +212,15 @@ function storedCount(
 function queueEffect(
 	broadcaster: Broadcaster,
 	key: string | null,
-	event: RedemptionEvent,
+	event: RedemptionEvent & { rewardId: string },
 ): void {
 	const effect: RewardEffect = {
 		key,
 		userId: event.userId,
 		userName: event.userName,
 		rewardTitle: event.rewardTitle,
+		redemptionId: event.id,
+		rewardId: event.rewardId,
 	};
 	if (hasEffectSubscribers(broadcaster.userId)) {
 		notifySubscribers(broadcaster.userId, { shields: [], effects: [effect] });
@@ -203,23 +243,13 @@ async function rejectRedemption(
 	settings: GameSettings,
 	reason: string,
 ): Promise<boolean> {
-	if (settings.autoRefund) {
-		await setRedemptionStatus(
-			broadcaster,
-			event.rewardId,
-			event.id,
-			"CANCELED",
-		);
-		logger.info(
-			`[effects] refunded ${event.userName} "${event.rewardTitle}" - ${reason} (${broadcaster.login})`,
-		);
-		return true;
-	}
-
-	logger.info(
-		`[effects] ${event.userName} redeemed "${event.rewardTitle}" - ${reason}, no refund (${broadcaster.login})`,
+	return cancelRedemption(
+		broadcaster,
+		event.rewardId,
+		event.id,
+		settings,
+		`${event.userName} "${event.rewardTitle}" - ${reason}`,
 	);
-	return false;
 }
 
 type RewardEvent = RedemptionEvent & { rewardId: string };
@@ -228,6 +258,7 @@ interface CheckContext {
 	storedCount(field: ConsumableField): number;
 	pendingCount(key: string): number;
 	effectActive(key: string): boolean;
+	shieldActive(): boolean;
 }
 
 interface GrantContext {
@@ -264,6 +295,7 @@ const REWARD_HANDLERS: Record<string, RewardHandler> = {
 		check: overLimit(REVIVE_REWARD.key, "revives", () => REVIVE_MAX),
 	},
 	[SHIELD_REWARD.key]: {
+		check: (ctx) => (ctx.shieldActive() ? "shield already active" : null),
 		grant: (ctx, event) =>
 			ctx.pushShield({
 				userId: event.userId,
@@ -302,6 +334,10 @@ async function handleRedemption(
 			pendingCount(broadcaster.userId, effectKey, event.userId),
 		effectActive: (effectKey) =>
 			(timers.get(broadcaster.userId)?.get(effectKey) ?? 0) > Date.now(),
+		shieldActive: () => {
+			const shield = shields.get(broadcaster.userId)?.get(event.userId);
+			return shield !== undefined && shield.expiresAt > Date.now();
+		},
 	};
 
 	const grantCtx: GrantContext = {
