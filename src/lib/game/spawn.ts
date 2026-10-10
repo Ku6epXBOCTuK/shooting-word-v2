@@ -11,7 +11,7 @@ import {
 	Z_FAR,
 } from "./config.js";
 import type { GameContext } from "./context.js";
-import type { Entity, Size, Viewer, Word } from "./types.js";
+import type { Entity, Shield, Size, Viewer, Word } from "./types.js";
 
 export function estimateWordSize(text: string, fontSize = FONT_SIZE): Size {
 	return {
@@ -46,6 +46,7 @@ export function spawnViewer(
 	xp = 0,
 	batteries = 0,
 	revives = 0,
+	shield?: Shield,
 ) {
 	const { world, screen, settings, rng } = ctx;
 	const width = VIEWER_WIDTH * settings.viewerScale;
@@ -60,6 +61,7 @@ export function spawnViewer(
 		batteries,
 		revives,
 		...(viewer.bot ? { bot: true } : {}),
+		...(shield ? { shield: { ...shield } } : {}),
 		hp: { current: baseHp, max: baseHp },
 		position: { x, y: 0 },
 		walker: {

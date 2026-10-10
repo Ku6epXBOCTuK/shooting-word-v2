@@ -39,15 +39,15 @@ const BUFF_LEVELS = [
 	{
 		label: "баффы 50%",
 		shieldUptime: 0.5,
-		batteryGrantsPerHour: 12,
-		batteryHeal: 5,
+		batteryGrantsPerHour: 6,
+		batteryHeal: BATTERY_HEAL,
 		window: { min: 360, max: 480 },
 	},
 	{
 		label: "баффы 100%",
 		shieldUptime: 1,
 		batteryGrantsPerHour: 12,
-		batteryHeal: 5,
+		batteryHeal: BATTERY_HEAL,
 		window: { min: 480, max: 720 },
 	},
 ];

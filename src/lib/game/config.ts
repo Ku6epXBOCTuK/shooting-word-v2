@@ -85,7 +85,7 @@ export const EXPLOSION_SCALE = 2;
 export const BULLET_SCALE = 2;
 
 export const ENEMY_SHOT_SPEED = 400;
-export const ENEMY_SHOT_DAMAGE_CHANCE = 0.6;
+export const ENEMY_SHOT_DAMAGE_CHANCE = 0.5;
 export const RICOCHET_TTL = 0.6;
 export const RICOCHET_SPEED_FACTOR = 2;
 export const SPARK_COUNT = 5;

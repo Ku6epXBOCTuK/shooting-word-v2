@@ -6,7 +6,12 @@ import {
 	SESSION_INTRO_DURATION,
 } from "../config.js";
 import { spawnViewer } from "../spawn.js";
-import { SESSIONPHASE, type Entity, type SessionPhase } from "../types.js";
+import {
+	SESSIONPHASE,
+	type Entity,
+	type SessionPhase,
+	type Shield,
+} from "../types.js";
 import type { SystemFactory } from "./types.js";
 
 export const createSessionSystem: SystemFactory = (ctx) => {
@@ -19,7 +24,7 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 	const banners = ctx.world.with("banner");
 
 	let lastPhase: SessionPhase = SESSIONPHASE.IDLE;
-	let pendingPlayers: StoredViewer[] = [];
+	let pendingPlayers: (StoredViewer & { shield?: Shield })[] = [];
 	let countdownBanner: Entity | null = null;
 
 	const expireAll = (entities: Iterable<Entity>) => {
@@ -41,6 +46,7 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 				xp: entity.xp ?? 0,
 				batteries: entity.batteries ?? 0,
 				revives: entity.revives ?? 0,
+				...(entity.shield ? { shield: { ...entity.shield } } : {}),
 			});
 			ctx.world.remove(entity);
 		}
@@ -48,7 +54,14 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 
 	const spawnPlayers = () => {
 		for (const viewer of pendingPlayers) {
-			spawnViewer(ctx, viewer, viewer.xp, viewer.batteries, viewer.revives);
+			spawnViewer(
+				ctx,
+				viewer,
+				viewer.xp,
+				viewer.batteries,
+				viewer.revives,
+				viewer.shield,
+			);
 		}
 		pendingPlayers = [];
 	};
