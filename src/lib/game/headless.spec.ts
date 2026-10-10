@@ -82,5 +82,8 @@ test("missed shot flies to a random point and explodes", () => {
 	expect([...game.world.with("hitBy")]).toHaveLength(0);
 	expect([...game.world.with("viewer")][0].xp ?? 0).toBe(0);
 
+	const session = [...game.world.with("session", "roundStats")][0];
+	expect(session.roundStats.misses.u1).toEqual({ user: "alice", count: 1 });
+
 	game.dispose();
 });

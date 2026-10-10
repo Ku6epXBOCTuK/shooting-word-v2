@@ -15,6 +15,7 @@ import {
 	VIEWER_TIMEOUT_MS,
 } from "./config.js";
 import type { GameContext, RenderContext } from "./context.js";
+import { bumpRoundStat, createRoundStats } from "./round-stats.js";
 import { defaultSettings, type GameSettings } from "./settings.js";
 import { spawnViewer } from "./spawn.js";
 import { cleanupGroups, logicGroups, renderGroups } from "./systems/index.js";
@@ -82,6 +83,7 @@ export function createGameCore(
 				timer: 0,
 				afk: false as boolean,
 			},
+			roundStats: createRoundStats(),
 		});
 	let session = createSession();
 
@@ -212,6 +214,14 @@ export function createGameCore(
 				target.hp.max,
 				target.hp.current + ctx.settings.batteryHeal,
 			);
+			if (session.roundStats && healer.viewer) {
+				bumpRoundStat(
+					session.roundStats,
+					"heals",
+					healer.viewer.userId,
+					healer.viewer.user,
+				);
+			}
 			ctx.viewersDirty = true;
 			return true;
 		},

@@ -118,6 +118,17 @@ export interface Session {
 	afk: boolean;
 }
 
+export interface RoundStatEntry {
+	user: string;
+	count: number;
+}
+
+export interface RoundStats {
+	kills: Record<string, RoundStatEntry>;
+	misses: Record<string, RoundStatEntry>;
+	heals: Record<string, RoundStatEntry>;
+}
+
 export interface Banner {
 	text: string;
 	scale?: number;
@@ -158,6 +169,7 @@ export interface EntityComponents {
 	shield: Shield;
 	hitBy: HitBy;
 	session: Session;
+	roundStats: RoundStats;
 	banner: Banner;
 	dead: boolean;
 	bot: boolean;

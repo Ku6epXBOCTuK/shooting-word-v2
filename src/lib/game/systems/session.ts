@@ -7,6 +7,7 @@ import {
 	ROUND_INTRO_DURATION,
 } from "../config.js";
 import { spawnViewer } from "../spawn.js";
+import { createRoundStats, formatRoundStats } from "../round-stats.js";
 import {
 	SESSIONPHASE,
 	type Entity,
@@ -83,7 +84,8 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 	const finishGame = (entity: With<Entity, "session">) => {
 		expireAll(words);
 		expireAll(projectiles);
-		ctx.world.add({ banner: { text: "игра завершена" } });
+		const stats = entity.roundStats ? formatRoundStats(entity.roundStats) : "";
+		ctx.world.add({ banner: { text: `игра завершена${stats}` } });
 		setPhase(entity, SESSIONPHASE.GAMEOVER);
 	};
 
@@ -114,6 +116,7 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 				}
 				if (session.phase === SESSIONPHASE.STARTING) {
 					clearScene();
+					entity.roundStats = createRoundStats();
 					countdownBanner = ctx.world.add({
 						banner: { text: "", scale: 3 },
 					});

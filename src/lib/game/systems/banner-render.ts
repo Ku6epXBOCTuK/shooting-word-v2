@@ -5,7 +5,11 @@ const BANNER_FONT_SIZE = 48;
 
 export const createBannerRenderSystem: RenderSystemFactory = (ctx) => {
 	const banners = ctx.world.with("banner");
-	const style = new TextStyle({ fill: "#ffffff", fontSize: BANNER_FONT_SIZE });
+	const style = new TextStyle({
+		fill: "#ffffff",
+		fontSize: BANNER_FONT_SIZE,
+		align: "center",
+	});
 
 	const unsubscribeAdded = banners.onEntityAdded.subscribe((entity) => {
 		const view = new Text({ text: entity.banner.text, style });
