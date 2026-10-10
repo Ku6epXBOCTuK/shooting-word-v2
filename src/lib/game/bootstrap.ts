@@ -51,6 +51,7 @@ export async function bootstrapGame(
 
 		joinViewer: core.joinViewer,
 		applyShields: core.applyShields,
+		applyOvercharges: core.applyOvercharges,
 		grantBatteries: core.grantBatteries,
 		grantRevives: core.grantRevives,
 		doomsday: core.doomsday,

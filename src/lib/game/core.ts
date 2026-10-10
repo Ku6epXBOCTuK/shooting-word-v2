@@ -165,6 +165,28 @@ export function createGameCore(
 			}
 		},
 
+		applyOvercharges: (
+			overcharges: { userId: string; expiresAt: number }[],
+		) => {
+			const map = new Map(
+				overcharges.map((overcharge) => [
+					overcharge.userId,
+					overcharge.expiresAt,
+				]),
+			);
+
+			for (const entity of viewers) {
+				const expiresAt = map.get(entity.viewer.userId);
+				if (expiresAt === undefined) continue;
+
+				if (!entity.overcharge) {
+					world.addComponent(entity, "overcharge", { expiresAt });
+				} else if (entity.overcharge.expiresAt < expiresAt) {
+					entity.overcharge.expiresAt = expiresAt;
+				}
+			}
+		},
+
 		grantBatteries: (userIds: string[]) => {
 			let changed = false;
 			for (const userId of userIds) {
@@ -331,13 +353,12 @@ export function createGameCore(
 		},
 
 		shoot: (message: ChatMessage) => {
-			const text = message.text.trim().split(/\s+/, 1)[0].toLowerCase();
-			if (!text) return;
-
+			let shooter: Entity | undefined;
 			let from: { x: number; y: number } | undefined;
 			for (const entity of viewersWithPosition) {
 				if (entity.viewer.userId === message.userId) {
 					if (entity.dead) return;
+					shooter = entity;
 					const halfHeight =
 						(entity.size?.height ?? VIEWER_HEIGHT * ctx.settings.viewerScale) /
 						2;
@@ -353,44 +374,54 @@ export function createGameCore(
 				y: ctx.screen.height - VIEWER_GROUND_MARGIN,
 			};
 
-			const targets: Entity[] = [];
-			for (const entity of wordsWithPosition) {
-				if (entity.word.text.toLowerCase() === text) {
-					targets.push(entity);
+			const all = message.text
+				.trim()
+				.toLowerCase()
+				.split(/\s+/)
+				.filter(Boolean);
+			const words = shooter?.overcharge ? [...new Set(all)] : all.slice(0, 1);
+			if (words.length === 0) return;
+
+			for (const text of words) {
+				const targets: Entity[] = [];
+				for (const entity of wordsWithPosition) {
+					if (entity.word.text.toLowerCase() === text) {
+						targets.push(entity);
+					}
 				}
-			}
 
-			if (targets.length === 0) {
-				if (!ctx.settings.viewerMisses) return;
+				if (targets.length === 0) {
+					if (!ctx.settings.viewerMisses) continue;
 
-				const target = world.add({
-					position: {
-						x: ctx.rng() * ctx.screen.width,
-						y: ctx.rng() * ctx.screen.height,
-					},
-				});
-				world.add({
-					bullet: { shooterId: message.userId, miss: true },
-					homing: {
-						target,
-						speed: BULLET_SPEED,
-						hitDistance: BULLET_HIT_DISTANCE,
-					},
-					position: { x: from.x, y: from.y },
-				});
-				return;
-			}
+					const target = world.add({
+						position: {
+							x: ctx.rng() * ctx.screen.width,
+							y: ctx.rng() * ctx.screen.height,
+						},
+					});
+					world.add({
+						bullet: { shooterId: message.userId, miss: true },
+						homing: {
+							target,
+							speed: BULLET_SPEED,
+							hitDistance: BULLET_HIT_DISTANCE,
+						},
+						position: { x: from.x, y: from.y },
+					});
+					continue;
+				}
 
-			for (const target of targets) {
-				world.add({
-					bullet: { shooterId: message.userId },
-					homing: {
-						target,
-						speed: BULLET_SPEED,
-						hitDistance: BULLET_HIT_DISTANCE,
-					},
-					position: { x: from.x, y: from.y },
-				});
+				for (const target of targets) {
+					world.add({
+						bullet: { shooterId: message.userId },
+						homing: {
+							target,
+							speed: BULLET_SPEED,
+							hitDistance: BULLET_HIT_DISTANCE,
+						},
+						position: { x: from.x, y: from.y },
+					});
+				}
 			}
 		},
 

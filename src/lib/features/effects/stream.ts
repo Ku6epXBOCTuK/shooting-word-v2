@@ -4,6 +4,7 @@ import {
 	DOOMSDAY_REWARD,
 	REVIVE_REWARD,
 	TIME_STOP_REWARD,
+	type ActiveOvercharge,
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
 
@@ -17,12 +18,14 @@ interface RewardEffect {
 
 interface EffectsResponse {
 	shields: ActiveShield[];
+	overcharges?: ActiveOvercharge[];
 	effects: RewardEffect[];
 }
 
 interface EffectsGame {
 	joinViewer(identity: { userId: string; user: string; login: string }): void;
 	applyShields(shields: ActiveShield[]): void;
+	applyOvercharges(overcharges: ActiveOvercharge[]): void;
 	grantBatteries(userIds: string[]): void;
 	grantRevives(userIds: string[]): void;
 	doomsday(userId: string): boolean;
@@ -42,6 +45,15 @@ export function applyEffects(
 		});
 	}
 	game.applyShields(response.shields);
+
+	for (const overcharge of response.overcharges ?? []) {
+		game.joinViewer({
+			userId: overcharge.userId,
+			user: overcharge.userName,
+			login: overcharge.userName,
+		});
+	}
+	game.applyOvercharges(response.overcharges ?? []);
 
 	for (const effect of response.effects) {
 		game.joinViewer({

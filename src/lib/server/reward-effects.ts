@@ -1,11 +1,14 @@
 import { dev } from "$app/env";
 import {
 	BATTERY_REWARD,
+	OVERCHARGE_DURATION_MS,
+	OVERCHARGE_REWARD,
 	REWARD_CONFIGS,
 	REVIVE_REWARD,
 	SHIELD_DURATION_MS,
 	SHIELD_REWARD,
 	TIME_STOP_REWARD,
+	type ActiveOvercharge,
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
 import type {
@@ -36,6 +39,7 @@ export interface RewardEffect {
 
 export interface EffectPush {
 	shields: ActiveShield[];
+	overcharges: ActiveOvercharge[];
 	effects: RewardEffect[];
 }
 
@@ -43,6 +47,7 @@ export type EffectSubscriber = (push: EffectPush) => void;
 
 const globalScope = globalThis as typeof globalThis & {
 	__effectShields?: Map<string, Map<string, ActiveShield>>;
+	__effectOvercharges?: Map<string, Map<string, ActiveOvercharge>>;
 	__effectQueue?: Map<string, RewardEffect[]>;
 	__effectsRegistered?: Set<string>;
 	__effectSubscribers?: Map<string, Set<EffectSubscriber>>;
@@ -50,6 +55,7 @@ const globalScope = globalThis as typeof globalThis & {
 };
 
 const shields = (globalScope.__effectShields ??= new Map());
+const overcharges = (globalScope.__effectOvercharges ??= new Map());
 const queues = (globalScope.__effectQueue ??= new Map());
 const registered = (globalScope.__effectsRegistered ??= new Set());
 const subscribers = (globalScope.__effectSubscribers ??= new Map());
@@ -106,10 +112,12 @@ function keyForRewardId(
 
 export function getRewardEffects(broadcasterId: string): {
 	shields: ActiveShield[];
+	overcharges: ActiveOvercharge[];
 	effects: RewardEffect[];
 } {
 	const now = Date.now();
 	const activeShields: ActiveShield[] = [];
+	const activeOvercharges: ActiveOvercharge[] = [];
 
 	const shieldMap = shields.get(broadcasterId);
 	if (shieldMap) {
@@ -122,10 +130,21 @@ export function getRewardEffects(broadcasterId: string): {
 		}
 	}
 
+	const overchargeMap = overcharges.get(broadcasterId);
+	if (overchargeMap) {
+		for (const [userId, overcharge] of overchargeMap) {
+			if (overcharge.expiresAt > now) {
+				activeOvercharges.push(overcharge);
+			} else {
+				overchargeMap.delete(userId);
+			}
+		}
+	}
+
 	const effects = queues.get(broadcasterId) ?? [];
 	queues.set(broadcasterId, []);
 
-	return { shields: activeShields, effects };
+	return { shields: activeShields, overcharges: activeOvercharges, effects };
 }
 
 async function setRedemptionStatus(
@@ -223,7 +242,11 @@ function queueEffect(
 		rewardId: event.rewardId,
 	};
 	if (hasEffectSubscribers(broadcaster.userId)) {
-		notifySubscribers(broadcaster.userId, { shields: [], effects: [effect] });
+		notifySubscribers(broadcaster.userId, {
+			shields: [],
+			overcharges: [],
+			effects: [effect],
+		});
 	} else {
 		let queue = queues.get(broadcaster.userId);
 		if (!queue) {
@@ -259,11 +282,13 @@ interface CheckContext {
 	pendingCount(key: string): number;
 	effectActive(key: string): boolean;
 	shieldActive(): boolean;
+	overchargeActive(): boolean;
 }
 
 interface GrantContext {
 	queueEffect(key: string): void;
 	pushShield(shield: ActiveShield): void;
+	pushOvercharge(overcharge: ActiveOvercharge): void;
 	markActive(key: string, ttlMs: number): void;
 }
 
@@ -313,6 +338,16 @@ const REWARD_HANDLERS: Record<string, RewardHandler> = {
 			ctx.queueEffect(TIME_STOP_REWARD.key);
 		},
 	},
+	[OVERCHARGE_REWARD.key]: {
+		check: (ctx) =>
+			ctx.overchargeActive() ? "overcharge already active" : null,
+		grant: (ctx, event) =>
+			ctx.pushOvercharge({
+				userId: event.userId,
+				userName: event.userName,
+				expiresAt: Date.now() + OVERCHARGE_DURATION_MS,
+			}),
+	},
 };
 
 async function handleRedemption(
@@ -338,6 +373,10 @@ async function handleRedemption(
 			const shield = shields.get(broadcaster.userId)?.get(event.userId);
 			return shield !== undefined && shield.expiresAt > Date.now();
 		},
+		overchargeActive: () => {
+			const overcharge = overcharges.get(broadcaster.userId)?.get(event.userId);
+			return overcharge !== undefined && overcharge.expiresAt > Date.now();
+		},
 	};
 
 	const grantCtx: GrantContext = {
@@ -351,10 +390,27 @@ async function handleRedemption(
 			shieldMap.set(shield.userId, shield);
 			notifySubscribers(broadcaster.userId, {
 				shields: [shield],
+				overcharges: [],
 				effects: [],
 			});
 			logger.info(
 				`[effects] ${shield.userName} got shield for ${SHIELD_DURATION_MS / 60_000} min (${broadcaster.login})`,
+			);
+		},
+		pushOvercharge: (overcharge) => {
+			let overchargeMap = overcharges.get(broadcaster.userId);
+			if (!overchargeMap) {
+				overchargeMap = new Map();
+				overcharges.set(broadcaster.userId, overchargeMap);
+			}
+			overchargeMap.set(overcharge.userId, overcharge);
+			notifySubscribers(broadcaster.userId, {
+				shields: [],
+				overcharges: [overcharge],
+				effects: [],
+			});
+			logger.info(
+				`[effects] ${overcharge.userName} got overcharge for ${OVERCHARGE_DURATION_MS / 60_000} min (${broadcaster.login})`,
 			);
 		},
 		markActive: (effectKey, ttlMs) => {

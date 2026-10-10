@@ -99,6 +99,10 @@ export interface Shield {
 	regenIn?: number;
 }
 
+export interface Overcharge {
+	expiresAt: number;
+}
+
 export interface HitBy {
 	shooterId: string;
 }
@@ -189,6 +193,7 @@ export interface EntityComponents {
 	spark: Spark;
 	hp: Hitpoints;
 	shield: Shield;
+	overcharge: Overcharge;
 	hitBy: HitBy;
 	session: Session;
 	roundStats: RoundStats;

@@ -258,6 +258,39 @@ test("repair resolves @login to userId even when displayName differs", () => {
 	game.dispose();
 });
 
+test("overcharge shoots every unique word of the message until expiry", () => {
+	let now = 1_000_000;
+	const game = createHeadlessGame({ now: () => now });
+	game.joinViewer({ userId: "u1", user: "alice", login: "alice" });
+
+	const shoot = (text: string) =>
+		game.shoot({
+			channel: "c",
+			userId: "u1",
+			user: "alice",
+			login: "alice",
+			text,
+			isMod: false,
+		});
+	const bulletCount = () => [...game.world.with("bullet")].length;
+
+	shoot("раз два");
+	expect(bulletCount()).toBe(1);
+
+	game.applyOvercharges([{ userId: "u1", expiresAt: now + 120_000 }]);
+
+	shoot("раз два два три");
+	expect(bulletCount()).toBe(1 + 3);
+
+	now += 121_000;
+	game.step(0.1);
+
+	shoot("раз два");
+	expect(bulletCount()).toBe(4 + 1);
+
+	game.dispose();
+});
+
 test("repair with unknown nick fails without spending a battery", () => {
 	const game = createHeadlessGame({});
 	game.joinViewer({ userId: "u1", user: "alice", login: "alice" });
