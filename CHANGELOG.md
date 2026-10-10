@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.13.1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/150add64850e568c8e0992bb60135400fc3a6993..0.13.1) - 2026-10-10
+#### Bug Fixes
+- update grace period to round intro - ([cd846fe](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/cd846feb0e0d806cea84059beab9f6f75b693948)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.13.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/990ca7581c0b345c1f5edf10521f68409e4dda42..0.13.0) - 2026-10-10
 #### Features
 - intial balance for game round - ([803f9d7](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/803f9d772eb91ad088b6b6b2d62acc32ae71dbce)) - Ku6epXBOCTuK
