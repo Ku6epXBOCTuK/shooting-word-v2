@@ -150,6 +150,7 @@ const FAILURE = (reason: string): RewardsManageResult => ({
 interface EffectiveReward {
 	key: string;
 	title: string;
+	description: string;
 	cost: number;
 	cooldown: number;
 }
@@ -167,6 +168,9 @@ function effectiveRewards(settings: GameSettings): EffectiveReward[] {
 			String(settings[`reward.${config.key}.title`] ?? config.title),
 		),
 		cost: Number(settings[`reward.${config.key}.cost`] ?? config.cost),
+		description: String(
+			settings[`reward.${config.key}.description`] ?? config.description,
+		),
 		cooldown: Number(
 			settings[`reward.${config.key}.cooldown`] ?? config.cooldown,
 		),
@@ -229,6 +233,7 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 					await context.api.channelPoints.createCustomReward(context.userId, {
 						title: reward.title,
 						cost: reward.cost,
+						prompt: reward.description,
 						...cooldownData(reward.cooldown),
 						isEnabled: enabled,
 					});
@@ -257,6 +262,7 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 						{
 							title: reward.title,
 							cost: reward.cost,
+							prompt: reward.description,
 							...cooldownData(reward.cooldown),
 						},
 					);
@@ -269,6 +275,7 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 					await context.api.channelPoints.createCustomReward(context.userId, {
 						title: reward.title,
 						cost: reward.cost,
+						prompt: reward.description,
 						...cooldownData(reward.cooldown),
 					});
 				rewardIds.set(context.userId, reward.key, createdReward.id);

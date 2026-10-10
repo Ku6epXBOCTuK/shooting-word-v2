@@ -177,6 +177,16 @@ for (const reward of REWARD_CONFIGS) {
 			default: reward.title,
 		},
 		{
+			key: `reward.${reward.key}.description`,
+			param: `reward_${reward.key}_description`,
+			label: "Описание",
+			type: "string",
+			scope: "full",
+			group,
+			maxLength: 200,
+			default: reward.description,
+		},
+		{
 			key: `reward.${reward.key}.cost`,
 			param: `reward_${reward.key}_cost`,
 			label: "Стоимость",
