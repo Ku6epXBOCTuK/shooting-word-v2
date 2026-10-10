@@ -37,6 +37,12 @@ export class SqliteRewardIdsRepo implements RewardIdsRepo {
 		return rows.map(({ key, reward_id }) => ({ key, rewardId: reward_id }));
 	}
 
+	remove(broadcasterId: string, key: string): void {
+		this.db
+			.prepare("DELETE FROM reward_ids WHERE broadcaster_id = ? AND key = ?")
+			.run(broadcasterId, key);
+	}
+
 	clear(broadcasterId: string): void {
 		this.db
 			.prepare("DELETE FROM reward_ids WHERE broadcaster_id = ?")

@@ -1,6 +1,8 @@
 import type { Cookies } from "@sveltejs/kit";
-import type { HelixCustomReward } from "@twurple/api";
+import type { ApiClient, HelixCustomReward } from "@twurple/api";
+import { dev } from "$app/env";
 import { rewardIds } from "#lib/server/reward-ids/index.js";
+import { planRewardPrune } from "#lib/server/reward-ids/prune.js";
 import { resolveBroadcaster } from "#lib/server/resolve-broadcaster.js";
 import { storage } from "#lib/server/storage/index.js";
 import { getApiClient } from "#lib/server/twitch-auth.js";
@@ -49,6 +51,45 @@ const NOT_AUTHORIZED = {
 	rewards: [],
 };
 
+async function pruneOrphanRewards(context: {
+	api: ApiClient;
+	userId: string;
+}): Promise<Set<string>> {
+	const manageable = await context.api.channelPoints.getCustomRewards(
+		context.userId,
+		true,
+	);
+	const plan = planRewardPrune(
+		rewardIds.list(context.userId),
+		new Set(REWARD_CONFIGS.map((config) => config.key)),
+		manageable.map((reward) => reward.id),
+	);
+	const removed = new Set<string>();
+
+	for (const id of plan.deleteIds) {
+		try {
+			await context.api.channelPoints.deleteCustomReward(context.userId, id);
+			removed.add(id);
+		} catch (error) {
+			logger.warn(
+				`[rewards] failed to delete orphan reward ${id}: ${error instanceof Error ? error.message : String(error)}`,
+			);
+		}
+	}
+
+	for (const key of plan.staleKeys) {
+		rewardIds.remove(context.userId, key);
+	}
+
+	if (removed.size > 0 || plan.staleKeys.length > 0) {
+		logger.info(
+			`[rewards] pruned ${removed.size} orphan rewards, ${plan.staleKeys.length} stale ids`,
+		);
+	}
+
+	return removed;
+}
+
 export const GET: RequestHandler = async ({ url, cookies }) => {
 	const context = await resolveContext(cookies, url);
 
@@ -57,9 +98,11 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 	}
 
 	try {
-		const data = await context.api.channelPoints.getCustomRewards(
+		const all = await context.api.channelPoints.getCustomRewards(
 			context.userId,
 		);
+		const removed = await pruneOrphanRewards(context);
+		const data = all.filter(({ id }) => !removed.has(id));
 		const rewards: ChannelReward[] = data.map(({ id, title, cost }) => ({
 			id,
 			title,
@@ -71,7 +114,11 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 				data,
 				context.userId,
 				config.key,
-				String(context.settings[`reward.${config.key}.title`] ?? config.title),
+				effectiveTitle(
+					String(
+						context.settings[`reward.${config.key}.title`] ?? config.title,
+					),
+				),
 			);
 			return {
 				key: config.key,
@@ -107,10 +154,18 @@ interface EffectiveReward {
 	cooldown: number;
 }
 
+const DEV_TITLE_PREFIX = "Dev: ";
+
+function effectiveTitle(title: string): string {
+	return dev ? `${DEV_TITLE_PREFIX}${title}` : title;
+}
+
 function effectiveRewards(settings: GameSettings): EffectiveReward[] {
 	return REWARD_CONFIGS.map((config) => ({
 		key: config.key,
-		title: String(settings[`reward.${config.key}.title`] ?? config.title),
+		title: effectiveTitle(
+			String(settings[`reward.${config.key}.title`] ?? config.title),
+		),
 		cost: Number(settings[`reward.${config.key}.cost`] ?? config.cost),
 		cooldown: Number(
 			settings[`reward.${config.key}.cooldown`] ?? config.cooldown,
@@ -140,9 +195,11 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 	const { action } = body;
 
 	try {
-		const existing = await context.api.channelPoints.getCustomRewards(
+		const existingAll = await context.api.channelPoints.getCustomRewards(
 			context.userId,
 		);
+		const removed = await pruneOrphanRewards(context);
+		const existing = existingAll.filter(({ id }) => !removed.has(id));
 
 		if (action === "toggle") {
 			const enabled = body.enabled === true;

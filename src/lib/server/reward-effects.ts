@@ -1,6 +1,7 @@
 import { dev } from "$app/env";
 import {
 	BATTERY_REWARD,
+	REWARD_CONFIGS,
 	REVIVE_REWARD,
 	SHIELD_DURATION_MS,
 	SHIELD_REWARD,
@@ -85,7 +86,12 @@ function keyForRewardId(
 	rewardId: string,
 ): string | null {
 	for (const entry of rewardIds.list(broadcasterId)) {
-		if (entry.rewardId === rewardId) return entry.key;
+		if (
+			entry.rewardId === rewardId &&
+			REWARD_CONFIGS.some((config) => config.key === entry.key)
+		) {
+			return entry.key;
+		}
 	}
 	return null;
 }
