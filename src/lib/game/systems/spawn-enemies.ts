@@ -5,7 +5,7 @@ import {
 	MAX_ENEMIES,
 	pressureMaxEnemies,
 	pressureSpawnInterval,
-	SESSION_ENEMY_GRACE,
+	ROUND_INTRO_DURATION,
 } from "../config.js";
 import { collectTakenRects, findPlacement } from "../placement.js";
 import { estimateWordSize, spawnEnemy } from "../spawn.js";
@@ -26,7 +26,7 @@ export const createEnemySpawnSystem: SystemFactory = (ctx) => {
 		for (const entity of sessions) {
 			const { phase, timer: phaseTimer } = entity.session;
 			pressure =
-				phase === SESSIONPHASE.PLAYING && phaseTimer >= SESSION_ENEMY_GRACE;
+				phase === SESSIONPHASE.PLAYING && phaseTimer >= ROUND_INTRO_DURATION;
 			canSpawn = phase === SESSIONPHASE.IDLE || pressure;
 		}
 		if (!pressure) peakAlive = 0;

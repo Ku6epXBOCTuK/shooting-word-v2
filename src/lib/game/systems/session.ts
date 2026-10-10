@@ -3,7 +3,8 @@ import type { StoredViewer } from "#lib/features/persistence/index.js";
 import {
 	AFK_RESTART_DELAY,
 	GAMEOVER_DURATION,
-	SESSION_INTRO_DURATION,
+	ROUND_COUNTDOWN_DURATION,
+	ROUND_INTRO_DURATION,
 } from "../config.js";
 import { spawnViewer } from "../spawn.js";
 import {
@@ -26,6 +27,7 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 	let lastPhase: SessionPhase = SESSIONPHASE.IDLE;
 	let pendingPlayers: (StoredViewer & { shield?: Shield })[] = [];
 	let countdownBanner: Entity | null = null;
+	let roundIntroBanner: Entity | null = null;
 
 	const expireAll = (entities: Iterable<Entity>) => {
 		for (const entity of entities) {
@@ -102,14 +104,23 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 
 			if (session.phase !== lastPhase) {
 				lastPhase = session.phase;
+				if (countdownBanner) {
+					ctx.world.remove(countdownBanner);
+					countdownBanner = null;
+				}
+				if (roundIntroBanner) {
+					ctx.world.remove(roundIntroBanner);
+					roundIntroBanner = null;
+				}
 				if (session.phase === SESSIONPHASE.STARTING) {
 					clearScene();
 					countdownBanner = ctx.world.add({
 						banner: { text: "", scale: 3 },
 					});
-				} else if (countdownBanner) {
-					ctx.world.remove(countdownBanner);
-					countdownBanner = null;
+				} else if (session.phase === SESSIONPHASE.PLAYING) {
+					roundIntroBanner = ctx.world.add({
+						banner: { text: "враги приближаются" },
+					});
 				}
 			}
 
@@ -117,17 +128,23 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 
 			if (session.phase === SESSIONPHASE.STARTING) {
 				if (countdownBanner?.banner) {
-					const remaining = SESSION_INTRO_DURATION - session.timer;
+					const remaining = ROUND_COUNTDOWN_DURATION - session.timer;
 					countdownBanner.banner.text = String(
 						Math.max(1, Math.ceil(remaining)),
 					);
 				}
-				if (session.timer >= SESSION_INTRO_DURATION) {
+				if (session.timer >= ROUND_COUNTDOWN_DURATION) {
 					spawnPlayers();
 					setPhase(entity, SESSIONPHASE.PLAYING);
 				}
-			} else if (session.phase === SESSIONPHASE.PLAYING && allPlayersDead()) {
-				finishGame(entity);
+			} else if (session.phase === SESSIONPHASE.PLAYING) {
+				if (roundIntroBanner && session.timer >= ROUND_INTRO_DURATION) {
+					ctx.world.remove(roundIntroBanner);
+					roundIntroBanner = null;
+				}
+				if (allPlayersDead()) {
+					finishGame(entity);
+				}
 			} else if (
 				session.phase === SESSIONPHASE.GAMEOVER &&
 				session.timer >= GAMEOVER_DURATION
@@ -135,6 +152,7 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 				for (const banner of banners) {
 					ctx.world.remove(banner);
 				}
+				roundIntroBanner = null;
 				revivePlayers();
 				setPhase(
 					entity,

@@ -99,6 +99,6 @@ export const ARMED_FUSE_MS = 1000;
 
 export const GAMEOVER_DURATION = 10;
 export const RESPAWN_DURATION = 30;
-export const SESSION_INTRO_DURATION = 9;
-export const SESSION_ENEMY_GRACE = 1.5;
+export const ROUND_COUNTDOWN_DURATION = 9;
+export const ROUND_INTRO_DURATION = 1.5;
 export const AFK_RESTART_DELAY = 30;
