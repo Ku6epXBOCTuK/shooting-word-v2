@@ -2,13 +2,8 @@
 
 ## Баги
 
-- [ ] иногда дублируется зритель - из-за ошибки 500 при put
-
-      ```txt
-      Request URL: https://xboct-games.duckdns.org/api/storage/viewers?uuid=xxx
-      Request Method: PUT
-      Status Code: 500 Internal Server Error
-      ```
+- [x] иногда дублируется зритель - из-за ошибки 500 при put. вроде исправлено,
+      была проблема из-за деплоя. надо потестировать
 
 ## Баланс
 
