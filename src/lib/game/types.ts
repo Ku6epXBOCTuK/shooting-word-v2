@@ -103,6 +103,10 @@ export interface Overcharge {
 	expiresAt: number;
 }
 
+export interface Ricochetium {
+	expiresAt: number;
+}
+
 export interface HitBy {
 	shooterId: string;
 }
@@ -194,6 +198,7 @@ export interface EntityComponents {
 	hp: Hitpoints;
 	shield: Shield;
 	overcharge: Overcharge;
+	ricochetium: Ricochetium;
 	hitBy: HitBy;
 	session: Session;
 	roundStats: RoundStats;

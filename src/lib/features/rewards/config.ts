@@ -67,6 +67,15 @@ export const OVERCHARGE_REWARD: RewardConfig = {
 	cooldown: 0,
 };
 
+export const RICOCHETIUM_REWARD: RewardConfig = {
+	key: "ricochetium",
+	title: "Обмазка из рикошетиума",
+	description:
+		"5 минут вражеские снаряды вдвое реже наносят урон твоему кораблю",
+	cost: 400,
+	cooldown: 0,
+};
+
 export const REWARD_CONFIGS: RewardConfig[] = [
 	SHIELD_REWARD,
 	BATTERY_REWARD,
@@ -75,10 +84,12 @@ export const REWARD_CONFIGS: RewardConfig[] = [
 	DOOMSDAY_REWARD,
 	TIME_STOP_REWARD,
 	OVERCHARGE_REWARD,
+	RICOCHETIUM_REWARD,
 ];
 
 export const SHIELD_DURATION_MS = 10 * 60 * 1000;
 export const OVERCHARGE_DURATION_MS = 2 * 60 * 1000;
+export const RICOCHETIUM_DURATION_MS = 5 * 60 * 1000;
 
 export interface ActiveShield {
 	userId: string;
@@ -87,3 +98,4 @@ export interface ActiveShield {
 }
 
 export type ActiveOvercharge = ActiveShield;
+export type ActiveRicochetium = ActiveShield;

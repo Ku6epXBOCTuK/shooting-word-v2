@@ -11,7 +11,14 @@ import {
 	Z_FAR,
 } from "./config.js";
 import type { GameContext } from "./context.js";
-import type { Entity, Shield, Size, Viewer, Word } from "./types.js";
+import type {
+	Entity,
+	Ricochetium,
+	Shield,
+	Size,
+	Viewer,
+	Word,
+} from "./types.js";
 
 export function estimateWordSize(text: string, fontSize = FONT_SIZE): Size {
 	return {
@@ -48,6 +55,7 @@ export function spawnViewer(
 	revives = 0,
 	beacons = 0,
 	shield?: Shield,
+	ricochetium?: Ricochetium,
 ) {
 	const { world, screen, settings, rng } = ctx;
 	const width = VIEWER_WIDTH * settings.viewerScale;
@@ -64,6 +72,7 @@ export function spawnViewer(
 		beacons,
 		...(viewer.bot ? { bot: true } : {}),
 		...(shield ? { shield: { ...shield } } : {}),
+		...(ricochetium ? { ricochetium: { ...ricochetium } } : {}),
 		hp: { current: baseHp, max: baseHp },
 		position: { x, y: 0 },
 		walker: {

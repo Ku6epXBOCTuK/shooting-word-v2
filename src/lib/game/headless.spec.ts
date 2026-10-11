@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { mulberry32 } from "./balance/sim.js";
 import { createHeadlessGame } from "./headless.js";
 import { defaultSettings } from "./settings.js";
 import { SESSIONPHASE } from "./types.js";
@@ -289,6 +290,52 @@ test("overcharge shoots every unique word of the message until expiry", () => {
 	expect(bulletCount()).toBe(4 + 1);
 
 	game.dispose();
+});
+
+test("ricochetium halves enemy damage chance until expiry", () => {
+	const settings = defaultSettings();
+	settings.viewerBaseHp = 1000;
+
+	const runShots = (coated: boolean) => {
+		let now = 1_000_000;
+		const rng = mulberry32(777);
+		const game = createHeadlessGame({ now: () => now, rng, settings });
+		game.joinViewer({ userId: "u1", user: "alice", login: "alice" });
+		if (coated) {
+			game.applyRicochetiums([{ userId: "u1", expiresAt: now + 300_000 }]);
+		}
+		game.startGame();
+
+		let shots = 0;
+		let hits = 0;
+		game.world.with("enemyShot").onEntityAdded.subscribe((entity) => {
+			shots++;
+			if (entity.enemyShot.damage > 0) hits++;
+		});
+
+		let coatedDuringRun = 0;
+		for (let i = 0; i < 6000; i++) {
+			now += 100;
+			game.step(0.1);
+			if (i === 100) {
+				coatedDuringRun = [...game.world.with("ricochetium")].length;
+			}
+		}
+
+		const coatedLeft = [...game.world.with("ricochetium")].length;
+		game.dispose();
+		return { shots, hits, coatedDuringRun, coatedLeft };
+	};
+
+	const plain = runShots(false);
+	const coated = runShots(true);
+
+	expect(plain.shots).toBeGreaterThan(10);
+	expect(coated.shots).toBe(plain.shots);
+	expect(coated.hits).toBeLessThan(plain.hits);
+	expect(coated.coatedDuringRun).toBe(1);
+	expect(coated.coatedLeft).toBe(0);
+	expect(plain.coatedDuringRun).toBe(0);
 });
 
 test("repair with unknown nick fails without spending a battery", () => {

@@ -6,6 +6,7 @@ import {
 	REVIVE_REWARD,
 	TIME_STOP_REWARD,
 	type ActiveOvercharge,
+	type ActiveRicochetium,
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
 
@@ -20,6 +21,7 @@ interface RewardEffect {
 interface EffectsResponse {
 	shields: ActiveShield[];
 	overcharges?: ActiveOvercharge[];
+	ricochetiums?: ActiveRicochetium[];
 	effects: RewardEffect[];
 }
 
@@ -27,6 +29,7 @@ interface EffectsGame {
 	joinViewer(identity: { userId: string; user: string; login: string }): void;
 	applyShields(shields: ActiveShield[]): void;
 	applyOvercharges(overcharges: ActiveOvercharge[]): void;
+	applyRicochetiums(ricochetiums: ActiveRicochetium[]): void;
 	grantBatteries(userIds: string[]): void;
 	grantRevives(userIds: string[]): void;
 	grantBeacons(userIds: string[]): void;
@@ -56,6 +59,15 @@ export function applyEffects(
 		});
 	}
 	game.applyOvercharges(response.overcharges ?? []);
+
+	for (const ricochetium of response.ricochetiums ?? []) {
+		game.joinViewer({
+			userId: ricochetium.userId,
+			user: ricochetium.userName,
+			login: ricochetium.userName,
+		});
+	}
+	game.applyRicochetiums(response.ricochetiums ?? []);
 
 	for (const effect of response.effects) {
 		game.joinViewer({

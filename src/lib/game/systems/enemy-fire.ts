@@ -2,6 +2,7 @@ import {
 	ARMED_FUSE_MS,
 	ENEMY_SHOT_HIT_DISTANCE,
 	ENEMY_SHOT_SPEED,
+	RICOCHETIUM_DAMAGE_CHANCE_FACTOR,
 } from "../config.js";
 import type { Entity } from "../types.js";
 import type { SystemFactory } from "./types.js";
@@ -32,7 +33,10 @@ export const createEnemyFireSystem: SystemFactory = (ctx) => {
 
 			const target = pickTarget();
 			if (target) {
-				const damage = ctx.rng() < ctx.settings.enemyDamageChance ? 1 : 0;
+				const chance = target.ricochetium
+					? ctx.settings.enemyDamageChance * RICOCHETIUM_DAMAGE_CHANCE_FACTOR
+					: ctx.settings.enemyDamageChance;
+				const damage = ctx.rng() < chance ? 1 : 0;
 				ctx.world.add({
 					position: { x: entity.position.x, y: entity.position.y },
 					enemyShot: { damage },

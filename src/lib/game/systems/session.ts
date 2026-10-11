@@ -11,6 +11,7 @@ import { createRoundStats, formatRoundStats } from "../round-stats.js";
 import {
 	SESSIONPHASE,
 	type Entity,
+	type Ricochetium,
 	type SessionPhase,
 	type Shield,
 } from "../types.js";
@@ -26,7 +27,10 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 	const banners = ctx.world.with("banner");
 
 	let lastPhase: SessionPhase = SESSIONPHASE.IDLE;
-	let pendingPlayers: (StoredViewer & { shield?: Shield })[] = [];
+	let pendingPlayers: (StoredViewer & {
+		shield?: Shield;
+		ricochetium?: Ricochetium;
+	})[] = [];
 	let countdownBanner: Entity | null = null;
 	let roundIntroBanner: Entity | null = null;
 
@@ -51,6 +55,9 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 				revives: entity.revives ?? 0,
 				beacons: entity.beacons ?? 0,
 				...(entity.shield ? { shield: { ...entity.shield } } : {}),
+				...(entity.ricochetium
+					? { ricochetium: { ...entity.ricochetium } }
+					: {}),
 			});
 			ctx.world.remove(entity);
 		}
@@ -66,6 +73,7 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 				viewer.revives,
 				viewer.beacons,
 				viewer.shield,
+				viewer.ricochetium,
 			);
 		}
 		pendingPlayers = [];

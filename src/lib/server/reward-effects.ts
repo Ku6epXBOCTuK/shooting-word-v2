@@ -6,10 +6,13 @@ import {
 	OVERCHARGE_REWARD,
 	REWARD_CONFIGS,
 	REVIVE_REWARD,
+	RICOCHETIUM_DURATION_MS,
+	RICOCHETIUM_REWARD,
 	SHIELD_DURATION_MS,
 	SHIELD_REWARD,
 	TIME_STOP_REWARD,
 	type ActiveOvercharge,
+	type ActiveRicochetium,
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
 import type {
@@ -45,6 +48,7 @@ export interface RewardEffect {
 export interface EffectPush {
 	shields: ActiveShield[];
 	overcharges: ActiveOvercharge[];
+	ricochetiums: ActiveRicochetium[];
 	effects: RewardEffect[];
 }
 
@@ -53,6 +57,7 @@ export type EffectSubscriber = (push: EffectPush) => void;
 const globalScope = globalThis as typeof globalThis & {
 	__effectShields?: Map<string, Map<string, ActiveShield>>;
 	__effectOvercharges?: Map<string, Map<string, ActiveOvercharge>>;
+	__effectRicochetiums?: Map<string, Map<string, ActiveRicochetium>>;
 	__effectQueue?: Map<string, RewardEffect[]>;
 	__effectsRegistered?: Set<string>;
 	__effectSubscribers?: Map<string, Set<EffectSubscriber>>;
@@ -61,6 +66,7 @@ const globalScope = globalThis as typeof globalThis & {
 
 const shields = (globalScope.__effectShields ??= new Map());
 const overcharges = (globalScope.__effectOvercharges ??= new Map());
+const ricochetiums = (globalScope.__effectRicochetiums ??= new Map());
 const queues = (globalScope.__effectQueue ??= new Map());
 const registered = (globalScope.__effectsRegistered ??= new Set());
 const subscribers = (globalScope.__effectSubscribers ??= new Map());
@@ -118,11 +124,13 @@ function keyForRewardId(
 export function getRewardEffects(broadcasterId: string): {
 	shields: ActiveShield[];
 	overcharges: ActiveOvercharge[];
+	ricochetiums: ActiveRicochetium[];
 	effects: RewardEffect[];
 } {
 	const now = Date.now();
 	const activeShields: ActiveShield[] = [];
 	const activeOvercharges: ActiveOvercharge[] = [];
+	const activeRicochetiums: ActiveRicochetium[] = [];
 
 	const shieldMap = shields.get(broadcasterId);
 	if (shieldMap) {
@@ -146,10 +154,26 @@ export function getRewardEffects(broadcasterId: string): {
 		}
 	}
 
+	const ricochetiumMap = ricochetiums.get(broadcasterId);
+	if (ricochetiumMap) {
+		for (const [userId, ricochetium] of ricochetiumMap) {
+			if (ricochetium.expiresAt > now) {
+				activeRicochetiums.push(ricochetium);
+			} else {
+				ricochetiumMap.delete(userId);
+			}
+		}
+	}
+
 	const effects = queues.get(broadcasterId) ?? [];
 	queues.set(broadcasterId, []);
 
-	return { shields: activeShields, overcharges: activeOvercharges, effects };
+	return {
+		shields: activeShields,
+		overcharges: activeOvercharges,
+		ricochetiums: activeRicochetiums,
+		effects,
+	};
 }
 
 async function setRedemptionStatus(
@@ -250,6 +274,7 @@ function queueEffect(
 		notifySubscribers(broadcaster.userId, {
 			shields: [],
 			overcharges: [],
+			ricochetiums: [],
 			effects: [effect],
 		});
 	} else {
@@ -288,12 +313,14 @@ interface CheckContext {
 	effectActive(key: string): boolean;
 	shieldActive(): boolean;
 	overchargeActive(): boolean;
+	ricochetiumActive(): boolean;
 }
 
 interface GrantContext {
 	queueEffect(key: string): void;
 	pushShield(shield: ActiveShield): void;
 	pushOvercharge(overcharge: ActiveOvercharge): void;
+	pushRicochetium(ricochetium: ActiveRicochetium): void;
 	markActive(key: string, ttlMs: number): void;
 }
 
@@ -356,6 +383,16 @@ const REWARD_HANDLERS: Record<string, RewardHandler> = {
 				expiresAt: Date.now() + OVERCHARGE_DURATION_MS,
 			}),
 	},
+	[RICOCHETIUM_REWARD.key]: {
+		check: (ctx) =>
+			ctx.ricochetiumActive() ? "ricochetium already active" : null,
+		grant: (ctx, event) =>
+			ctx.pushRicochetium({
+				userId: event.userId,
+				userName: event.userName,
+				expiresAt: Date.now() + RICOCHETIUM_DURATION_MS,
+			}),
+	},
 };
 
 async function handleRedemption(
@@ -385,6 +422,12 @@ async function handleRedemption(
 			const overcharge = overcharges.get(broadcaster.userId)?.get(event.userId);
 			return overcharge !== undefined && overcharge.expiresAt > Date.now();
 		},
+		ricochetiumActive: () => {
+			const ricochetium = ricochetiums
+				.get(broadcaster.userId)
+				?.get(event.userId);
+			return ricochetium !== undefined && ricochetium.expiresAt > Date.now();
+		},
 	};
 
 	const grantCtx: GrantContext = {
@@ -399,6 +442,7 @@ async function handleRedemption(
 			notifySubscribers(broadcaster.userId, {
 				shields: [shield],
 				overcharges: [],
+				ricochetiums: [],
 				effects: [],
 			});
 			logger.info(
@@ -415,10 +459,28 @@ async function handleRedemption(
 			notifySubscribers(broadcaster.userId, {
 				shields: [],
 				overcharges: [overcharge],
+				ricochetiums: [],
 				effects: [],
 			});
 			logger.info(
 				`[effects] ${overcharge.userName} got overcharge for ${OVERCHARGE_DURATION_MS / 60_000} min (${broadcaster.login})`,
+			);
+		},
+		pushRicochetium: (ricochetium) => {
+			let ricochetiumMap = ricochetiums.get(broadcaster.userId);
+			if (!ricochetiumMap) {
+				ricochetiumMap = new Map();
+				ricochetiums.set(broadcaster.userId, ricochetiumMap);
+			}
+			ricochetiumMap.set(ricochetium.userId, ricochetium);
+			notifySubscribers(broadcaster.userId, {
+				shields: [],
+				overcharges: [],
+				ricochetiums: [ricochetium],
+				effects: [],
+			});
+			logger.info(
+				`[effects] ${ricochetium.userName} got ricochetium for ${RICOCHETIUM_DURATION_MS / 60_000} min (${broadcaster.login})`,
 			);
 		},
 		markActive: (effectKey, ttlMs) => {

@@ -196,6 +196,28 @@ export function createGameCore(
 			}
 		},
 
+		applyRicochetiums: (
+			ricochetiums: { userId: string; expiresAt: number }[],
+		) => {
+			const map = new Map(
+				ricochetiums.map((ricochetium) => [
+					ricochetium.userId,
+					ricochetium.expiresAt,
+				]),
+			);
+
+			for (const entity of viewers) {
+				const expiresAt = map.get(entity.viewer.userId);
+				if (expiresAt === undefined) continue;
+
+				if (!entity.ricochetium) {
+					world.addComponent(entity, "ricochetium", { expiresAt });
+				} else if (entity.ricochetium.expiresAt < expiresAt) {
+					entity.ricochetium.expiresAt = expiresAt;
+				}
+			}
+		},
+
 		grantBatteries: (userIds: string[]) => {
 			let changed = false;
 			for (const userId of userIds) {
