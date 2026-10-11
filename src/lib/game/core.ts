@@ -97,14 +97,7 @@ export function createGameCore(
 		const now = ctx.now();
 		for (const viewer of await ctx.viewerStore.load()) {
 			if (now - viewer.lastSeen < VIEWER_TIMEOUT_MS) {
-				spawnViewer(
-					ctx,
-					viewer,
-					viewer.xp,
-					viewer.batteries,
-					viewer.revives,
-					viewer.beacons,
-				);
+				spawnViewer(ctx, viewer, viewer);
 			} else {
 				logger.info(
 					`[viewers] skip stale ${viewer.user} (${viewer.userId}), idle ${Math.round((now - viewer.lastSeen) / 3_600_000)}h`,

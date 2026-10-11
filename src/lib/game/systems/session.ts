@@ -1,20 +1,12 @@
 import type { With } from "miniplex";
-import type { StoredViewer } from "#lib/features/persistence/index.js";
 import {
 	AFK_RESTART_DELAY,
 	GAMEOVER_DURATION,
 	ROUND_COUNTDOWN_DURATION,
 	ROUND_INTRO_DURATION,
 } from "../config.js";
-import { spawnViewer } from "../spawn.js";
 import { createRoundStats, formatRoundStats } from "../round-stats.js";
-import {
-	SESSIONPHASE,
-	type Entity,
-	type Ricochetium,
-	type SessionPhase,
-	type Shield,
-} from "../types.js";
+import { SESSIONPHASE, type Entity, type SessionPhase } from "../types.js";
 import type { SystemFactory } from "./types.js";
 
 export const createSessionSystem: SystemFactory = (ctx) => {
@@ -27,10 +19,6 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 	const banners = ctx.world.with("banner");
 
 	let lastPhase: SessionPhase = SESSIONPHASE.IDLE;
-	let pendingPlayers: (StoredViewer & {
-		shield?: Shield;
-		ricochetium?: Ricochetium;
-	})[] = [];
 	let countdownBanner: Entity | null = null;
 	let roundIntroBanner: Entity | null = null;
 
@@ -45,38 +33,6 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 		expireAll(projectiles);
 		expireAll(stars);
 		expireAll(explosions);
-
-		pendingPlayers = [];
-		for (const entity of viewers) {
-			pendingPlayers.push({
-				...entity.viewer,
-				xp: entity.xp ?? 0,
-				batteries: entity.batteries ?? 0,
-				revives: entity.revives ?? 0,
-				beacons: entity.beacons ?? 0,
-				...(entity.shield ? { shield: { ...entity.shield } } : {}),
-				...(entity.ricochetium
-					? { ricochetium: { ...entity.ricochetium } }
-					: {}),
-			});
-			ctx.world.remove(entity);
-		}
-	};
-
-	const spawnPlayers = () => {
-		for (const viewer of pendingPlayers) {
-			spawnViewer(
-				ctx,
-				viewer,
-				viewer.xp,
-				viewer.batteries,
-				viewer.revives,
-				viewer.beacons,
-				viewer.shield,
-				viewer.ricochetium,
-			);
-		}
-		pendingPlayers = [];
 	};
 
 	const setPhase = (entity: With<Entity, "session">, phase: SessionPhase) => {
@@ -147,7 +103,6 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 					);
 				}
 				if (session.timer >= ROUND_COUNTDOWN_DURATION) {
-					spawnPlayers();
 					setPhase(entity, SESSIONPHASE.PLAYING);
 				}
 			} else if (session.phase === SESSIONPHASE.PLAYING) {

@@ -85,6 +85,18 @@
 
 ## Архив
 
+- [x] ecs: рестарт раунда без пересоздания зрителей. Зритель - постоянная
+      сущность на время сессии, персистентные компоненты (xp/batteries/revives/
+      beacons/shield/overcharge/ricochetium) просто не трогаются. Новая система
+      round-reset по смене фазы на STARTING: снимает dead/respawning/timedOut,
+      перезаливает hp/position/walker на месте. clearScene в session.ts больше
+      не трогает зрителей (только сцена: words/homing/stars/explosions),
+      pendingPlayers/spawnPlayers удалены. spawnViewer: позиционные параметры
+      xp/batteries/revives/beacons/shield/ricochetium -> объект ViewerProgress.
+      Побочный фикс: баффы больше не теряются при старте раунда (переживают
+      рестарт, таймаут и gameover->idle), раньше щит/перегрузка/рикошетиум
+      сбрасывались. Тест в headless.spec.ts: сущность та же, баффы и жетоны целы
+
 - [x] бафф "обмазка из рикошетиума": снижает шанс попадания p по конкретному
       игроку. RICOCHETIUM_REWARD (400, 5 мин), p x0.5 на цель с компонентом
       ricochetium в enemy-fire, система снятия по expiresAt (viewers),

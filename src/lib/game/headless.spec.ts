@@ -380,6 +380,58 @@ const startPlaying = () => {
 	};
 };
 
+test("round reset revives the fleet but keeps buffs and progress", () => {
+	let now = 1_000_000;
+	const game = createHeadlessGame({ now: () => now });
+	game.joinViewer({ userId: "u1", user: "alice", login: "alice" });
+
+	const tick = (seconds: number) => {
+		for (let i = 0; i < seconds * 10; i++) {
+			now += 100;
+			game.step(0.1);
+		}
+	};
+
+	tick(1);
+
+	const alice = [...game.world.with("viewer")][0];
+	if (!alice.hp || !alice.position) throw new Error("viewer missing");
+	alice.hp.current = 1;
+	game.world.addComponent(alice, "dead", true);
+	game.world.addComponent(alice, "respawning", {
+		elapsed: 0,
+		duration: 10,
+		x: 100,
+	});
+	game.grantBatteries(["u1"]);
+	game.grantBeacons(["u1"]);
+	game.applyShields([{ userId: "u1", expiresAt: now + 600_000 }]);
+	game.applyOvercharges([{ userId: "u1", expiresAt: now + 120_000 }]);
+	game.applyRicochetiums([{ userId: "u1", expiresAt: now + 300_000 }]);
+
+	const before = alice.position.x;
+	const shieldUntil = now + 600_000;
+	const overchargeUntil = now + 120_000;
+	const ricochetiumUntil = now + 300_000;
+	game.startGame();
+	tick(1);
+
+	const after = [...game.world.with("viewer")][0];
+	if (!after.position) throw new Error("viewer missing");
+	expect(after).toBe(alice);
+	expect(after.dead).toBeUndefined();
+	expect(after.respawning).toBeUndefined();
+	expect(after.hp?.current).toBe(after.hp?.max);
+	expect(after.batteries).toBe(1);
+	expect(after.beacons).toBe(1);
+	expect(after.shield?.expiresAt).toBe(shieldUntil);
+	expect(after.overcharge?.expiresAt).toBe(overchargeUntil);
+	expect(after.ricochetium?.expiresAt).toBe(ricochetiumUntil);
+	expect(after.position.x).not.toBe(before);
+
+	game.dispose();
+});
+
 test("remote revive returns a dead viewer after 5 seconds", () => {
 	const { game, target, tick } = startPlaying();
 	game.world.addComponent(target, "dead", true);

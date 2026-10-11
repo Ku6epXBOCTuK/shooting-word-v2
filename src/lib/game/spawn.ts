@@ -11,14 +11,7 @@ import {
 	Z_FAR,
 } from "./config.js";
 import type { GameContext } from "./context.js";
-import type {
-	Entity,
-	Ricochetium,
-	Shield,
-	Size,
-	Viewer,
-	Word,
-} from "./types.js";
+import type { Entity, Size, Viewer, Word } from "./types.js";
 
 export function estimateWordSize(text: string, fontSize = FONT_SIZE): Size {
 	return {
@@ -47,15 +40,17 @@ export function spawnEnemy(
 	});
 }
 
+export interface ViewerProgress {
+	xp?: number;
+	batteries?: number;
+	revives?: number;
+	beacons?: number;
+}
+
 export function spawnViewer(
 	ctx: GameContext,
 	viewer: Viewer,
-	xp = 0,
-	batteries = 0,
-	revives = 0,
-	beacons = 0,
-	shield?: Shield,
-	ricochetium?: Ricochetium,
+	progress: ViewerProgress = {},
 ) {
 	const { world, screen, settings, rng } = ctx;
 	const width = VIEWER_WIDTH * settings.viewerScale;
@@ -66,13 +61,11 @@ export function spawnViewer(
 
 	world.add({
 		viewer,
-		xp,
-		batteries,
-		revives,
-		beacons,
+		xp: progress.xp ?? 0,
+		batteries: progress.batteries ?? 0,
+		revives: progress.revives ?? 0,
+		beacons: progress.beacons ?? 0,
 		...(viewer.bot ? { bot: true } : {}),
-		...(shield ? { shield: { ...shield } } : {}),
-		...(ricochetium ? { ricochetium: { ...ricochetium } } : {}),
 		hp: { current: baseHp, max: baseHp },
 		position: { x, y: 0 },
 		walker: {
