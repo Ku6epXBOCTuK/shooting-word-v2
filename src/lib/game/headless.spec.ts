@@ -259,6 +259,39 @@ test("repair resolves @login to userId even when displayName differs", () => {
 	game.dispose();
 });
 
+test("battery heals less on self than on another viewer", () => {
+	const settings = {
+		...defaultSettings(),
+		batteryHeal: 2,
+		batteryHealOther: 5,
+	};
+	const game = createHeadlessGame({ settings });
+	game.joinViewer({ userId: "u1", user: "Alice", login: "alice" });
+	game.joinViewer({ userId: "u2", user: "Bob", login: "bob" });
+
+	const hpOf = (userId: string) => {
+		const entity = [...game.world.with("viewer")].find(
+			(candidate) => candidate.viewer.userId === userId,
+		);
+		if (!entity?.hp) throw new Error(`viewer ${userId} missing`);
+		return entity.hp;
+	};
+
+	const healerHp = hpOf("u1");
+	healerHp.current = 1;
+	game.grantBatteries(["u1"]);
+	expect(game.repair("u1")).toBe(true);
+	expect(healerHp.current).toBe(3);
+
+	const targetHp = hpOf("u2");
+	targetHp.current = 1;
+	game.grantBatteries(["u1"]);
+	expect(game.repair("u1", "bob")).toBe(true);
+	expect(targetHp.current).toBe(6);
+
+	game.dispose();
+});
+
 test("overcharge shoots every unique word of the message until expiry", () => {
 	let now = 1_000_000;
 	const game = createHeadlessGame({ now: () => now });

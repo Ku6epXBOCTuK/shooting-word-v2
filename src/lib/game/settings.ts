@@ -1,6 +1,7 @@
 import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
 import {
-	BATTERY_HEAL,
+	BATTERY_HEAL_OTHER,
+	BATTERY_HEAL_SELF,
 	BATTERY_MAX,
 	ENEMY_SHOT_DAMAGE_CHANCE,
 	PRESSURE_SPAWN_SCALE_K,
@@ -36,6 +37,7 @@ export interface GameSettings {
 	pressureSpawnK: number;
 	wordTtl: number;
 	batteryHeal: number;
+	batteryHealOther: number;
 	batteryMax: number;
 	respawnDuration: number;
 	[key: string]: SettingValue;
@@ -126,13 +128,24 @@ export const SETTINGS_SCHEMA: SettingDef[] = [
 	{
 		key: "batteryHeal",
 		param: "battery_heal",
-		label: "Лечение батареей, hp",
+		label: "Лечение батареей себе, hp",
 		type: "number",
 		scope: "full",
 		dev: true,
 		min: 1,
 		max: 10,
-		default: BATTERY_HEAL,
+		default: BATTERY_HEAL_SELF,
+	},
+	{
+		key: "batteryHealOther",
+		param: "battery_heal_other",
+		label: "Лечение батареей другому игроку, hp",
+		type: "number",
+		scope: "full",
+		dev: true,
+		min: 1,
+		max: 10,
+		default: BATTERY_HEAL_OTHER,
 	},
 	{
 		key: "batteryMax",

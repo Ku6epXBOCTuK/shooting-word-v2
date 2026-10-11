@@ -374,10 +374,11 @@ export function createGameCore(
 			}
 
 			healer.batteries = (healer.batteries ?? 0) - 1;
-			target.hp.current = Math.min(
-				target.hp.max,
-				target.hp.current + ctx.settings.batteryHeal,
-			);
+			const heal =
+				target === healer
+					? ctx.settings.batteryHeal
+					: ctx.settings.batteryHealOther;
+			target.hp.current = Math.min(target.hp.max, target.hp.current + heal);
 			if (session.roundStats && healer.viewer) {
 				bumpRoundStat(
 					session.roundStats,

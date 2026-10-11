@@ -12,7 +12,7 @@ import {
 	PRESSURE_SPAWN_SCALE_K,
 } from "../config.js";
 import {
-	BATTERY_HEAL,
+	BATTERY_HEAL_SELF,
 	SHIELD_MAX_HP,
 	SHIELD_REGEN_INTERVAL,
 } from "../config.js";
@@ -33,21 +33,21 @@ const BUFF_LEVELS = [
 		label: "без баффов",
 		shieldUptime: 0,
 		batteryGrantsPerHour: 0,
-		batteryHeal: BATTERY_HEAL,
+		batteryHeal: BATTERY_HEAL_SELF,
 		window: { min: 120, max: 180 },
 	},
 	{
 		label: "баффы 50%",
 		shieldUptime: 0.5,
 		batteryGrantsPerHour: 6,
-		batteryHeal: BATTERY_HEAL,
+		batteryHeal: BATTERY_HEAL_SELF,
 		window: { min: 360, max: 480 },
 	},
 	{
 		label: "баффы 100%",
 		shieldUptime: 1,
 		batteryGrantsPerHour: 12,
-		batteryHeal: BATTERY_HEAL,
+		batteryHeal: BATTERY_HEAL_SELF,
 		window: { min: 480, max: 720 },
 	},
 ];
@@ -154,8 +154,11 @@ async function buildReport(): Promise<string> {
 Цели: \`docs/balance-targets.md\`. Активный режим (!игра): смерть перманентна,
 конец раунда = вайп всех. Цели по покрытию баффов: ${BUFF_LEVELS.map(
 		(b) => `${b.label} — ${b.window.min / 60}–${b.window.max / 60} мин`,
-	).join(", ")} (баффы = щит uptime + батареи/час, ремонт +5 hp; выше ~60%
-покрытия — плато, овербафф не продлевает раунд).
+	).join(
+		", ",
+	)} (баффы = щит uptime + батареи/час, ремонт +${BATTERY_HEAL_SELF} hp
+	себе, боты лечат только себя; выше ~60% покрытия — плато, овербафф не
+	продлевает раунд).
 
 Модель: headless-прогон реальных ECS-систем (\`src/lib/game/balance/sim.ts\` на
 \`createHeadlessGame\`), без отдельного движка. Реальные константы: спавн в idle
@@ -163,7 +166,7 @@ ${ENEMY_SPAWN_MIN_INTERVAL}–${ENEMY_SPAWN_MAX_INTERVAL} сек, в playing —
 давление: интервал / (1 + ${PRESSURE_SPAWN_SCALE_K} × пик живых за раунд), кап
 ${PRESSURE_MAX_ENEMIES_BASE} + ${PRESSURE_MAX_ENEMIES_PER_PLAYER} × живые (≤
 ${PRESSURE_MAX_ENEMIES_CAP}), фьюз вооружённого слова ${ARMED_FUSE_MS} мс, урон
-1 hp с шансом \`p\` (сетка), батарея +${BATTERY_HEAL} hp, щит ${SHIELD_MAX_HP}
+	1 hp с шансом \`p\` (сетка), батарея +${BATTERY_HEAL_SELF} hp себе, щит ${SHIELD_MAX_HP}
 hp (реген 1 / ${SHIELD_REGEN_INTERVAL} сек), печать ${
 		DEFAULT_PARAMS.typingCharsPerSec
 	} зн/сек + реакция ${REACTION_SEC} сек (включает стрим-задержку), ttl слова
