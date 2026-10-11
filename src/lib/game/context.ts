@@ -1,5 +1,6 @@
 import type { World } from "miniplex";
 import type { Application } from "pixi.js";
+import type { RoundRecord } from "#lib/features/rounds/record.js";
 import type { ViewerStore } from "#lib/features/persistence/index.js";
 import type { GameAssets } from "./assets.js";
 import type { GameSettings } from "./settings.js";
@@ -11,6 +12,7 @@ export interface GameContext {
 	settings: GameSettings;
 	viewerStore: ViewerStore;
 	viewersDirty: boolean;
+	onRoundEnd?: (record: RoundRecord) => void;
 	now(): number;
 	rng(): number;
 	measureText(text: string, fontSize: number): Size;

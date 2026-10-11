@@ -2,6 +2,7 @@
 	import PixiOverlay from "#lib/PixiOverlay.svelte";
 	import { startChatFlow } from "#lib/chat/flow.js";
 	import { startEffectsStream } from "#lib/features/effects/stream.js";
+	import { reportRound } from "#lib/features/rounds/reporter.js";
 	import { REWARDS_ENABLED } from "#lib/features/variant.js";
 	import { bootstrapGame } from "#lib/game/index.js";
 	import type { GameSettings } from "#lib/game/settings.js";
@@ -15,6 +16,15 @@
 
 	let game: Awaited<ReturnType<typeof bootstrapGame>> | null = null;
 	let stopStream: (() => void) | undefined;
+
+	const roundHooks = $derived(
+		REWARDS_ENABLED && uuid
+			? {
+					onRoundEnd: (record: Parameters<typeof reportRound>[1]) =>
+						reportRound(uuid as string, record),
+				}
+			: {},
+	);
 
 	onMount(() => {
 		const stopChat = startChatFlow(() => game, channel);
@@ -30,7 +40,7 @@
 
 <PixiOverlay
 	onReady={(app) => {
-		void bootstrapGame(app, uuid, settings).then((instance) => {
+		void bootstrapGame(app, uuid, settings, roundHooks).then((instance) => {
 			game = instance;
 			if (REWARDS_ENABLED && uuid) {
 				stopStream = startEffectsStream(instance, uuid);

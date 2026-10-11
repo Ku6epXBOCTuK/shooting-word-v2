@@ -1,3 +1,4 @@
+import type { RoundRecord } from "#lib/features/rounds/record.js";
 import { ViewerStore } from "#lib/features/persistence/viewer-store.js";
 import { createGameCore } from "./core.js";
 import type { GameSettings } from "./settings.js";
@@ -9,6 +10,7 @@ export interface HeadlessGameOptions {
 	settings?: GameSettings;
 	rng?: () => number;
 	now?: () => number;
+	onRoundEnd?: (record: RoundRecord) => void;
 }
 
 export function createHeadlessGame(options: HeadlessGameOptions = {}) {
@@ -19,6 +21,7 @@ export function createHeadlessGame(options: HeadlessGameOptions = {}) {
 			load: () => Promise.resolve(null),
 			save: () => Promise.resolve(),
 		}),
+		onRoundEnd: options.onRoundEnd,
 		now: options.now,
 		rng: options.rng,
 		measureText: estimateWordSize,

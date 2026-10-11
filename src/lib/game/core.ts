@@ -1,4 +1,5 @@
 import type { ChatMessage } from "#lib/chat/port.js";
+import type { RoundRecord } from "#lib/features/rounds/record.js";
 import type { ViewerStore } from "#lib/features/persistence/viewer-store.js";
 import { logger } from "#lib/logger.js";
 import { World } from "miniplex";
@@ -36,6 +37,7 @@ export interface GameCoreOptions {
 	screen: Size;
 	settings?: GameSettings;
 	viewerStore: ViewerStore;
+	onRoundEnd?: (record: RoundRecord) => void;
 	now?: () => number;
 	rng?: () => number;
 	measureText: (text: string, fontSize: number) => Size;
@@ -63,6 +65,7 @@ export function createGameCore(
 		settings: options.settings ?? defaultSettings(),
 		viewerStore: options.viewerStore,
 		viewersDirty: false,
+		onRoundEnd: options.onRoundEnd,
 		now: options.now ?? Date.now,
 		rng: options.rng ?? Math.random,
 		measureText: options.measureText,

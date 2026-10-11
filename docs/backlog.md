@@ -85,6 +85,23 @@
 
 ## Архив
 
+- [x] сбор статистики раунда в sqlite (сырьё для тюнинга баланса по живым
+      данным). RoundRecord в features/rounds/record.ts (общий тип клиента и
+      сервера + валидатор тела запроса), ECS-система round-log в группе session:
+      счётчики слов (подписки onEntityAdded word/armed), разрушений, возвратов,
+      пик слов на экране, среднее число слов и средняя доля hp; на переходе
+      PLAYING -> GAMEOVER собирает итог (duration/outcome
+      wipe|empty/afk/kills/misses/ heals/doomsday) и зовёт ctx.onRoundEnd.
+      deaths считает разрушения, а не зрителей: возврат жетоном = разрушение
+      корабля возвращается дважды, инвариант deaths = revives + viewers на
+      вайпе. Проброс: GameContext -> core -> headless и bootstrap (hooks).
+      Клиент features/rounds/reporter.ts шлёт POST /api/rounds?uuid= (только под
+      REWARDS_ENABLED, статик-сборка чистая), сервер
+      rounds/{port,sqlite-adapter,index} + таблица rounds (18 колонок, индекс по
+      broadcaster, прун до 1000 раундов на канал). GET /api/rounds отдаёт
+      последние N (limit, по умолчанию 50, максимум 200). Тесты:
+      round-log.spec.ts (5), rounds/sqlite-adapter.spec.ts (6)
+
 - [x] ecs: рестарт раунда без пересоздания зрителей. Зритель - постоянная
       сущность на время сессии, персистентные компоненты (xp/batteries/revives/
       beacons/shield/overcharge/ricochetium) просто не трогаются. Новая система

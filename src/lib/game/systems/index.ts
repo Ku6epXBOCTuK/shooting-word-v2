@@ -1,6 +1,7 @@
 import type { RenderSystemGroup, SystemGroup } from "./types.js";
 import { createSessionSystem } from "./session.js";
 import { createRoundResetSystem } from "./round-reset.js";
+import { createRoundLogSystem } from "./round-log.js";
 import { createEnemySpawnSystem } from "./spawn-enemies.js";
 import { createFlightSystem } from "./flight.js";
 import { createPerspectiveSystem } from "./perspective.js";
@@ -45,7 +46,11 @@ export function logicGroups(): SystemGroup[] {
 	return [
 		{
 			name: "session",
-			factories: [createSessionSystem, createRoundResetSystem],
+			factories: [
+				createSessionSystem,
+				createRoundResetSystem,
+				createRoundLogSystem,
+			],
 		},
 		{
 			name: "spawn",
