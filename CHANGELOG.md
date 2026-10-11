@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.17.1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/0583589c342bbba1ed8ac91e18edf9950a0ac59b..0.17.1) - 2026-10-11
+#### Bug Fixes
+- updates persistance via put - ([cd7b0e4](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/cd7b0e4036d945814ff33c78cfd706350c465c2b)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.17.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/a630651344729fe70b32ed8e12f261180f8727d0..0.17.0) - 2026-10-11
 #### Features
 - update battery usage - ([a630651](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/a630651344729fe70b32ed8e12f261180f8727d0)) - Ku6epXBOCTuK
