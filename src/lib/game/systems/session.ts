@@ -49,6 +49,7 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 				xp: entity.xp ?? 0,
 				batteries: entity.batteries ?? 0,
 				revives: entity.revives ?? 0,
+				beacons: entity.beacons ?? 0,
 				...(entity.shield ? { shield: { ...entity.shield } } : {}),
 			});
 			ctx.world.remove(entity);
@@ -63,6 +64,7 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 				viewer.xp,
 				viewer.batteries,
 				viewer.revives,
+				viewer.beacons,
 				viewer.shield,
 			);
 		}

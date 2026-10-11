@@ -46,6 +46,7 @@ export function spawnViewer(
 	xp = 0,
 	batteries = 0,
 	revives = 0,
+	beacons = 0,
 	shield?: Shield,
 ) {
 	const { world, screen, settings, rng } = ctx;
@@ -60,6 +61,7 @@ export function spawnViewer(
 		xp,
 		batteries,
 		revives,
+		beacons,
 		...(viewer.bot ? { bot: true } : {}),
 		...(shield ? { shield: { ...shield } } : {}),
 		hp: { current: baseHp, max: baseHp },

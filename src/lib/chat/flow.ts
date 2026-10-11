@@ -68,6 +68,14 @@ const COMMANDS: Command[] = [
 			game.repair(message.userId, argument.replace(/^@/, "") || undefined);
 		},
 	},
+	{
+		name: "!маяк",
+		aliases: ["!beacon"],
+		run: (game, message, argument) => {
+			const target = argument.replace(/^@/, "");
+			if (target) game.remoteRevive(message.userId, target);
+		},
+	},
 ];
 
 function matchCommand(

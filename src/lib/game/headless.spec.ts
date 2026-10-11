@@ -306,3 +306,86 @@ test("repair with unknown nick fails without spending a battery", () => {
 
 	game.dispose();
 });
+
+const startPlaying = () => {
+	let now = 1_000_000;
+	const game = createHeadlessGame({ now: () => now });
+	game.joinViewer({ userId: "u1", user: "alice", login: "alice" });
+	game.joinViewer({ userId: "u2", user: "소피아", login: "sophia_kr" });
+	game.startGame();
+	for (let i = 0; i < 150; i++) {
+		now += 100;
+		game.step(0.1);
+	}
+	const target = [...game.world.with("viewer")].find(
+		(entity) => entity.viewer.userId === "u2",
+	);
+	if (!target) throw new Error("target viewer missing");
+	return {
+		game,
+		target,
+		tick: (seconds: number) => {
+			for (let i = 0; i < seconds * 10; i++) {
+				now += 100;
+				game.step(0.1);
+			}
+		},
+	};
+};
+
+test("remote revive returns a dead viewer after 5 seconds", () => {
+	const { game, target, tick } = startPlaying();
+	game.world.addComponent(target, "dead", true);
+	game.grantBeacons(["u1"]);
+
+	expect(game.remoteRevive("u1", "Sophia_KR")).toBe(true);
+	expect(target.respawning?.duration).toBe(5);
+	expect(
+		[...game.world.with("viewer")].find(
+			(entity) => entity.viewer.userId === "u1",
+		)?.beacons,
+	).toBe(0);
+
+	tick(6);
+	expect(target.dead).toBeUndefined();
+	expect(target.hp?.current).toBe(target.hp?.max);
+
+	game.dispose();
+});
+
+test("remote revive fails without spending a beacon", () => {
+	const { game, target } = startPlaying();
+	game.world.addComponent(target, "dead", true);
+
+	expect(game.remoteRevive("u1", "sophia_kr")).toBe(false);
+
+	game.grantBeacons(["u1"]);
+	expect(game.remoteRevive("u1", "ghost")).toBe(false);
+	expect(game.remoteRevive("u1", "alice")).toBe(false);
+	expect(
+		[...game.world.with("viewer")].find(
+			(entity) => entity.viewer.userId === "u1",
+		)?.beacons,
+	).toBe(1);
+	expect(target.respawning).toBeUndefined();
+
+	game.dispose();
+});
+
+test("remote revive only works during a round", () => {
+	const game = createHeadlessGame({});
+	game.joinViewer({ userId: "u1", user: "alice", login: "alice" });
+	game.joinViewer({ userId: "u2", user: "bob", login: "bob" });
+
+	const target = [...game.world.with("viewer")].find(
+		(entity) => entity.viewer.userId === "u2",
+	);
+	if (!target) throw new Error("target viewer missing");
+	game.world.addComponent(target, "dead", true);
+	game.grantBeacons(["u1"]);
+
+	expect(game.remoteRevive("u1", "bob")).toBe(false);
+	expect(target.respawning).toBeUndefined();
+
+	game.dispose();
+});

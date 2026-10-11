@@ -1,6 +1,7 @@
 import { dev } from "$app/env";
 import {
 	BATTERY_REWARD,
+	BEACON_REWARD,
 	OVERCHARGE_DURATION_MS,
 	OVERCHARGE_REWARD,
 	REWARD_CONFIGS,
@@ -15,7 +16,11 @@ import type {
 	ConsumableField,
 	StoredViewer,
 } from "#lib/features/persistence/index.js";
-import { REVIVE_MAX, TIME_STOP_DURATION } from "#lib/game/config.js";
+import {
+	BEACON_MAX,
+	REVIVE_MAX,
+	TIME_STOP_DURATION,
+} from "#lib/game/config.js";
 import { normalizeSettings, type GameSettings } from "#lib/game/settings.js";
 import { logger } from "#lib/logger.js";
 import type { Broadcaster } from "./broadcasters/index.js";
@@ -318,6 +323,9 @@ const REWARD_HANDLERS: Record<string, RewardHandler> = {
 	},
 	[REVIVE_REWARD.key]: {
 		check: overLimit(REVIVE_REWARD.key, "revives", () => REVIVE_MAX),
+	},
+	[BEACON_REWARD.key]: {
+		check: overLimit(BEACON_REWARD.key, "beacons", () => BEACON_MAX),
 	},
 	[SHIELD_REWARD.key]: {
 		check: (ctx) => (ctx.shieldActive() ? "shield already active" : null),

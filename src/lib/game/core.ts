@@ -10,6 +10,8 @@ import {
 	BULLET_SPEED,
 	DOOMSDAY_DURATION,
 	TIME_STOP_DURATION,
+	BEACON_DELAY,
+	BEACON_MAX,
 	REVIVE_MAX,
 	SHIELD_MAX_HP,
 	VIEWER_GROUND_MARGIN,
@@ -95,7 +97,14 @@ export function createGameCore(
 		const now = ctx.now();
 		for (const viewer of await ctx.viewerStore.load()) {
 			if (now - viewer.lastSeen < VIEWER_TIMEOUT_MS) {
-				spawnViewer(ctx, viewer, viewer.xp, viewer.batteries, viewer.revives);
+				spawnViewer(
+					ctx,
+					viewer,
+					viewer.xp,
+					viewer.batteries,
+					viewer.revives,
+					viewer.beacons,
+				);
 			} else {
 				logger.info(
 					`[viewers] skip stale ${viewer.user} (${viewer.userId}), idle ${Math.round((now - viewer.lastSeen) / 3_600_000)}h`,
@@ -214,6 +223,43 @@ export function createGameCore(
 				}
 			}
 			if (changed) ctx.viewersDirty = true;
+		},
+
+		grantBeacons: (userIds: string[]) => {
+			let changed = false;
+			for (const userId of userIds) {
+				for (const entity of viewers) {
+					if (entity.viewer.userId !== userId) continue;
+					entity.beacons = Math.min(BEACON_MAX, (entity.beacons ?? 0) + 1);
+					changed = true;
+					break;
+				}
+			}
+			if (changed) ctx.viewersDirty = true;
+		},
+
+		remoteRevive: (userId: string, targetUser: string) => {
+			if (session.session.phase !== SESSIONPHASE.PLAYING) return false;
+
+			const wanted = targetUser.toLowerCase();
+			let owner: Entity | undefined;
+			let target: Entity | undefined;
+			for (const entity of viewers) {
+				if (entity.viewer.userId === userId) owner = entity;
+				if (entity.viewer.login.toLowerCase() === wanted) target = entity;
+			}
+			if (!owner || (owner.beacons ?? 0) <= 0) return false;
+			if (!target?.dead || !target.position) return false;
+			if (target.respawning) return false;
+
+			owner.beacons = (owner.beacons ?? 0) - 1;
+			ctx.viewersDirty = true;
+			world.addComponent(target, "respawning", {
+				elapsed: 0,
+				duration: BEACON_DELAY,
+				x: target.position.x,
+			});
+			return true;
 		},
 
 		doomsday: (userId: string): boolean => {

@@ -210,6 +210,7 @@ export interface EntityComponents {
 	xp: number;
 	batteries: number;
 	revives: number;
+	beacons: number;
 	view: Text;
 	bar: Graphics;
 	plate: Graphics;

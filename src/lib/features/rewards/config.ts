@@ -33,6 +33,15 @@ export const REVIVE_REWARD: RewardConfig = {
 	cooldown: 0,
 };
 
+export const BEACON_REWARD: RewardConfig = {
+	key: "beacon",
+	title: "Циномаяк",
+	description:
+		"Маяк возврата другого игрока (максимум 1). Потратить: !маяк @ник — игрок возвращается с полным hp",
+	cost: 400,
+	cooldown: 0,
+};
+
 export const DOOMSDAY_REWARD: RewardConfig = {
 	key: "doomsday",
 	title: "Doomsday device",
@@ -62,6 +71,7 @@ export const REWARD_CONFIGS: RewardConfig[] = [
 	SHIELD_REWARD,
 	BATTERY_REWARD,
 	REVIVE_REWARD,
+	BEACON_REWARD,
 	DOOMSDAY_REWARD,
 	TIME_STOP_REWARD,
 	OVERCHARGE_REWARD,

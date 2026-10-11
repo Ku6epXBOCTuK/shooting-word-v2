@@ -3,7 +3,7 @@ import type { StoragePort } from "./port.js";
 
 const KEY = "viewers";
 
-export const CONSUMABLE_FIELDS = ["batteries", "revives"] as const;
+export const CONSUMABLE_FIELDS = ["batteries", "revives", "beacons"] as const;
 export type ConsumableField = (typeof CONSUMABLE_FIELDS)[number];
 
 export type StoredViewer = Viewer & {
@@ -21,6 +21,7 @@ function isStoredViewer(value: unknown): value is StoredViewer {
 		(viewer.xp === undefined || typeof viewer.xp === "number") &&
 		(viewer.batteries === undefined || typeof viewer.batteries === "number") &&
 		(viewer.revives === undefined || typeof viewer.revives === "number") &&
+		(viewer.beacons === undefined || typeof viewer.beacons === "number") &&
 		(viewer.bot === undefined || typeof viewer.bot === "boolean") &&
 		(viewer.skin === undefined || typeof viewer.skin === "number")
 	);
@@ -38,6 +39,7 @@ export class ViewerStore {
 			xp: viewer.xp ?? 0,
 			batteries: viewer.batteries ?? 0,
 			revives: viewer.revives ?? 0,
+			beacons: viewer.beacons ?? 0,
 			skin: viewer.skin ?? 0,
 		}));
 	}

@@ -24,6 +24,7 @@ export const createViewerPersistenceSystem: SystemFactory = (ctx) => {
 				xp: entity.xp ?? 0,
 				batteries: entity.batteries ?? 0,
 				revives: entity.revives ?? 0,
+				beacons: entity.beacons ?? 0,
 			});
 		}
 		void ctx.viewerStore.save(stored);

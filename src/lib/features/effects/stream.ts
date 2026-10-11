@@ -1,6 +1,7 @@
 import { resolve } from "$app/paths";
 import {
 	BATTERY_REWARD,
+	BEACON_REWARD,
 	DOOMSDAY_REWARD,
 	REVIVE_REWARD,
 	TIME_STOP_REWARD,
@@ -28,6 +29,7 @@ interface EffectsGame {
 	applyOvercharges(overcharges: ActiveOvercharge[]): void;
 	grantBatteries(userIds: string[]): void;
 	grantRevives(userIds: string[]): void;
+	grantBeacons(userIds: string[]): void;
 	doomsday(userId: string): boolean;
 	timeStop(): void;
 }
@@ -75,6 +77,13 @@ export function applyEffects(
 		.map((effect) => effect.userId);
 	if (reviveUserIds.length > 0) {
 		game.grantRevives(reviveUserIds);
+	}
+
+	const beaconUserIds = response.effects
+		.filter((effect) => effect.key === BEACON_REWARD.key)
+		.map((effect) => effect.userId);
+	if (beaconUserIds.length > 0) {
+		game.grantBeacons(beaconUserIds);
 	}
 
 	for (const effect of response.effects) {
