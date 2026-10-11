@@ -32,6 +32,31 @@ pnpm dev          # static-вариант, http://localhost:5173
 pnpm dev:node     # node-вариант, http://localhost:5173
 ```
 
+`APP_VARIANT` задан скриптами dev/build. В `.env.test` (коммитится) и
+`.env.dev.local` (локально) держим `APP_VARIANT=node` — иначе vitest и
+`svelte-kit sync` перезапишут сгенерированный env, схема запечётся как static, и
+node-вариант соберётся без бэкенда.
+
+## Проверки
+
+```sh
+pnpm test          # vitest (симуляция баланса пропускается)
+pnpm check         # svelte-check
+pnpm lint          # prettier + eslint
+pnpm build:static  # сборка статики + scripts/check-static-build.mjs
+```
+
+В статической сборке нельзя импортировать `#lib/server`, `@twurple/*`,
+`$app/env/private` и `node:*` вне серверных зон — проверяет eslint и скрипт
+поверх `build/`.
+
+Графики баланса ([docs/balance.md](./docs/balance.md)) генерируются отдельно, ~8
+мин:
+
+```sh
+CALIBRATE=1 pnpm vitest run src/lib/game/balance/sim.spec.ts
+```
+
 ## Сборка и запуск
 
 ```sh
