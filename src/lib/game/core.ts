@@ -70,8 +70,14 @@ export function createGameCore(
 		rng: options.rng ?? Math.random,
 		measureText: options.measureText,
 	};
+	// factoryCtx MUST be the same object as ctx, not a shallow copy: the public
+	// API (joinViewer, grantBatteries, repair, …) writes ctx.viewersDirty, while
+	// systems (notably viewer-persistence) read it from the factory context.
+	// Spreading ctx into a new object would give `viewersDirty` two independent
+	// bindings and silently drop viewer persistence (no PUT to the backend on
+	// chat messages and reward grants). Attach app/assets onto the shared ctx.
 	const factoryCtx: RenderContext = render
-		? { ...ctx, app: render.app, assets: render.assets }
+		? Object.assign(ctx, { app: render.app, assets: render.assets })
 		: (ctx as RenderContext);
 
 	const groupDefs: { factories: ((ctx: RenderContext) => System)[] }[] = render
