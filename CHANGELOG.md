@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.16.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/21633c9fdb5effd5659e45fc6b82539cb4ce41c0..0.16.0) - 2026-10-11
+#### Features
+- add round statistics - ([f93afca](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/f93afcaca2f7cc890d88618c2b7225c98c7208f7)) - Ku6epXBOCTuK
+- redo round reset, dont despawn viewers - ([ce32999](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/ce329998b9186eefceb7c080a1f83b9963bb1897)) - Ku6epXBOCTuK
+- add ricochetium reward - ([88028bb](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/88028bbf9194b9fe9d70592d952adba2128453c2)) - Ku6epXBOCTuK
+- add beacon for remote revive - ([21633c9](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/21633c9fdb5effd5659e45fc6b82539cb4ce41c0)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.15.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/a6ce7937a628c16ebeb8a7fe6ab4fd48c92ffcdd..0.15.0) - 2026-10-10
 #### Features
 - add descriptions to reward - ([d45127d](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/d45127d01227a11a17242b40560d3ecbc81cc97c)) - Ku6epXBOCTuK
