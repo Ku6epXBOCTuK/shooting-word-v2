@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
 	return {
 		define: {
 			__APP_VARIANT_NODE__: JSON.stringify(variant === "node"),
+			__APP_COMMIT__: JSON.stringify(process.env.APP_COMMIT ?? "dev"),
 		},
 		plugins: [
 			sveltekit({

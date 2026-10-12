@@ -9,6 +9,7 @@ import {
 	type ActiveRicochetium,
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
+import { shouldReload } from "./version.js";
 
 interface RewardEffect {
 	key: string | null;
@@ -23,6 +24,7 @@ interface EffectsResponse {
 	overcharges?: ActiveOvercharge[];
 	ricochetiums?: ActiveRicochetium[];
 	effects: RewardEffect[];
+	version?: string;
 }
 
 interface EffectsGame {
@@ -133,7 +135,12 @@ export function startEffectsStream(
 	);
 	source.onmessage = (message: MessageEvent<string>) => {
 		try {
-			applyEffects(game, JSON.parse(message.data) as EffectsResponse, reject);
+			const response = JSON.parse(message.data) as EffectsResponse;
+			if (shouldReload(response.version, __APP_COMMIT__)) {
+				location.reload();
+				return;
+			}
+			applyEffects(game, response, reject);
 		} catch {
 			// malformed event - ignore, stream stays open
 		}

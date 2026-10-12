@@ -5,6 +5,7 @@ import {
 	subscribeEffects,
 	type EffectPush,
 } from "#lib/server/reward-effects.js";
+import { SERVER_VERSION } from "#lib/server/version.js";
 import type { RequestHandler } from "./$types";
 
 export const prerender = false;
@@ -15,7 +16,9 @@ const encoder = new TextEncoder();
 const heartbeat = encoder.encode(":\n\n");
 
 function encode(push: EffectPush): Uint8Array {
-	return encoder.encode(`data: ${JSON.stringify(push)}\n\n`);
+	return encoder.encode(
+		`data: ${JSON.stringify({ ...push, version: SERVER_VERSION })}\n\n`,
+	);
 }
 
 export const GET: RequestHandler = ({ url, request }) => {

@@ -3,6 +3,9 @@ WORKDIR /app
 
 RUN npm install -g pnpm@12.4.1
 
+ARG APP_COMMIT
+ENV APP_COMMIT=$APP_COMMIT
+
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
@@ -19,6 +22,9 @@ RUN pnpm install --prod --frozen-lockfile
 
 FROM oven/bun:1-slim
 WORKDIR /app
+
+ARG APP_COMMIT
+ENV APP_COMMIT=$APP_COMMIT
 
 COPY --from=build /app/build-node ./build-node
 COPY --from=prod-deps /app/node_modules ./node_modules
