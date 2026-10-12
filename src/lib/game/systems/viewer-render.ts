@@ -4,6 +4,11 @@ import {
 	VIEWER_LABEL_FONT_SIZE,
 	VIEWER_PLATE_PADDING,
 } from "../config.js";
+import {
+	createMetalShimmer,
+	METAL_SHIMMER_MAX_SHIPS,
+	type MetalShimmer,
+} from "../metal-shimmer.js";
 import type { Entity } from "../types.js";
 import type { System, RenderSystemFactory } from "./types.js";
 
@@ -25,6 +30,7 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 
 	const appliedSkin = new Map<Entity, number>();
 	const shieldBubbles = new Map<Entity, Graphics>();
+	const metalShimmers = new Map<Entity, MetalShimmer>();
 
 	const shipFrames = (skin: number) =>
 		ctx.assets.ships[skin] ?? ctx.assets.ships[0];
@@ -57,6 +63,8 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 		appliedSkin.delete(entity);
 		shieldBubbles.get(entity)?.destroy();
 		shieldBubbles.delete(entity);
+		metalShimmers.get(entity)?.destroy();
+		metalShimmers.delete(entity);
 		entity.plate?.destroy();
 		entity.plate = undefined;
 		entity.bar?.destroy();
@@ -203,6 +211,25 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 				bubble.destroy();
 				shieldBubbles.delete(entity);
 			}
+
+			if (entity.ricochetium && visible) {
+				let shimmer = metalShimmers.get(entity);
+				if (!shimmer && metalShimmers.size < METAL_SHIMMER_MAX_SHIPS) {
+					shimmer = createMetalShimmer();
+					metalShimmers.set(entity, shimmer);
+				}
+				if (shimmer) {
+					shimmer.update(
+						performance.now() / 1000,
+						ship.width / Math.max(ship.height, 1),
+					);
+					if (!ship.filters) ship.filters = [shimmer.filter];
+				}
+			} else if (ship.filters) {
+				ship.filters = null;
+				metalShimmers.get(entity)?.destroy();
+				metalShimmers.delete(entity);
+			}
 		}
 	};
 
@@ -215,6 +242,7 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 		}
 		shieldBubbles.clear();
 		for (const entity of viewers) {
+			if (entity.sprite) entity.sprite.filters = null;
 			entity.sprite?.destroy();
 			entity.sprite = undefined;
 			entity.plate?.destroy();
@@ -224,6 +252,10 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 			entity.view?.destroy();
 			entity.view = undefined;
 		}
+		for (const shimmer of metalShimmers.values()) {
+			shimmer.destroy();
+		}
+		metalShimmers.clear();
 	};
 
 	return system;

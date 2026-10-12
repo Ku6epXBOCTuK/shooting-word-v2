@@ -29,7 +29,7 @@ export const REVIVE_REWARD: RewardConfig = {
 	key: "revive",
 	title: "Аварийный маяк",
 	description:
-		"Маяк возврата в игру (максимум 1). При разрушении корабля во время раунда: ты возвращаешься с полным hp",
+		"Маяк возврата в игру (максимум 1). При разрушении корабля во время раунда ты возвращаешься с полным hp",
 	cost: 400,
 	cooldown: 0,
 };
@@ -63,8 +63,8 @@ export const OVERCHARGE_REWARD: RewardConfig = {
 	key: "overcharge",
 	title: "Перегрузка оружия",
 	description:
-		"2 минуты корабль стреляет по всем слова из сообщения, а не только по первому",
-	cost: 600,
+		"10 минут корабль стреляет по всем словам из сообщения, а не только по первому",
+	cost: 200,
 	cooldown: 0,
 };
 
@@ -72,8 +72,8 @@ export const RICOCHETIUM_REWARD: RewardConfig = {
 	key: "ricochetium",
 	title: "Обмазка из рикошетиума",
 	description:
-		"5 минут вражеские снаряды вдвое реже наносят урон твоему кораблю",
-	cost: 400,
+		"10 минут вражеские снаряды вдвое реже наносят урон твоему кораблю",
+	cost: 300,
 	cooldown: 0,
 };
 
@@ -89,8 +89,8 @@ export const REWARD_CONFIGS: RewardConfig[] = [
 ];
 
 export const SHIELD_DURATION_MS = 10 * 60 * 1000;
-export const OVERCHARGE_DURATION_MS = 2 * 60 * 1000;
-export const RICOCHETIUM_DURATION_MS = 5 * 60 * 1000;
+export const OVERCHARGE_DURATION_MS = 10 * 60 * 1000;
+export const RICOCHETIUM_DURATION_MS = 10 * 60 * 1000;
 
 export interface ActiveShield {
 	userId: string;
