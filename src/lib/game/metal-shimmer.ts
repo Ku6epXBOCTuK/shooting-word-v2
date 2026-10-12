@@ -1,13 +1,13 @@
 import { defaultFilterVert, Filter } from "pixi.js";
 
-export const METAL_SHIMMER_STRENGTH = 0.5;
-export const METAL_SHIMMER_SPEED = 5.0;
-export const METAL_SHIMMER_BAND = 0.01;
-export const METAL_SHIMMER_CURVE = 0.5;
+export const METAL_SHIMMER_STRENGTH = 0.7;
+export const METAL_SHIMMER_SPEED = 3.0;
+export const METAL_SHIMMER_BAND = 0.4;
+export const METAL_SHIMMER_CURVE = 0.9;
 export const METAL_SHIMMER_DETAIL = 0.25;
-export const METAL_SHIMMER_SATURATION = 0.8;
+export const METAL_SHIMMER_SATURATION = 1.8;
 export const METAL_SHIMMER_GAIN = 1.8;
-export const METAL_SHIMMER_MAX_SHIPS = 5;
+export const METAL_SHIMMER_MAX_SHIPS = 10;
 
 const METAL_SHIMMER_FRAGMENT = /* glsl */ `
 in vec2 vTextureCoord;
