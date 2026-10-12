@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.18.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/4abe1bee58699706604d7f2461063ecdd3271562..0.18.0) - 2026-10-12
+#### Features
+- add shimmer shader for ricochetium reward - ([73b78e1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/73b78e1a3864e18be0ae03844464950652c35825)) - Ku6epXBOCTuK
+- version flow - check commit hash, update widget, toast - ([dd733a5](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/dd733a5b7481a258c0ab89eb76638c1da91fd1a6)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.17.1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/0583589c342bbba1ed8ac91e18edf9950a0ac59b..0.17.1) - 2026-10-11
 #### Bug Fixes
 - updates persistance via put - ([cd7b0e4](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/cd7b0e4036d945814ff33c78cfd706350c465c2b)) - Ku6epXBOCTuK
