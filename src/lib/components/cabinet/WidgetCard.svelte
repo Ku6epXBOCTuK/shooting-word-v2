@@ -4,6 +4,7 @@
 	import Button from "#lib/components/ui/Button.svelte";
 	import FieldLabel from "#lib/components/ui/FieldLabel.svelte";
 	import Icon from "#lib/components/ui/Icon.svelte";
+	import OpenLinkIcon from "~icons/lucide/link";
 	import LinkIcon from "~icons/lucide/link-2";
 	import MonitorPlayIcon from "~icons/lucide/monitor-play";
 	import RefreshCwIcon from "~icons/lucide/refresh-cw";
@@ -65,6 +66,10 @@
 				<Button variant="pro" onclick={copy}>
 					<Icon as={LinkIcon} />
 					{copied ? "Ссылка скопирована" : "Скопировать ссылку для OBS"}
+				</Button>
+				<Button variant="pro" href={link} target="_blank">
+					<Icon as={OpenLinkIcon} />
+					Открыть в браузере
 				</Button>
 				<Button variant="pro" disabled={rotating} onclick={rotate}>
 					<Icon as={RefreshCwIcon} />
