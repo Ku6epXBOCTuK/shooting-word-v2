@@ -1,16 +1,16 @@
 <script lang="ts">
-	import PencilIcon from "~icons/lucide/pencil";
-	import PowerIcon from "~icons/lucide/power";
-	import type { AppRewardStatus } from "#lib/features/rewards/port.js";
+	import SettingsField from "#lib/components/cabinet/SettingsField.svelte";
+	import Button from "#lib/components/ui/Button.svelte";
+	import Icon from "#lib/components/ui/Icon.svelte";
 	import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
+	import type { AppRewardStatus } from "#lib/features/rewards/port.js";
 	import {
 		SETTING_GROUPS,
 		SETTINGS_SCHEMA,
 		type GameSettings,
 	} from "#lib/game/settings.js";
-	import Button from "#lib/landing/ui/Button.svelte";
-	import Icon from "#lib/landing/ui/Icon.svelte";
-	import SettingsField from "#lib/settings/SettingsField.svelte";
+	import PencilIcon from "~icons/lucide/pencil";
+	import PowerIcon from "~icons/lucide/power";
 
 	interface Props {
 		settings: GameSettings;

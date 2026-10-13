@@ -1,5 +1,4 @@
 <script lang="ts">
-	import PixiOverlay from "#lib/PixiOverlay.svelte";
 	import { startChatFlow } from "#lib/chat/flow.js";
 	import { startEffectsStream } from "#lib/features/effects/stream.js";
 	import { reportRound } from "#lib/features/rounds/reporter.js";
@@ -8,6 +7,7 @@
 	import type { GameSettings } from "#lib/game/settings.js";
 	import type { Application } from "pixi.js";
 	import { onMount } from "svelte";
+	import PixiOverlay from "./PixiOverlay.svelte";
 
 	let {
 		channel,

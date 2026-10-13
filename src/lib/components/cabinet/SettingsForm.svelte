@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { dev } from "$app/env";
 	import {
 		SETTING_GROUPS,
 		SETTINGS_SCHEMA,
@@ -7,6 +6,7 @@
 		type SettingDef,
 		type SettingScope,
 	} from "#lib/game/settings.js";
+	import { dev } from "$app/env";
 	import SettingsField from "./SettingsField.svelte";
 
 	interface Props {

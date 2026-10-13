@@ -1,8 +1,8 @@
 <script lang="ts">
+	import BackdropWords from "#lib/components/BackdropWords.svelte";
+	import Button from "#lib/components/ui/Button.svelte";
 	import ViewShip from "#lib/components/ViewShip.svelte";
 	import { REWARD_CONFIGS } from "#lib/features/rewards/config.ts";
-	import BackdropWords from "#lib/landing/BackdropWords.svelte";
-	import Button from "#lib/landing/ui/Button.svelte";
 
 	const rewardsList = REWARD_CONFIGS.map(({ key, title }) => ({
 		key,

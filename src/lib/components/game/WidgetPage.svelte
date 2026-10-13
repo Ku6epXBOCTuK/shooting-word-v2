@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import { dev } from "$app/env";
-	import { page } from "$app/state";
-	import { resolve } from "$app/paths";
-	import GameWidget from "#lib/GameWidget.svelte";
 	import { loadServerSettings } from "#lib/features/persistence/index.js";
 	import {
 		defaultSettings,
 		parseSettings,
 		type GameSettings,
 	} from "#lib/game/settings.js";
+	import { dev } from "$app/env";
+	import { resolve } from "$app/paths";
+	import { page } from "$app/state";
+	import { onMount } from "svelte";
+	import GameWidget from "./GameWidget.svelte";
 
 	const uuid = $derived(page.url.searchParams.get("uuid") ?? "");
 

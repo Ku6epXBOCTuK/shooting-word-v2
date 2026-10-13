@@ -1,7 +1,7 @@
 <script lang="ts">
-	import CabinetPage from "#lib/cabinet/CabinetPage.svelte";
+	import CabinetPage from "#lib/components/cabinet/CabinetPage.svelte";
+	import FullVersionStub from "#lib/components/game/FullVersionStub.svelte";
 	import { REWARDS_ENABLED } from "#lib/features/variant.js";
-	import FullVersionStub from "#lib/FullVersionStub.svelte";
 </script>
 
 {#if REWARDS_ENABLED}

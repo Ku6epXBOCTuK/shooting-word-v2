@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import GameWidget from "#lib/components/game/GameWidget.svelte";
+	import { parseSettings, type GameSettings } from "#lib/game/settings.js";
 	import { dev } from "$app/env";
 	import { page } from "$app/state";
-	import GameWidget from "#lib/GameWidget.svelte";
-	import { parseSettings, type GameSettings } from "#lib/game/settings.js";
+	import { onMount } from "svelte";
 
 	const DEFAULT_CHANNEL = "Ku6epXBOCTuK";
 

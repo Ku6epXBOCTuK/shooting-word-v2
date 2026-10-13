@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Component, Snippet } from "svelte";
-	import Icon from "./ui/Icon.svelte";
+	import Icon from "../components/ui/Icon.svelte";
 
 	interface Props {
 		variant?: "cyan" | "orange";

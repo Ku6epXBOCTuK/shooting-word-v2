@@ -1,6 +1,6 @@
 <script lang="ts">
+	import FieldLabel from "#lib/components/ui/FieldLabel.svelte";
 	import type { GameSettings, SettingDef } from "#lib/game/settings.js";
-	import FieldLabel from "#lib/landing/ui/FieldLabel.svelte";
 
 	interface Props {
 		def: SettingDef;

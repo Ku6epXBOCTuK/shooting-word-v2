@@ -1,6 +1,6 @@
 <script lang="ts">
-	import LaunchCard from "#lib/landing/LaunchCard.svelte";
-	import Button from "#lib/landing/ui/Button.svelte";
+	import LaunchCard from "#lib/components/LaunchCard.svelte";
+	import Button from "#lib/components/ui/Button.svelte";
 	import { resolve } from "$app/paths";
 	import TwitchIcon from "~icons/lucide/twitch";
 </script>

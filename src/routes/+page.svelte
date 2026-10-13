@@ -1,8 +1,8 @@
 <script lang="ts">
-	import BackdropWords from "#lib/landing/BackdropWords.svelte";
-	import CommanderCard from "#lib/landing/CommanderCard.svelte";
-	import Hero from "#lib/landing/Hero.svelte";
-	import ScoutCard from "#lib/landing/ScoutCard.svelte";
+	import BackdropWords from "#lib/components/BackdropWords.svelte";
+	import CommanderCard from "#lib/components/landing/CommanderCard.svelte";
+	import Hero from "#lib/components/landing/Hero.svelte";
+	import ScoutCard from "#lib/components/landing/ScoutCard.svelte";
 </script>
 
 <div class="scene">

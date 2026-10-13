@@ -1,12 +1,12 @@
 <script lang="ts">
+	import { rotateWidgetUuid } from "#lib/cabinet/api.ts";
+	import LaunchCard from "#lib/components/LaunchCard.svelte";
+	import Button from "#lib/components/ui/Button.svelte";
+	import FieldLabel from "#lib/components/ui/FieldLabel.svelte";
+	import Icon from "#lib/components/ui/Icon.svelte";
 	import LinkIcon from "~icons/lucide/link-2";
 	import MonitorPlayIcon from "~icons/lucide/monitor-play";
 	import RefreshCwIcon from "~icons/lucide/refresh-cw";
-	import LaunchCard from "#lib/landing/LaunchCard.svelte";
-	import Button from "#lib/landing/ui/Button.svelte";
-	import FieldLabel from "#lib/landing/ui/FieldLabel.svelte";
-	import Icon from "#lib/landing/ui/Icon.svelte";
-	import { rotateWidgetUuid } from "./api.js";
 	import SecretLinkField from "./SecretLinkField.svelte";
 
 	interface Props {

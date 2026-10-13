@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { gameHost } from "#lib/landing/config.ts";
+	import { DEFAULT_CHANNEL, extractNick } from "#lib/landing/handle.ts";
 	import { resolve } from "$app/paths";
 	import ArrowUpRightIcon from "~icons/lucide/arrow-up-right";
 	import CircleOffIcon from "~icons/lucide/circle-off";
@@ -8,16 +10,14 @@
 	import SettingsIcon from "~icons/lucide/settings";
 	import ShieldIcon from "~icons/lucide/shield";
 	import ZapIcon from "~icons/lucide/zap";
-	import LaunchCard from "./LaunchCard.svelte";
-	import { gameHost } from "./config.js";
-	import { DEFAULT_CHANNEL, extractNick } from "./handle.js";
-	import Button from "./ui/Button.svelte";
-	import CopyField from "./ui/CopyField.svelte";
-	import FeatureItem from "./ui/FeatureItem.svelte";
-	import FeatureList from "./ui/FeatureList.svelte";
-	import FieldLabel from "./ui/FieldLabel.svelte";
-	import HandleInput from "./ui/HandleInput.svelte";
-	import Icon from "./ui/Icon.svelte";
+	import LaunchCard from "../LaunchCard.svelte";
+	import Button from "../ui/Button.svelte";
+	import CopyField from "../ui/CopyField.svelte";
+	import FeatureItem from "../ui/FeatureItem.svelte";
+	import FeatureList from "../ui/FeatureList.svelte";
+	import FieldLabel from "../ui/FieldLabel.svelte";
+	import HandleInput from "../ui/HandleInput.svelte";
+	import Icon from "../ui/Icon.svelte";
 
 	let channel = $state("");
 	let copied = $state(false);

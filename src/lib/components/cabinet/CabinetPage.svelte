@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { loadSession, type CabinetSession } from "#lib/cabinet/api.js";
-	import SettingsCard from "#lib/cabinet/SettingsCard.svelte";
-	import TopBar from "#lib/cabinet/TopBar.svelte";
-	import UnauthorizedCard from "#lib/cabinet/UnauthorizedCard.svelte";
-	import WidgetCard from "#lib/cabinet/WidgetCard.svelte";
-	import Icon from "#lib/landing/ui/Icon.svelte";
+
+	import Icon from "#lib/components/ui/Icon.svelte";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import { onMount } from "svelte";
 	import LogOutIcon from "~icons/lucide/log-out";
+	import SettingsCard from "./SettingsCard.svelte";
+	import TopBar from "./TopBar.svelte";
+	import UnauthorizedCard from "./UnauthorizedCard.svelte";
+	import WidgetCard from "./WidgetCard.svelte";
 
 	let loading = $state(true);
 	let session = $state<CabinetSession | null>(null);

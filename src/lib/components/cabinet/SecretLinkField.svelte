@@ -1,6 +1,6 @@
 <script lang="ts">
-	import CopyField from "#lib/landing/ui/CopyField.svelte";
-	import Icon from "#lib/landing/ui/Icon.svelte";
+	import CopyField from "#lib/components/ui/CopyField.svelte";
+	import Icon from "#lib/components/ui/Icon.svelte";
 	import CheckIcon from "~icons/lucide/check";
 	import CopyIcon from "~icons/lucide/copy";
 	import EyeIcon from "~icons/lucide/eye";

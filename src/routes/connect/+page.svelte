@@ -1,8 +1,8 @@
 <script lang="ts">
-	import ArrowUpRightIcon from "~icons/lucide/arrow-up-right";
+	import Button from "#lib/components/ui/Button.svelte";
+	import Icon from "#lib/components/ui/Icon.svelte";
 	import { FULL_HOST, TWITCH_LOGIN_URL } from "#lib/landing/config.js";
-	import Button from "#lib/landing/ui/Button.svelte";
-	import Icon from "#lib/landing/ui/Icon.svelte";
+	import ArrowUpRightIcon from "~icons/lucide/arrow-up-right";
 </script>
 
 <svelte:head>

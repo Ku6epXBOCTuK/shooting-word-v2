@@ -1,19 +1,19 @@
 <script lang="ts">
+	import { REWARDS_ENABLED } from "#lib/features/variant.js";
+	import { resolve } from "$app/paths";
 	import ArrowUpRightIcon from "~icons/lucide/arrow-up-right";
 	import GaugeIcon from "~icons/lucide/gauge";
 	import RadioIcon from "~icons/lucide/radio";
 	import SettingsIcon from "~icons/lucide/settings";
 	import ShieldIcon from "~icons/lucide/shield";
 	import SparklesIcon from "~icons/lucide/sparkles";
-	import { resolve } from "$app/paths";
-	import { REWARDS_ENABLED } from "#lib/features/variant.js";
-	import { FULL_HOST } from "./config.js";
-	import LaunchCard from "./LaunchCard.svelte";
-	import Button from "./ui/Button.svelte";
-	import FeatureItem from "./ui/FeatureItem.svelte";
-	import FeatureList from "./ui/FeatureList.svelte";
-	import Icon from "./ui/Icon.svelte";
-	import ProNote from "./ui/ProNote.svelte";
+	import { FULL_HOST } from "../../landing/config.js";
+	import LaunchCard from "../LaunchCard.svelte";
+	import Button from "../ui/Button.svelte";
+	import FeatureItem from "../ui/FeatureItem.svelte";
+	import FeatureList from "../ui/FeatureList.svelte";
+	import Icon from "../ui/Icon.svelte";
+	import ProNote from "../ui/ProNote.svelte";
 
 	const loginHref = REWARDS_ENABLED
 		? resolve("/auth/twitch/login")

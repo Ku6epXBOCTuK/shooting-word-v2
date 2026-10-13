@@ -1,22 +1,22 @@
 <script lang="ts">
+	import SettingsForm from "#lib/components/cabinet/SettingsForm.svelte";
+	import TopBar from "#lib/components/cabinet/TopBar.svelte";
+	import LaunchCard from "#lib/components/LaunchCard.svelte";
+	import Button from "#lib/components/ui/Button.svelte";
+	import CopyField from "#lib/components/ui/CopyField.svelte";
+	import FieldLabel from "#lib/components/ui/FieldLabel.svelte";
+	import HandleInput from "#lib/components/ui/HandleInput.svelte";
+	import Icon from "#lib/components/ui/Icon.svelte";
+	import { defaultSettings, serializeSettings } from "#lib/game/settings.js";
+	import { gameHost } from "#lib/landing/config.js";
+	import { DEFAULT_CHANNEL, extractNick } from "#lib/landing/handle.js";
+	import { browser } from "$app/env";
+	import { resolve } from "$app/paths";
+	import { SvelteURLSearchParams } from "svelte/reactivity";
 	import ArrowUpRightIcon from "~icons/lucide/arrow-up-right";
 	import LinkIcon from "~icons/lucide/link-2";
 	import RotateCcwIcon from "~icons/lucide/rotate-ccw";
 	import SlidersIcon from "~icons/lucide/sliders-horizontal";
-	import { browser } from "$app/env";
-	import { resolve } from "$app/paths";
-	import { SvelteURLSearchParams } from "svelte/reactivity";
-	import TopBar from "#lib/cabinet/TopBar.svelte";
-	import { defaultSettings, serializeSettings } from "#lib/game/settings.js";
-	import { DEFAULT_CHANNEL, extractNick } from "#lib/landing/handle.js";
-	import { gameHost } from "#lib/landing/config.js";
-	import LaunchCard from "#lib/landing/LaunchCard.svelte";
-	import Button from "#lib/landing/ui/Button.svelte";
-	import CopyField from "#lib/landing/ui/CopyField.svelte";
-	import FieldLabel from "#lib/landing/ui/FieldLabel.svelte";
-	import HandleInput from "#lib/landing/ui/HandleInput.svelte";
-	import Icon from "#lib/landing/ui/Icon.svelte";
-	import SettingsForm from "#lib/settings/SettingsForm.svelte";
 
 	let channel = $state("");
 	let settings = $state(defaultSettings());

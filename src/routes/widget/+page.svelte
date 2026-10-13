@@ -1,7 +1,7 @@
 <script lang="ts">
+	import FullVersionStub from "#lib/components/game/FullVersionStub.svelte";
+	import WidgetPage from "#lib/components/game/WidgetPage.svelte";
 	import { REWARDS_ENABLED } from "#lib/features/variant.js";
-	import FullVersionStub from "#lib/FullVersionStub.svelte";
-	import WidgetPage from "#lib/WidgetPage.svelte";
 </script>
 
 {#if REWARDS_ENABLED}

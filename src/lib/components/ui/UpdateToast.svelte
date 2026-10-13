@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Button from "#lib/landing/ui/Button.svelte";
+	import Button from "#lib/components/ui/Button.svelte";
 	import { page, updated } from "$app/state";
 
 	const OVERLAY_ROUTES = new Set(["/widget", "/game"]);

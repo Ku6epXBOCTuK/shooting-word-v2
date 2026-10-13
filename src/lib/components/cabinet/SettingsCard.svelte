@@ -1,23 +1,23 @@
 <script lang="ts">
-	import GiftIcon from "~icons/lucide/gift";
-	import SaveIcon from "~icons/lucide/save";
-	import SlidersIcon from "~icons/lucide/sliders-horizontal";
-	import TrashIcon from "~icons/lucide/trash-2";
-	import { untrack } from "svelte";
-	import type { AppRewardStatus } from "#lib/features/rewards/port.js";
-	import { REWARDS_ENABLED } from "#lib/features/variant.js";
-	import type { GameSettings } from "#lib/game/settings.js";
-	import LaunchCard from "#lib/landing/LaunchCard.svelte";
-	import Button from "#lib/landing/ui/Button.svelte";
-	import Icon from "#lib/landing/ui/Icon.svelte";
-	import SettingsForm from "#lib/settings/SettingsForm.svelte";
-	import RewardsEditor from "./RewardsEditor.svelte";
 	import {
 		listAppRewards,
 		manageRewards,
 		saveSettings,
 		toggleReward,
-	} from "./api.js";
+	} from "#lib/cabinet/api.ts";
+	import SettingsForm from "#lib/components/cabinet/SettingsForm.svelte";
+	import LaunchCard from "#lib/components/LaunchCard.svelte";
+	import Button from "#lib/components/ui/Button.svelte";
+	import Icon from "#lib/components/ui/Icon.svelte";
+	import type { AppRewardStatus } from "#lib/features/rewards/port.js";
+	import { REWARDS_ENABLED } from "#lib/features/variant.js";
+	import type { GameSettings } from "#lib/game/settings.js";
+	import { untrack } from "svelte";
+	import GiftIcon from "~icons/lucide/gift";
+	import SaveIcon from "~icons/lucide/save";
+	import SlidersIcon from "~icons/lucide/sliders-horizontal";
+	import TrashIcon from "~icons/lucide/trash-2";
+	import RewardsEditor from "./RewardsEditor.svelte";
 
 	interface Props {
 		initial: GameSettings;
