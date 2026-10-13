@@ -9,11 +9,13 @@
 	import { onMount } from "svelte";
 	import PixiOverlay from "./PixiOverlay.svelte";
 
-	let {
-		channel,
-		uuid,
-		settings,
-	}: { channel: string; uuid?: string; settings?: GameSettings } = $props();
+	interface Props {
+		channel: string;
+		uuid?: string;
+		settings?: GameSettings;
+	}
+
+	let { channel, uuid, settings }: Props = $props();
 
 	let game: Awaited<ReturnType<typeof bootstrapGame>> | null = null;
 	let stopStream: (() => void) | undefined;
