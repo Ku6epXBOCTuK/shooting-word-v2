@@ -6,6 +6,7 @@
 	import { REWARDS_ENABLED } from "#lib/features/variant.js";
 	import { bootstrapGame } from "#lib/game/index.js";
 	import type { GameSettings } from "#lib/game/settings.js";
+	import type { Application } from "pixi.js";
 	import { onMount } from "svelte";
 
 	let {
@@ -36,15 +37,15 @@
 			game = null;
 		};
 	});
-</script>
 
-<PixiOverlay
-	onReady={(app) => {
+	function pixiOverlayReady(app: Application) {
 		void bootstrapGame(app, uuid, settings, roundHooks).then((instance) => {
 			game = instance;
 			if (REWARDS_ENABLED && uuid) {
 				stopStream = startEffectsStream(instance, uuid);
 			}
 		});
-	}}
-/>
+	}
+</script>
+
+<PixiOverlay onReady={pixiOverlayReady} />

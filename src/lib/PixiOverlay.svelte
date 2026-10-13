@@ -2,7 +2,11 @@
 	import { Application } from "pixi.js";
 	import { onMount } from "svelte";
 
-	let { onReady }: { onReady?: (app: Application) => void } = $props();
+	interface Props {
+		onReady?: (app: Application) => void;
+	}
+
+	let { onReady }: Props = $props();
 
 	let canvas: HTMLCanvasElement;
 	const app: Application = new Application();

@@ -1,11 +1,14 @@
-import { dev } from "$app/env";
+import type {
+	ConsumableField,
+	StoredViewer,
+} from "#lib/features/persistence/index.js";
 import {
 	BATTERY_REWARD,
 	BEACON_REWARD,
 	OVERCHARGE_DURATION_MS,
 	OVERCHARGE_REWARD,
-	REWARD_CONFIGS,
 	REVIVE_REWARD,
+	REWARD_CONFIGS,
 	RICOCHETIUM_DURATION_MS,
 	RICOCHETIUM_REWARD,
 	SHIELD_DURATION_MS,
@@ -15,10 +18,6 @@ import {
 	type ActiveRicochetium,
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
-import type {
-	ConsumableField,
-	StoredViewer,
-} from "#lib/features/persistence/index.js";
 import {
 	BEACON_MAX,
 	REVIVE_MAX,
@@ -26,6 +25,7 @@ import {
 } from "#lib/game/config.js";
 import { normalizeSettings, type GameSettings } from "#lib/game/settings.js";
 import { logger } from "#lib/logger.js";
+import { dev } from "$app/env";
 import type { Broadcaster } from "./broadcasters/index.js";
 import {
 	subscribeAllRedemptions,

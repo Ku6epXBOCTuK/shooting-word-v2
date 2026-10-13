@@ -1,16 +1,16 @@
 import { AnimatedSprite, Graphics, Text, TextStyle } from "pixi.js";
 import {
+	createMetalShimmer,
+	METAL_SHIMMER_MAX_SHIPS,
+	type MetalShimmer,
+} from "../../vfx/metal-shimmer.js";
+import {
 	SHIELD_MAX_HP,
 	VIEWER_LABEL_FONT_SIZE,
 	VIEWER_PLATE_PADDING,
 } from "../config.js";
-import {
-	createMetalShimmer,
-	METAL_SHIMMER_MAX_SHIPS,
-	type MetalShimmer,
-} from "../metal-shimmer.js";
 import type { Entity } from "../types.js";
-import type { System, RenderSystemFactory } from "./types.js";
+import type { RenderSystemFactory, System } from "./types.js";
 
 const LABEL_GAP = 4;
 const SHIP_ANIMATION_SPEED = 0.2;

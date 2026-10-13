@@ -1,9 +1,9 @@
-import { defineConfig } from "vitest/config";
-import { loadEnv } from "vite";
-import adapterStatic from "@sveltejs/adapter-static";
 import adapterNode from "@sveltejs/adapter-node";
+import adapterStatic from "@sveltejs/adapter-static";
 import { sveltekit } from "@sveltejs/kit/vite";
 import Icons from "unplugin-icons/vite";
+import { loadEnv } from "vite";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig(({ mode }) => {
 	const fileEnv = loadEnv(mode, process.cwd(), "");
