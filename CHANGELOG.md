@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.19.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/ea188636cd4694ca7c3a3a9d7788c9c6a431aa4d..0.19.0) - 2026-10-13
+#### Features
+- add page for view skins\effects - ([ab5368f](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/ab5368ff2f64fd3398ba491ae8d6419fd02a22bb)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.18.1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/439fdef83f5d58b3c07b1032838b8cd5acf6817e..0.18.1) - 2026-10-12
 #### Bug Fixes
 - update shimmer shader params - ([439fdef](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/439fdef83f5d58b3c07b1032838b8cd5acf6817e)) - Ku6epXBOCTuK
