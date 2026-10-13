@@ -4,11 +4,14 @@ import { Graphics, type AnimatedSprite } from "pixi.js";
 const SHIELD_DOT_RADIUS = 2.5;
 const SHIELD_DOT_GAP = 8;
 
-export function createShieldBubble(
-	shieldHp: number,
+export function updateShieldBubble(
+	bubble: Graphics,
 	ship: AnimatedSprite,
-): Graphics {
-	const bubble = new Graphics();
+	shieldHp: number,
+	visible: boolean,
+): void {
+	bubble.visible = visible;
+
 	const frac = Math.max(0, shieldHp / SHIELD_MAX_HP);
 	const time = performance.now() / 1000;
 	const phase = ship.x * 0.013;
@@ -70,5 +73,4 @@ export function createShieldBubble(
 				.stroke({ color: 0x3fa9ff, alpha: 0.4, width: 1 });
 		}
 	}
-	return bubble;
 }

@@ -6,8 +6,8 @@
 		type MetalShimmer,
 	} from "#lib/vfx/metal-shimmer.ts";
 	import { AnimatedSprite, Application, Graphics, Texture } from "pixi.js";
-	import { onMount, untrack } from "svelte";
-	import { createShieldBubble } from "../vfx/bubble";
+	import { onMount } from "svelte";
+	import { updateShieldBubble } from "../vfx/shield-bubble";
 
 	interface Props {
 		effects: Record<string, boolean>;
@@ -29,18 +29,18 @@
 
 	let armorShimmer: MetalShimmer | null = $state(null);
 	let ship: AnimatedSprite | null = $derived(createShip(skin));
-	let shield: Graphics | null = $derived(
-		ship ? createShieldBubble(3, ship) : null,
-	);
+	let shield: Graphics | null = new Graphics();
+
+	$effect(() => {
+		if (ship && shield) updateShieldBubble(shield, ship, 3, shieldEnabled);
+	});
 
 	$effect(() => {
 		const shipToDestroy = ship;
-		const shieldToDestroy = untrack(() => shield);
 		if (ship) app.stage.addChild(ship);
 
 		return () => {
 			if (shipToDestroy) app.stage.removeChild(shipToDestroy);
-			if (shieldToDestroy) app.stage.removeChild(shieldToDestroy);
 		};
 	});
 
@@ -121,6 +121,8 @@
 
 <div class="ship">
 	Skin number: {skin + 1} <br />
+	Shield: {shieldEnabled ?? false} <br />
+	Armor: {armorCoatingEnabled ?? false} <br />
 	<div class="hero-scene" bind:this={container}>
 		<canvas bind:this={canvas}></canvas>
 	</div>
