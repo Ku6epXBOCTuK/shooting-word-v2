@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.19.1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/ba70b8edc2760c689bdb59239d74fba8d86ba85a..0.19.1) - 2026-10-13
+#### Bug Fixes
+- add open in browser link - ([2c5566b](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/2c5566ba93ef323a09f0b21c03292f856d3ca27b)) - Ku6epXBOCTuK
+#### Refactoring
+- props interface - ([d784b65](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/d784b65db0826697a9b31273239c34eddd893678)) - Ku6epXBOCTuK
+- use common function for update bubble - ([8b475ae](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/8b475ae7186d5d5b097bafd2ca554bd227820c09)) - Ku6epXBOCTuK
+- add typing for rewards - ([b40c014](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/b40c014199104b82e2fe7c496abb9224a385db0b)) - Ku6epXBOCTuK
+- move components to folders - ([ba70b8e](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/ba70b8edc2760c689bdb59239d74fba8d86ba85a)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.19.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/ea188636cd4694ca7c3a3a9d7788c9c6a431aa4d..0.19.0) - 2026-10-13
 #### Features
 - add page for view skins\effects - ([ab5368f](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/ab5368ff2f64fd3398ba491ae8d6419fd02a22bb)) - Ku6epXBOCTuK
