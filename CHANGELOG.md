@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.21.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/694147108691164b42f117aed98bdcb75c52c0d6..0.21.0) - 2026-10-14
+#### Features
+- add persistance viewers data - ([023e2a1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/023e2a106c2f4b583f3861e83bbf6897749c02ea)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.20.1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/7a0f76a6a7c16aabd897f0d74888dd170f72c793..0.20.1) - 2026-10-14
 #### Bug Fixes
 - hsl parse scientific values near 0 - ([7a0f76a](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/7a0f76a6a7c16aabd897f0d74888dd170f72c793)) - Ku6epXBOCTuK
