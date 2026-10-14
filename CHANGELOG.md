@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.20.1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/7a0f76a6a7c16aabd897f0d74888dd170f72c793..0.20.1) - 2026-10-14
+#### Bug Fixes
+- hsl parse scientific values near 0 - ([7a0f76a](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/7a0f76a6a7c16aabd897f0d74888dd170f72c793)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.20.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/c67008b53f570dcc19c945afdff9c10d744e8917..0.20.0) - 2026-10-14
 #### Features
 - update vfx pattern - react\aura - ([d774a4d](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/d774a4de5765f706b4224f624884097170122899)) - Ku6epXBOCTuK
