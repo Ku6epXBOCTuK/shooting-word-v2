@@ -53,8 +53,12 @@ export class HttpRewardsAdapter implements RewardsPort {
 		return appRewards ?? [];
 	}
 
-	async createRewards(uuid?: string): Promise<RewardsManageResult> {
-		return this.manage({ action: "create" }, uuid);
+	async updateAll(uuid?: string): Promise<RewardsManageResult> {
+		return this.manage({ action: "update-all" }, uuid);
+	}
+
+	async update(key: string, uuid?: string): Promise<RewardsManageResult> {
+		return this.manage({ action: "update", key }, uuid);
 	}
 
 	async deleteAllRewards(uuid?: string): Promise<RewardsManageResult> {

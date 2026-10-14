@@ -1,4 +1,3 @@
-import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
 import {
 	BATTERY_HEAL_OTHER,
 	BATTERY_HEAL_SELF,
@@ -11,39 +10,92 @@ import {
 	WORD_TTL,
 } from "./config.js";
 
-export type SettingValue = number | string | boolean;
 export type SettingScope = "static" | "full";
+export type SettingValue = number | string | boolean;
 
-export interface SettingDef {
+interface BaseSettingDef {
 	key: string;
 	param: string;
 	label: string;
-	type: "number" | "string" | "boolean";
 	scope: SettingScope;
-	dev?: boolean;
-	group?: string;
-	min?: number;
-	max?: number;
+	dev: boolean;
+}
+
+interface NumberSettingDef extends BaseSettingDef {
+	type: "number";
+	min: number;
+	max: number;
 	step?: number;
-	maxLength?: number;
-	default: SettingValue;
+	default: number;
 }
 
-export interface GameSettings {
-	viewerScale: number;
-	viewerMisses: boolean;
-	viewerBaseHp: number;
-	enemyDamageChance: number;
-	pressureSpawnK: number;
-	wordTtl: number;
-	batteryHeal: number;
-	batteryHealOther: number;
-	batteryMax: number;
-	respawnDuration: number;
-	[key: string]: SettingValue;
+interface BooleanSettingDef extends BaseSettingDef {
+	type: "boolean";
+	default: boolean;
 }
 
-export const SETTINGS_SCHEMA: SettingDef[] = [
+interface StringSettingDef extends BaseSettingDef {
+	type: "string";
+	maxLength: number;
+	default: string;
+}
+
+export type SettingDef =
+	NumberSettingDef | BooleanSettingDef | StringSettingDef;
+
+export type SettingTypeMap = {
+	string: string;
+	number: number;
+	boolean: boolean;
+};
+
+// export interface SettingDef<K extends keyof TypeMapping> {
+// 	key: string;
+// 	param: string;
+// 	label: string;
+// 	type: K;
+// 	scope: SettingScope;
+// 	dev?: boolean;
+// 	group?: string;
+// 	min?: number;
+// 	max?: number;
+// 	step?: number;
+// 	maxLength?: number;
+// 	default: TypeMapping[K];
+// }
+
+// export interface GameSettings {
+// 	viewerScale: number;
+// 	viewerMisses: boolean;
+// 	viewerBaseHp: number;
+// 	enemyDamageChance: number;
+// 	pressureSpawnK: number;
+// 	wordTtl: number;
+// 	batteryHeal: number;
+// 	batteryHealOther: number;
+// 	batteryMax: number;
+// 	respawnDuration: number;
+// }
+
+export type GameSettings = {
+	[
+		I in keyof typeof SETTINGS_SCHEMA as (typeof SETTINGS_SCHEMA)[I] extends {
+			key: infer K extends string;
+		}
+			? K
+			: never
+	]: (typeof SETTINGS_SCHEMA)[I] extends {
+		type: infer T extends keyof SettingTypeMap;
+	}
+		? SettingTypeMap[T]
+		: never;
+};
+
+// export type GameSettings = {
+// 	[K in SettingTypeMap as K["type"]]: K["default"];
+// };
+
+export const SETTINGS_SCHEMA = [
 	{
 		key: "viewerScale",
 		param: "viewer_scale",
@@ -54,6 +106,7 @@ export const SETTINGS_SCHEMA: SettingDef[] = [
 		max: 6,
 		step: 0.5,
 		default: VIEWER_SCALE,
+		dev: false,
 	},
 	{
 		key: "viewerMisses",
@@ -62,6 +115,7 @@ export const SETTINGS_SCHEMA: SettingDef[] = [
 		type: "boolean",
 		scope: "static",
 		default: true,
+		dev: false,
 	},
 	{
 		key: "autoFulfillment",
@@ -70,6 +124,7 @@ export const SETTINGS_SCHEMA: SettingDef[] = [
 		type: "boolean",
 		scope: "full",
 		default: false,
+		dev: false,
 	},
 	{
 		key: "autoRefund",
@@ -78,6 +133,7 @@ export const SETTINGS_SCHEMA: SettingDef[] = [
 		type: "boolean",
 		scope: "full",
 		default: true,
+		dev: false,
 	},
 	{
 		key: "viewerBaseHp",
@@ -169,86 +225,139 @@ export const SETTINGS_SCHEMA: SettingDef[] = [
 		max: 120,
 		default: RESPAWN_DURATION,
 	},
-];
+] as const satisfies SettingDef[];
 
-export const SETTING_GROUPS: Record<string, string> = {};
+export const REWARDS_SCHEMA = [
+	{
+		key: "title",
+		param: "reward_title",
+		label: "Название",
+		type: "string",
+		scope: "full",
+		maxLength: 45,
+		default: "",
+		dev: false,
+	},
+	{
+		key: `description`,
+		param: `description`,
+		label: "Описание",
+		type: "string",
+		scope: "full",
+		maxLength: 200,
+		default: "",
+		dev: false,
+	},
+	{
+		key: "cost",
+		param: "cost",
+		label: "Стоимость",
+		type: "number",
+		scope: "full",
+		min: 1,
+		max: 1_000_000,
+		default: 100,
+		dev: false,
+	},
+	{
+		key: "cooldown",
+		param: "cooldown",
+		label: "Кулдаун, сек (0 — без кулдауна)",
+		type: "number",
+		scope: "full",
+		min: 0,
+		max: 604_800,
+		default: 0,
+		dev: false,
+	},
+] as const satisfies SettingDef[];
 
-for (const reward of REWARD_CONFIGS) {
-	const group = `reward:${reward.key}`;
-	SETTING_GROUPS[group] =
-		reward.title.charAt(0).toUpperCase() + reward.title.slice(1);
+// for (const reward of REWARD_CONFIGS) {
+// 	const group = `reward:${reward.key}`;
+// 	SETTING_GROUPS[group] =
+// 		reward.title.charAt(0).toUpperCase() + reward.title.slice(1);
 
-	SETTINGS_SCHEMA.push(
-		{
-			key: `reward.${reward.key}.title`,
-			param: `reward_${reward.key}_title`,
-			label: "Название",
-			type: "string",
-			scope: "full",
-			group,
-			maxLength: 45,
-			default: reward.title,
-		},
-		{
-			key: `reward.${reward.key}.description`,
-			param: `reward_${reward.key}_description`,
-			label: "Описание",
-			type: "string",
-			scope: "full",
-			group,
-			maxLength: 200,
-			default: reward.description,
-		},
-		{
-			key: `reward.${reward.key}.cost`,
-			param: `reward_${reward.key}_cost`,
-			label: "Стоимость",
-			type: "number",
-			scope: "full",
-			group,
-			min: 1,
-			max: 1_000_000,
-			default: reward.cost,
-		},
-		{
-			key: `reward.${reward.key}.cooldown`,
-			param: `reward_${reward.key}_cooldown`,
-			label: "Кулдаун, сек (0 — без кулдауна)",
-			type: "number",
-			scope: "full",
-			group,
-			min: 0,
-			max: 604_800,
-			default: reward.cooldown,
-		},
-	);
-}
+// 	SETTINGS_SCHEMA.push(
+// 		{
+// 			key: `reward.${reward.key}.title`,
+// 			param: `reward_${reward.key}_title`,
+// 			label: "Название",
+// 			type: "string",
+// 			scope: "full",
+// 			group,
+// 			maxLength: 45,
+// 			default: reward.title,
+// 		},
+// 		{
+// 			key: `reward.${reward.key}.description`,
+// 			param: `reward_${reward.key}_description`,
+// 			label: "Описание",
+// 			type: "string",
+// 			scope: "full",
+// 			group,
+// 			maxLength: 200,
+// 			default: reward.description,
+// 		},
+// 		{
+// 			key: `reward.${reward.key}.cost`,
+// 			param: `reward_${reward.key}_cost`,
+// 			label: "Стоимость",
+// 			type: "number",
+// 			scope: "full",
+// 			group,
+// 			min: 1,
+// 			max: 1_000_000,
+// 			default: reward.cost,
+// 		},
+// 		{
+// 			key: `reward.${reward.key}.cooldown`,
+// 			param: `reward_${reward.key}_cooldown`,
+// 			label: "Кулдаун, сек (0 — без кулдауна)",
+// 			type: "number",
+// 			scope: "full",
+// 			group,
+// 			min: 0,
+// 			max: 604_800,
+// 			default: reward.cooldown,
+// 		},
+// 	);
+// }
 
 export function defaultSettings(): GameSettings {
-	const settings: Record<string, SettingValue> = {};
+	const settings = {} as Partial<GameSettings>;
 	for (const def of SETTINGS_SCHEMA) {
-		settings[def.key] = def.default;
+		(settings as Record<string, SettingValue>)[def.key] = def.default;
 	}
 	return settings as GameSettings;
 }
 
-const clamp = (value: number, def: SettingDef): number =>
+const clamp = (value: number, def: NumberSettingDef): number =>
 	Math.min(def.max ?? value, Math.max(def.min ?? value, value));
 
-function coerce(raw: string, def: SettingDef): SettingValue | undefined {
-	switch (def.type) {
+function coerce<T extends SettingDef>(
+	raw: string,
+	def: T,
+): SettingTypeMap[T["type"]] | undefined {
+	const currentDef = def as unknown as SettingDef;
+	switch (currentDef.type) {
 		case "number": {
 			const value = Number(raw);
 			if (!Number.isFinite(value)) return undefined;
-			return clamp(value, def);
+			const clamped = clamp(value, def as NumberSettingDef);
+			return clamped as unknown as SettingTypeMap[T["type"]];
 		}
-		case "boolean":
-			if (raw === "1" || raw === "true") return true;
-			if (raw === "0" || raw === "false") return false;
-			return undefined;
+		case "boolean": {
+			let result: boolean | undefined;
+			if (raw === "1" || raw === "true") result = true;
+			if (raw === "0" || raw === "false") result = false;
+			return result as unknown as SettingTypeMap[T["type"]];
+		}
 		case "string": {
-			const value = raw.slice(0, def.maxLength ?? raw.length);
-			return value.length > 0 ? value : undefined;
+			const value = raw.slice(0, currentDef.maxLength ?? raw.length);
+			const result = (value.length > 0
+				? value
+				: undefined) as unknown as SettingTypeMap[T["type"]];
+			return result;
 		}
 	}
 }
@@ -316,7 +425,10 @@ export function normalizeSettings(
 		const value = (raw as Record<string, unknown>)[def.key];
 		if (value === undefined) continue;
 		const valid = validateStored(value, def);
-		if (valid !== undefined) settings[def.key] = valid;
+		if (valid !== undefined) {
+			const key = def.key as keyof GameSettings;
+			settings[key] = valid as GameSettings[typeof key];
+		}
 	}
 	return settings;
 }

@@ -33,6 +33,14 @@ export class NullRewardsAdapter implements RewardsPort {
 		return NOT_SUPPORTED;
 	}
 
+	async updateAll(): Promise<RewardsManageResult> {
+		return NOT_SUPPORTED;
+	}
+
+	async update(): Promise<RewardsManageResult> {
+		return NOT_SUPPORTED;
+	}
+
 	async deleteAllRewards(): Promise<RewardsManageResult> {
 		return NOT_SUPPORTED;
 	}

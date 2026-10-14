@@ -1,13 +1,13 @@
-import { resolve } from "$app/paths";
-import { dev } from "$app/env";
-import type { AppRewardStatus } from "#lib/features/rewards/port.js";
 import { rewards } from "#lib/features/rewards/index.js";
+import type { AppRewardStatus } from "#lib/features/rewards/port.js";
 import { REWARDS_ENABLED } from "#lib/features/variant.js";
 import {
 	defaultSettings,
 	normalizeSettings,
 	type GameSettings,
 } from "#lib/game/settings.js";
+import { dev } from "$app/env";
+import { resolve } from "$app/paths";
 
 export interface CabinetSession {
 	login: string;
@@ -95,30 +95,14 @@ export async function rotateWidgetUuid(): Promise<string | null> {
 	return data.widgetUuid;
 }
 
-export async function manageRewards(
-	action: "create" | "delete",
-): Promise<string> {
-	const result =
-		action === "create"
-			? await rewards.createRewards()
-			: await rewards.deleteAllRewards();
+export async function updateAllRewards(): Promise<boolean> {
+	const result = await rewards.updateAll();
+	return result.ok;
+}
 
-	if (!result.ok) {
-		return result.reason ?? "ошибка";
-	}
-
-	if (action === "create") {
-		const parts: string[] = [];
-		if (result.created.length > 0) {
-			parts.push(`Созданы: ${result.created.join(", ")}`);
-		}
-		if (result.updated && result.updated.length > 0) {
-			parts.push(`Обновлены: ${result.updated.join(", ")}`);
-		}
-		return parts.length > 0 ? parts.join("; ") : "Все награды уже существуют";
-	}
-
-	return `Удалено наград: ${result.deleted}`;
+export async function updateReward(key: string): Promise<boolean> {
+	const result = await rewards.update(key);
+	return result.ok;
 }
 
 export async function toggleReward(
@@ -135,4 +119,9 @@ export async function listAppRewards(): Promise<AppRewardStatus[]> {
 	} catch {
 		return [];
 	}
+}
+
+export async function deleteAllRewards(): Promise<boolean> {
+	const result = await rewards.deleteAllRewards();
+	return result.ok;
 }

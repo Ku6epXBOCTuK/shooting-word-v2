@@ -4,27 +4,23 @@
 	import Icon from "#lib/components/ui/Icon.svelte";
 	import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
 	import type { AppRewardStatus } from "#lib/features/rewards/port.js";
-	import {
-		SETTING_GROUPS,
-		SETTINGS_SCHEMA,
-		type GameSettings,
-	} from "#lib/game/settings.js";
-	import PencilIcon from "~icons/lucide/pencil";
-	import PowerIcon from "~icons/lucide/power";
+	import { REWARDS_SCHEMA } from "#lib/game/settings.ts";
+	import SaveIcon from "~icons/lucide/notebook-pen";
+	import EditIcon from "~icons/lucide/pencil";
+	import ToggleIcon from "~icons/lucide/power";
 
 	interface Props {
-		settings: GameSettings;
 		statuses: AppRewardStatus[];
 		busy: boolean;
 		ontoggle: (key: string, enabled: boolean) => void;
+		onSave: (key: string) => void;
 	}
 
-	let { settings, statuses, busy, ontoggle }: Props = $props();
+	let { statuses, busy, ontoggle, onSave }: Props = $props();
+
+	let value: string = $state("");
 
 	let expanded = $state<string | null>(null);
-
-	const groupDefs = (key: string) =>
-		SETTINGS_SCHEMA.filter((def) => def.group === `reward:${key}`);
 
 	const statusOf = (key: string): AppRewardStatus =>
 		statuses.find((item) => item.key === key) ?? {
@@ -44,7 +40,7 @@
 		<div class="reward" class:reward-open={isExpanded}>
 			<div class="reward-row">
 				<span class="reward-title">
-					{SETTING_GROUPS[`reward:${reward.key}`] ?? reward.title}
+					{reward.title}
 				</span>
 				<span
 					class="reward-status"
@@ -58,8 +54,12 @@
 						disabled={busy}
 						onclick={() => ontoggle(reward.key, !status.enabled)}
 					>
-						<Icon as={PowerIcon} />
+						<Icon as={ToggleIcon} />
 						{status.enabled ? "Выключить" : "Включить"}
+					</Button>
+					<Button disabled={busy} onclick={() => onSave(reward.key)}>
+						<Icon as={SaveIcon} />
+						Сохранить
 					</Button>
 					<Button
 						disabled={busy}
@@ -67,15 +67,15 @@
 							expanded = isExpanded ? null : reward.key;
 						}}
 					>
-						<Icon as={PencilIcon} />
+						<Icon as={EditIcon} />
 						Редактировать
 					</Button>
 				</div>
 			</div>
 			{#if isExpanded}
 				<div class="reward-fields">
-					{#each groupDefs(reward.key) as def (def.key)}
-						<SettingsField {def} {settings} />
+					{#each REWARDS_SCHEMA as def (def.key)}
+						<SettingsField {def} {value} />
 					{/each}
 				</div>
 			{/if}

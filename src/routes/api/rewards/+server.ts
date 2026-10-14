@@ -243,7 +243,7 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 			return Response.json({ ok: true, created: [], updated: [], deleted: 0 });
 		}
 
-		if (action === "create") {
+		if (action === "update-all") {
 			const created: string[] = [];
 			const updated: string[] = [];
 
@@ -283,6 +283,62 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 			}
 
 			return Response.json({ ok: true, created, updated, deleted: 0 });
+		}
+		if (action === "update") {
+			const key = body.key;
+			if (!key) {
+				return Response.json(FAILURE("missing `key`"), { status: 400 });
+			}
+			const reward = effectiveRewards(context.settings).find(
+				(item) => item.key === key,
+			);
+			if (!reward) {
+				return Response.json(FAILURE("unknown reward key"), { status: 400 });
+			}
+
+			const existingReward = matchReward(
+				existing,
+				context.userId,
+				reward.key,
+				reward.title,
+			);
+
+			if (existingReward) {
+				await context.api.channelPoints.updateCustomReward(
+					context.userId,
+					existingReward.id,
+					{
+						title: reward.title,
+						cost: reward.cost,
+						prompt: reward.description,
+						...cooldownData(reward.cooldown),
+					},
+				);
+				rewardIds.set(context.userId, reward.key, existingReward.id);
+				return Response.json({
+					ok: true,
+					created: [],
+					updated: [reward.title],
+					deleted: 0,
+				});
+			}
+
+			const createdReward = await context.api.channelPoints.createCustomReward(
+				context.userId,
+				{
+					title: reward.title,
+					cost: reward.cost,
+					prompt: reward.description,
+					...cooldownData(reward.cooldown),
+				},
+			);
+			rewardIds.set(context.userId, reward.key, createdReward.id);
+			return Response.json({
+				ok: true,
+				created: [reward.title],
+				updated: [],
+				deleted: 0,
+			});
 		}
 
 		if (action === "delete") {

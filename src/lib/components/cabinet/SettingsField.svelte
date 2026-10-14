@@ -1,13 +1,13 @@
 <script lang="ts">
 	import FieldLabel from "#lib/components/ui/FieldLabel.svelte";
-	import type { GameSettings, SettingDef } from "#lib/game/settings.js";
+	import type { SettingDef } from "#lib/game/settings.js";
 
-	interface Props {
+	type Props = {
 		def: SettingDef;
-		settings: GameSettings;
-	}
+		value: SettingDef["default"];
+	};
 
-	let { def, settings }: Props = $props();
+	let { def, value }: Props = $props();
 </script>
 
 <div class="field">
@@ -21,12 +21,9 @@
 				min={def.min}
 				max={def.max}
 				step={def.step}
-				value={Number(settings[def.key])}
-				oninput={(event) => {
-					settings[def.key] = Number(event.currentTarget.value);
-				}}
+				bind:value
 			/>
-			<span class="number-value">{settings[def.key]}</span>
+			<span class="number-value">{value}</span>
 		</div>
 	{:else if def.type === "number"}
 		<input
@@ -34,31 +31,18 @@
 			type="number"
 			min={def.min}
 			max={def.max}
-			value={Number(settings[def.key])}
-			oninput={(event) => {
-				settings[def.key] = Number(event.currentTarget.value);
-			}}
+			bind:value
 		/>
 	{:else if def.type === "boolean"}
-		<input
-			class="checkbox"
-			type="checkbox"
-			checked={Boolean(settings[def.key])}
-			onchange={(event) => {
-				settings[def.key] = event.currentTarget.checked;
-			}}
-		/>
+		<input class="checkbox" type="checkbox" bind:checked={value as boolean} />
 	{:else}
 		<input
 			class="text-input"
 			type="text"
-			value={String(settings[def.key])}
+			bind:value
 			maxlength={def.maxLength}
 			autocomplete="off"
 			spellcheck="false"
-			oninput={(event) => {
-				settings[def.key] = event.currentTarget.value;
-			}}
 		/>
 	{/if}
 </div>

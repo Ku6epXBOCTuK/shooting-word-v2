@@ -6,6 +6,7 @@
 	import { page } from "$app/state";
 	import { onMount } from "svelte";
 	import LogOutIcon from "~icons/lucide/log-out";
+	import RewardsCard from "./RewardsCard.svelte";
 	import SettingsCard from "./SettingsCard.svelte";
 	import TopBar from "./TopBar.svelte";
 	import UnauthorizedCard from "./UnauthorizedCard.svelte";
@@ -67,10 +68,10 @@
 						/>
 					{/if}
 
-					<SettingsCard
-						initial={session.settings}
+					<SettingsCard initial={session.settings} />
+
+					<RewardsCard
 						rewardsAuthorized={session.rewardsAuthorized}
-						rewardsStatus={session.rewardsStatus}
 						appRewards={session.appRewards}
 					/>
 				</div>
