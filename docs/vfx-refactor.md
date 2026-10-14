@@ -184,12 +184,27 @@ export interface RewardConfig {
 
 Картинка меняется только здесь: фикс масштаба щита.
 
-- [ ] `vfx/shield.ts` ← `vfx/shield-bubble.ts` (пока Graphics, фикс `* scale`)
-- [ ] `vfx/shimmer.ts` ← `vfx/metal-shimmer.ts` (слой-обвязка)
-- [ ] `viewer-render.ts`: переписать на `ctx.vfx`
-- [ ] `ViewShip.svelte`: переписать на слой, чинить тикер и `destroy`
-- [ ] удалить `vfx/shield-bubble.ts`, `vfx/metal-shimmer.ts`
-- [ ] проверить `/view`: щит вращается, масштабируется, фильтр снимается
+- [x] `vfx/shield.ts` ← `vfx/shield-bubble.ts` (пока Graphics, все размеры через
+      `* state.radius`)
+- [x] `vfx/shimmer.ts` ← `vfx/metal-shimmer.ts` (`update(frame)`, aspect из
+      конфига)
+- [x] `vfx/registry.ts`: реестр `kind → фабрика` + `registry.spec.ts`
+- [x] `viewer-render.ts`: переписан на `ctx.vfx`, щит и обмазка больше не
+      управляются вручную
+- [x] `systems/vfx-tick.ts` + подключение последним в `renderGroups()` — время
+      слоя качается один раз за кадр
+- [x] `ViewShip.svelte`: переписан на слой, три `$effect` с очисткой вместо
+      `$effect`-одноразового вызова; чинены тикер и утечка `destroy` фильтра
+- [x] удалить `vfx/shield-bubble.ts`, `vfx/metal-shimmer.ts`
+- [x] проверить `/view` в браузере: щит вращается, масштабируется, фильтр
+      снимается
+
+Виды эффектов разложены на три словаря в `kinds.ts`: `REACTION_KINDS`,
+`AURA_KINDS`, `COATING_KINDS`. `shimmer` оказался фильтром, а не аурой, — для
+наград это третий вариант `visual`.
+
+`viewer-persistence.spec.ts:109` править не пришлось: фейковая сцена уже умеет
+`addChild`, снимок состояния не изменился.
 
 ### Шаг 3. Единый отклик — 3 ч
 

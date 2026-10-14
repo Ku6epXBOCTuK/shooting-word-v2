@@ -15,12 +15,17 @@ export const REACTION_KINDS = [
 
 export type ReactionKind = (typeof REACTION_KINDS)[number];
 
+/** Долгоживущие эффекты, живущие контейнером в сцене. */
 export const AURA_KINDS = [
 	"shield",
-	"shimmer",
 	"overcharge",
 	"doomsday",
 	"portal",
 ] as const;
 
 export type AuraKind = (typeof AURA_KINDS)[number];
+
+/** Эффекты-фильтры, навешиваемые на чужой спрайт. */
+export const COATING_KINDS = ["ricochetium"] as const;
+
+export type CoatingKind = (typeof COATING_KINDS)[number];

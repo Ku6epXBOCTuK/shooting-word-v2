@@ -40,6 +40,7 @@ import { createRenderSystem } from "./render.js";
 import { createBannerRenderSystem } from "./banner-render.js";
 import { createPortalRenderSystem } from "./portal-render.js";
 import { createViewerRenderSystem } from "./viewer-render.js";
+import { createVfxTickSystem } from "./vfx-tick.js";
 import { createCleanupSystem } from "./cleanup.js";
 
 export function logicGroups(): SystemGroup[] {
@@ -120,6 +121,7 @@ export function renderGroups(): RenderSystemGroup[] {
 				createStarRenderSystem,
 				createDoomsdayRenderSystem,
 				createExplosionRenderSystem,
+				createVfxTickSystem,
 			],
 		},
 	];

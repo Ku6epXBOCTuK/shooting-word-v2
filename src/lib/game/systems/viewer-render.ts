@@ -1,12 +1,14 @@
-import { updateShieldBubble } from "#lib/vfx/shield-bubble.js";
 import { AnimatedSprite, Graphics, Text, TextStyle } from "pixi.js";
+import { createAura, createCoating } from "../../vfx/registry.js";
+import type { ShieldAuraState } from "../../vfx/shield.js";
+import { METAL_SHIMMER_MAX_SHIPS } from "../../vfx/shimmer.js";
+import type { VfxAura, VfxFilter } from "../../vfx/types.js";
 import {
-	createMetalShimmer,
-	METAL_SHIMMER_MAX_SHIPS,
-	type MetalShimmer,
-} from "../../vfx/metal-shimmer.js";
-import { VIEWER_LABEL_FONT_SIZE, VIEWER_PLATE_PADDING } from "../config.js";
-import type { Entity } from "../types.js";
+	SHIELD_MAX_HP,
+	VIEWER_LABEL_FONT_SIZE,
+	VIEWER_PLATE_PADDING,
+} from "../config.js";
+import type { Entity, Position } from "../types.js";
 import type { RenderSystemFactory, System } from "./types.js";
 
 const LABEL_GAP = 4;
@@ -16,6 +18,9 @@ const PLATE_ALPHA = 0.7;
 const HP_BAR_HEIGHT = 3;
 const HP_BAR_GAP = 3;
 
+/** Зритель с позицией — устойчивый срез запроса `with("viewer", "position")`. */
+type Positioned = Entity & { position: Position };
+
 export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 	const viewers = ctx.world.with("viewer", "position");
 	const labelStyle = new TextStyle({
@@ -24,11 +29,60 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 	});
 
 	const appliedSkin = new Map<Entity, number>();
-	const shieldBubbles = new Map<Entity, Graphics>();
-	const metalShimmers = new Map<Entity, MetalShimmer>();
+	const shields = new Map<Entity, VfxAura<ShieldAuraState>>();
+	const shimmers = new Map<Entity, VfxFilter>();
 
 	const shipFrames = (skin: number) =>
 		ctx.assets.ships[skin] ?? ctx.assets.ships[0];
+
+	const placementOf = (entity: Positioned) => ({
+		x: entity.position.x,
+		y: entity.position.y,
+		scale: ctx.settings.viewerScale,
+	});
+
+	const syncShield = (
+		entity: Positioned,
+		ship: AnimatedSprite,
+		visible: boolean,
+	) => {
+		if (!entity.shield) {
+			const aura = shields.get(entity);
+			if (aura) {
+				ctx.vfx.remove(aura);
+				shields.delete(entity);
+			}
+			return;
+		}
+
+		let aura = shields.get(entity);
+		if (!aura) {
+			aura = createAura("shield", {
+				...placementOf(entity),
+				rng: ctx.rng,
+			}) as VfxAura<ShieldAuraState> | undefined;
+			if (!aura) return;
+			shields.set(entity, aura);
+			ctx.vfx.add(aura, placementOf(entity));
+		}
+
+		aura.state = {
+			hp: entity.shield.hp,
+			max: SHIELD_MAX_HP,
+			radius: Math.max(ship.width, ship.height) / 2,
+		};
+		aura.root.visible = visible;
+		ctx.vfx.move(aura, placementOf(entity));
+	};
+
+	const dropEffects = (entity: Entity, ship?: AnimatedSprite) => {
+		const aura = shields.get(entity);
+		if (aura) {
+			ctx.vfx.remove(aura);
+			shields.delete(entity);
+		}
+		if (shimmers.delete(entity) && ship) ctx.vfx.unfilter(ship);
+	};
 
 	const unsubscribeAdded = viewers.onEntityAdded.subscribe((entity) => {
 		const plate = new Graphics();
@@ -53,13 +107,10 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 	});
 
 	const unsubscribeRemoved = viewers.onEntityRemoved.subscribe((entity) => {
+		dropEffects(entity, entity.sprite as AnimatedSprite | undefined);
 		entity.sprite?.destroy();
 		entity.sprite = undefined;
 		appliedSkin.delete(entity);
-		shieldBubbles.get(entity)?.destroy();
-		shieldBubbles.delete(entity);
-		metalShimmers.get(entity)?.destroy();
-		metalShimmers.delete(entity);
 		entity.plate?.destroy();
 		entity.plate = undefined;
 		entity.bar?.destroy();
@@ -133,36 +184,19 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 					.fill("#2ecc40");
 			}
 
-			let bubble = shieldBubbles.get(entity);
-			if (entity.shield) {
-				if (!bubble) {
-					bubble = new Graphics();
-					shieldBubbles.set(entity, bubble);
-					ctx.app.stage.addChild(bubble);
-				}
-				updateShieldBubble(bubble, ship, entity.shield.hp, visible);
-			} else if (bubble) {
-				bubble.destroy();
-				shieldBubbles.delete(entity);
-			}
+			syncShield(entity, ship, visible);
 
 			if (entity.ricochetium && visible) {
-				let shimmer = metalShimmers.get(entity);
-				if (!shimmer && metalShimmers.size < METAL_SHIMMER_MAX_SHIPS) {
-					shimmer = createMetalShimmer();
-					metalShimmers.set(entity, shimmer);
+				if (!shimmers.has(entity) && shimmers.size < METAL_SHIMMER_MAX_SHIPS) {
+					const shimmer = createCoating("ricochetium");
+					if (shimmer) {
+						shimmers.set(entity, shimmer);
+						ctx.vfx.filter(ship, shimmer);
+					}
 				}
-				if (shimmer) {
-					shimmer.update(
-						performance.now() / 1000,
-						ship.width / Math.max(ship.height, 1),
-					);
-					if (!ship.filters) ship.filters = [shimmer.filter];
-				}
-			} else if (ship.filters) {
-				ship.filters = null;
-				metalShimmers.get(entity)?.destroy();
-				metalShimmers.delete(entity);
+			} else if (shimmers.has(entity)) {
+				ctx.vfx.unfilter(ship);
+				shimmers.delete(entity);
 			}
 		}
 	};
@@ -171,12 +205,8 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 		unsubscribeAdded();
 		unsubscribeRemoved();
 		appliedSkin.clear();
-		for (const bubble of shieldBubbles.values()) {
-			bubble.destroy();
-		}
-		shieldBubbles.clear();
 		for (const entity of viewers) {
-			if (entity.sprite) entity.sprite.filters = null;
+			dropEffects(entity, entity.sprite as AnimatedSprite | undefined);
 			entity.sprite?.destroy();
 			entity.sprite = undefined;
 			entity.plate?.destroy();
@@ -186,10 +216,6 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 			entity.view?.destroy();
 			entity.view = undefined;
 		}
-		for (const shimmer of metalShimmers.values()) {
-			shimmer.destroy();
-		}
-		metalShimmers.clear();
 	};
 
 	return system;

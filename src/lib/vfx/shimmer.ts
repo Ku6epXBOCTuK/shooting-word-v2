@@ -1,4 +1,6 @@
+import { VIEWER_HEIGHT, VIEWER_WIDTH } from "#lib/game/config.ts";
 import { defaultFilterVert, Filter } from "pixi.js";
+import type { VfxFilter, VfxFrame } from "./types.js";
 
 export const METAL_SHIMMER_STRENGTH = 0.7;
 export const METAL_SHIMMER_SPEED = 3.0;
@@ -7,6 +9,7 @@ export const METAL_SHIMMER_CURVE = 0.9;
 export const METAL_SHIMMER_DETAIL = 0.25;
 export const METAL_SHIMMER_SATURATION = 1.8;
 export const METAL_SHIMMER_GAIN = 1.8;
+/** сколько кораблей одновременно носят обмазку */
 export const METAL_SHIMMER_MAX_SHIPS = 10;
 
 const METAL_SHIMMER_FRAGMENT = /* glsl */ `
@@ -88,13 +91,10 @@ void main() {
 }
 `;
 
-export interface MetalShimmer {
-	readonly filter: Filter;
-	update(time: number, aspect: number): void;
-	destroy(): void;
-}
-
-export function createMetalShimmer(): MetalShimmer {
+/** Обмазка рикошетиумом: жидкий металл поверх корабля. */
+export function createMetalShimmer(
+	aspect: number = VIEWER_WIDTH / VIEWER_HEIGHT,
+): VfxFilter {
 	const filter = Filter.from({
 		gl: { vertex: defaultFilterVert, fragment: METAL_SHIMMER_FRAGMENT },
 		resources: {
@@ -107,17 +107,16 @@ export function createMetalShimmer(): MetalShimmer {
 				uDetail: { value: METAL_SHIMMER_DETAIL, type: "f32" },
 				uSaturation: { value: METAL_SHIMMER_SATURATION, type: "f32" },
 				uGain: { value: METAL_SHIMMER_GAIN, type: "f32" },
-				uAspect: { value: 1, type: "f32" },
+				uAspect: { value: aspect, type: "f32" },
 			},
 		},
 	});
 
 	return {
 		filter,
-		update(time, aspect) {
+		update(frame: VfxFrame) {
 			const uniforms = filter.resources.shimmerUniforms.uniforms;
-			uniforms.uTime = time;
-			uniforms.uAspect = aspect;
+			uniforms.uTime = frame.t;
 		},
 		destroy() {
 			filter.destroy();
