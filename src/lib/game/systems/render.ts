@@ -1,6 +1,6 @@
 import { Graphics, Text, TextStyle } from "pixi.js";
 import { FONT_SIZE } from "../config.js";
-import type { System, RenderSystemFactory } from "./types.js";
+import type { RenderSystemFactory, System } from "./types.js";
 
 const BAR_HEIGHT = 4;
 const BAR_GAP = 6;
@@ -76,7 +76,7 @@ export const createRenderSystem: RenderSystemFactory = (ctx) => {
 						width,
 						BAR_HEIGHT,
 					)
-					.fill(`hsl(${hue}, 90%, 50%)`);
+					.fill(`hsl(${Math.round(hue)}, 90%, 50%)`);
 				bar.alpha = view.alpha;
 			} else {
 				view.alpha = 1;

@@ -8,6 +8,24 @@
 
 ## Баги
 
+- [ ] баг после обновления vfx
+
+      ```
+      Uncaught Error: Unable to convert color hsl(1.9984014443252818e-13, 90%, 50%)
+      at e._normalize (D-VL_XoU.js:4:29311)
+      at set value (D-VL_XoU.js:4:26311)
+      at e.setValue (D-VL_XoU.js:4:26014)
+      at bn (CMiUSK8j.js:1:51681)
+      at $ (CMiUSK8j.js:1:52304)
+      at n.fill (CMiUSK8j.js:1:54956)
+      at e._callContextMethod (sRWfdvSf.js:52:15668)
+      at e.fill (sRWfdvSf.js:52:15843)
+      at o (CMI7_2DE.js:18:20097)
+      at Object.v [as step] (CMI7_2DE.js:18:25386)
+      ```
+
+- [ ] при удалении наград - их настройки не сбрасываются на те, которые
+      прописаны в конфиге
 - [ ] исправить ci\cd процесс - при падении билда не должно быть бампа версии
 - [ ] лог почему key=unknown?
       `[effects] ku6epxboctuk redeemed "Обмазка из рикошетиума" key=unknown (ku6epxboctuk)`
