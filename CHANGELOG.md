@@ -2,6 +2,18 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.20.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/c67008b53f570dcc19c945afdff9c10d744e8917..0.20.0) - 2026-10-14
+#### Features
+- update vfx pattern - react\aura - ([d774a4d](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/d774a4de5765f706b4224f624884097170122899)) - Ku6epXBOCTuK
+- redo shield bubble - ([01eea8e](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/01eea8e4dd87f554930f0ea84e48164d684f48d0)) - Ku6epXBOCTuK
+- vfx reactions use single pattern - ([6a4a170](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/6a4a170172ec6804d9703baef6e22ca9fe418ccc)) - Ku6epXBOCTuK
+- vfx registry and systems - ([8dc771c](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/8dc771c858dbf70f363c03343fa2ccff1ef2e7fe)) - Ku6epXBOCTuK
+- add vfx infra, add in context - ([cb159b2](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/cb159b2def475d892f573163f6830ca9a49187b4)) - Ku6epXBOCTuK
+#### Refactoring
+- move doomsday and portal to new aura vfx pattern - ([65cac0b](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/65cac0b139f4fa7686fae07dec34a4c7b3eae42c)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.19.1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/ba70b8edc2760c689bdb59239d74fba8d86ba85a..0.19.1) - 2026-10-13
 #### Bug Fixes
 - add open in browser link - ([2c5566b](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/2c5566ba93ef323a09f0b21c03292f856d3ca27b)) - Ku6epXBOCTuK
