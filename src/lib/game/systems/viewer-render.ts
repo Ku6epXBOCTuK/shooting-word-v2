@@ -1,5 +1,6 @@
 ﻿import { AnimatedSprite, Graphics, Text, TextStyle } from "pixi.js";
 import { createAura, createCoating } from "../../vfx/registry.js";
+import { shieldHit } from "../../vfx/durations.js";
 import { METAL_SHIMMER_MAX_SHIPS } from "../../vfx/shimmer.js";
 import type {
 	ShieldAuraState,
@@ -72,6 +73,7 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 			hp: entity.shield.hp,
 			max: SHIELD_MAX_HP,
 			radius: Math.max(ship.width, ship.height) / 2,
+			...shieldHit(entity.shield, entity.position, ctx.now()),
 		};
 		aura.root.visible = visible;
 		ctx.vfx.move(aura, placementOf(entity));

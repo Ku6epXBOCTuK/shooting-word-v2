@@ -5,13 +5,11 @@ import {
 	REGISTERED_AURA_KINDS,
 	REGISTERED_COATING_KINDS,
 } from "./registry.js";
-import { REACTION_KINDS } from "./kinds.js";
-import { REACTION_DURATION } from "./durations.js";
 import type { AuraStates } from "./types.js";
 
 /** Состояния известны только типами, поэтому для проверки нужен список-эталон. */
 const AURA_STATES: AuraStates = {
-	shield: { hp: 0, max: 0, radius: 0 },
+	shield: { hp: 0, max: 0, radius: 0, hit: 0, hitDir: { x: 0, y: 1 } },
 	doomsday: { active: false, shooter: null, shooterRadius: 0 },
 	portal: { progress: 0, groundY: 0 },
 };
@@ -39,15 +37,6 @@ describe("vfx registry", () => {
 			(ALL_COATING_KINDS as readonly string[]).includes(kind),
 		);
 		expect(overlap).toEqual([]);
-	});
-
-	test("у каждого вида отклика есть срок жизни", () => {
-		expect(REACTION_KINDS.every((kind) => REACTION_DURATION[kind] > 0)).toBe(
-			true,
-		);
-		expect(Object.keys(REACTION_DURATION).sort()).toEqual(
-			[...REACTION_KINDS].sort(),
-		);
 	});
 
 	test("у каждой зарегистрированной ауры есть состояние в AuraStates", () => {

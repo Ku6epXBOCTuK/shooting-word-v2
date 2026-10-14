@@ -86,6 +86,10 @@ export interface Shield {
 	expiresAt: number;
 	hp: number;
 	regenIn?: number;
+	/** когда последний раз потратили заряд — для искажения щита */
+	hitAt?: number;
+	/** откуда прилетел снаряд — для искажения щита */
+	hitFrom?: Position;
 }
 
 export interface Overcharge {

@@ -3,6 +3,7 @@
 	import { SHIELD_MAX_HP } from "#lib/game/config.ts";
 	import { createVfxLayer, type VfxLayer } from "#lib/vfx/layer.ts";
 	import { createAura, createCoating } from "#lib/vfx/registry.ts";
+	import { SHIELD_HIT_DECAY_MS } from "#lib/vfx/durations.ts";
 	import type { ShieldAuraState, VfxStateful } from "#lib/vfx/types.ts";
 	import { AnimatedSprite, Application, type Texture } from "pixi.js";
 	import { onMount } from "svelte";
@@ -19,6 +20,9 @@
 
 	const SCALE = 10;
 	const CHARGES = 3;
+	/** как часто предпросмотр имитирует попадание, сек */
+	const HIT_CYCLE = 2.5;
+	const DECAY_SEC = SHIELD_HIT_DECAY_MS / 1000;
 
 	let container: HTMLDivElement;
 	let canvas: HTMLCanvasElement;
@@ -31,6 +35,7 @@
 
 	onMount(() => {
 		let destroyed = false;
+		let elapsed = 0;
 
 		const setup = async () => {
 			await app.init({
@@ -51,13 +56,23 @@
 					current.x = app.screen.width / 2;
 					current.y = app.screen.height / 2;
 				}
-				if (shield) {
-					layer?.move(shield, {
+				const aura = shield;
+				if (aura) {
+					// предпросмотр повторяет попадание, чтобы искажение было видно.
+					// Всё в секундах: decay — тоже.
+					const sinceHit = elapsed % HIT_CYCLE;
+					aura.state.hit = sinceHit < DECAY_SEC ? 1 - sinceHit / DECAY_SEC : 0;
+					aura.state.hitDir = {
+						x: Math.cos((elapsed / HIT_CYCLE) * Math.PI * 2),
+						y: Math.sin((elapsed / HIT_CYCLE) * Math.PI * 2),
+					};
+					layer?.move(aura, {
 						x: current?.x ?? 0,
 						y: current?.y ?? 0,
 						scale: SCALE,
 					});
 				}
+				elapsed += dt;
 				layer?.update(dt);
 			});
 		};
@@ -112,6 +127,8 @@
 			hp: CHARGES,
 			max: SHIELD_MAX_HP,
 			radius: Math.max(current.width, current.height) / 2,
+			hit: 0,
+			hitDir: { x: 0, y: -1 },
 		};
 		layer.add(aura, { x: current.x, y: current.y, scale: SCALE });
 		shield = aura;
