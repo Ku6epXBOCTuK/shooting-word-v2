@@ -70,3 +70,31 @@ export interface ShieldAuraState {
 	/** половина большей стороны корабля в мировых пикселях, уже с учётом масштаба */
 	radius: number;
 }
+
+/** Состояние ядра устройства doomsday. */
+export interface DoomsdayAuraState {
+	/** ядро начало работать */
+	active: boolean;
+	/** корабль стрелка, вокруг которого идёт кольцо; null если корабля нет */
+	shooter: { x: number; y: number } | null;
+	/** половина высоты корабля стрелка */
+	shooterRadius: number;
+}
+
+/** Состояние портала возврата. */
+export interface PortalAuraState {
+	/** 0..1 — сколько осталось ждать */
+	progress: number;
+	/** линия земли в мировых пикселях */
+	groundY: number;
+}
+
+/**
+ * Соответствие вида ауры и её состояния. Реестр не даст завести вид без
+ * состояния: ключи здесь и есть допустимые аргументы `createAura`.
+ */
+export interface AuraStates {
+	shield: ShieldAuraState;
+	doomsday: DoomsdayAuraState;
+	portal: PortalAuraState;
+}

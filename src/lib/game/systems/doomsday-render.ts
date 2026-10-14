@@ -1,83 +1,90 @@
-import { Graphics } from "pixi.js";
 import { VIEWER_HEIGHT } from "../config.js";
+import { createAura } from "../../vfx/registry.js";
+import { createDoomsdayBolt } from "../../vfx/auras.js";
+import type { VfxItem, VfxStateful } from "../../vfx/types.js";
+import type { DoomsdayAuraState } from "../../vfx/types.js";
 import type { System, RenderSystemFactory } from "./types.js";
 
-const CORE_RADIUS = 72;
-const CORE_COLOR = 0xff3322;
 const BOLT_RADIUS = 4;
-const BOLT_COLOR = 0xff3322;
-const AURA_COLOR = 0xff2211;
-const AURA_GAP = 10;
 
+/**
+ * Рисует устройство doomsday. Логика (спавн, заморозка, взрывы) живёт в
+ * `systems/doomsday.ts`, вид — в `vfx/auras.ts`, здесь только состояние.
+ */
 export const createDoomsdayRenderSystem: RenderSystemFactory = (ctx) => {
 	const devices = ctx.world.with("doomsday", "position");
 	const bolts = ctx.world.with("doomsdayBolt", "position");
 	const viewers = ctx.world.with("viewer", "position").without("dead");
 
-	const unsubscribeDeviceAdded = devices.onEntityAdded.subscribe((entity) => {
-		entity.body = new Graphics();
-		ctx.app.stage.addChild(entity.body);
+	const auras = new Map<object, VfxStateful<DoomsdayAuraState>>();
+	const boltFx = new Map<object, VfxItem>();
+
+	const placement = (x: number, y: number) => ({
+		x,
+		y,
+		scale: ctx.settings.viewerScale,
 	});
+
+	const unsubscribeDeviceAdded = devices.onEntityAdded.subscribe((entity) => {
+		const aura = createAura("doomsday", {
+			...placement(entity.position.x, entity.position.y),
+			rng: ctx.rng,
+		});
+		if (!aura) return;
+		auras.set(entity, aura);
+		ctx.vfx.add(aura, placement(entity.position.x, entity.position.y));
+	});
+
 	const unsubscribeDeviceRemoved = devices.onEntityRemoved.subscribe(
 		(entity) => {
-			entity.body?.destroy();
-			entity.body = undefined;
+			const aura = auras.get(entity);
+			if (!aura) return;
+			auras.delete(entity);
+			ctx.vfx.remove(aura);
 		},
 	);
+
 	const unsubscribeBoltAdded = bolts.onEntityAdded.subscribe((entity) => {
-		entity.body = new Graphics().circle(0, 0, BOLT_RADIUS).fill(BOLT_COLOR);
-		ctx.app.stage.addChild(entity.body);
+		const effect = createDoomsdayBolt(BOLT_RADIUS);
+		boltFx.set(entity, effect);
+		ctx.vfx.add(effect, placement(entity.position.x, entity.position.y));
 	});
+
 	const unsubscribeBoltRemoved = bolts.onEntityRemoved.subscribe((entity) => {
-		entity.body?.destroy();
-		entity.body = undefined;
+		const effect = boltFx.get(entity);
+		if (!effect) return;
+		boltFx.delete(entity);
+		ctx.vfx.remove(effect);
 	});
 
 	const system: System = () => {
-		const time = performance.now() / 1000;
-
 		for (const entity of devices) {
-			const body = entity.body;
-			if (!(body instanceof Graphics)) continue;
-			body.clear();
+			const aura = auras.get(entity);
+			if (!aura) continue;
 
 			const state = entity.doomsday;
-			const pulse = 0.5 + 0.5 * Math.sin(time * 6);
-
+			let shooter: DoomsdayAuraState["shooter"] = null;
+			let shooterRadius = 0;
 			for (const viewer of viewers) {
 				if (viewer.viewer.userId !== state.shooterId) continue;
-				const halfHeight =
+				shooter = { x: viewer.position.x, y: viewer.position.y };
+				shooterRadius =
 					(viewer.size?.height ?? VIEWER_HEIGHT * ctx.settings.viewerScale) / 2;
-				body
-					.circle(
-						viewer.position.x,
-						viewer.position.y,
-						halfHeight + AURA_GAP + pulse * 4,
-					)
-					.stroke({
-						color: AURA_COLOR,
-						alpha: 0.4 + 0.3 * pulse,
-						width: 3,
-					});
+				break;
 			}
 
-			if (state.active) {
-				body
-					.circle(
-						entity.position.x,
-						entity.position.y,
-						CORE_RADIUS * (0.8 + 0.4 * pulse),
-					)
-					.fill({ color: CORE_COLOR, alpha: 0.25 + 0.2 * pulse })
-					.circle(entity.position.x, entity.position.y, CORE_RADIUS * 0.4)
-					.fill({ color: CORE_COLOR, alpha: 0.6 });
-			}
+			aura.state = {
+				active: state.active,
+				shooter,
+				shooterRadius,
+			};
+			ctx.vfx.move(aura, placement(entity.position.x, entity.position.y));
 		}
 
 		for (const bolt of bolts) {
-			if (!bolt.body) continue;
-			bolt.body.x = bolt.position.x;
-			bolt.body.y = bolt.position.y;
+			const effect = boltFx.get(bolt);
+			if (!effect) continue;
+			ctx.vfx.move(effect, placement(bolt.position.x, bolt.position.y));
 		}
 	};
 
@@ -86,14 +93,14 @@ export const createDoomsdayRenderSystem: RenderSystemFactory = (ctx) => {
 		unsubscribeDeviceRemoved();
 		unsubscribeBoltAdded();
 		unsubscribeBoltRemoved();
-		for (const entity of devices) {
-			entity.body?.destroy();
-			entity.body = undefined;
+		for (const aura of auras.values()) {
+			ctx.vfx.remove(aura);
 		}
-		for (const bolt of bolts) {
-			bolt.body?.destroy();
-			bolt.body = undefined;
+		auras.clear();
+		for (const effect of boltFx.values()) {
+			ctx.vfx.remove(effect);
 		}
+		boltFx.clear();
 	};
 
 	return system;

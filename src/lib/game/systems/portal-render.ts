@@ -1,73 +1,63 @@
-import { Graphics } from "pixi.js";
 import { VIEWER_GROUND_MARGIN } from "../config.js";
+import { createAura } from "../../vfx/registry.js";
+import type { PortalAuraState, VfxStateful } from "../../vfx/types.js";
 import type { System, RenderSystemFactory } from "./types.js";
 
 const PORTAL_RADIUS = 32;
-const PORTAL_COLOR = 0x9b59ff;
-const PORTAL_EDGE = 0xd6b3ff;
-const BAR_WIDTH = 48;
-const BAR_HEIGHT = 4;
-const BAR_GAP = 8;
 
+/**
+ * Рисует портал возврата. Логика (сколько ждать, когда вернуться) живёт в
+ * `systems/respawn-scheduler.ts` и `respawn.ts`, вид — в `vfx/auras.ts`.
+ */
 export const createPortalRenderSystem: RenderSystemFactory = (ctx) => {
-	const portals = ctx.world.with("respawning");
+	const portals = ctx.world.with("respawning", "position");
+	const auras = new Map<object, VfxStateful<PortalAuraState>>();
+
+	const groundY = () => ctx.app.screen.height - VIEWER_GROUND_MARGIN;
+
+	const placement = (x: number) => ({
+		x,
+		y: groundY() - PORTAL_RADIUS,
+		scale: ctx.settings.viewerScale,
+	});
 
 	const unsubscribeAdded = portals.onEntityAdded.subscribe((entity) => {
-		const body = new Graphics();
-		entity.body = body;
-		ctx.app.stage.addChild(body);
+		const aura = createAura("portal", {
+			...placement(entity.respawning.x),
+			rng: ctx.rng,
+		});
+		if (!aura) return;
+		auras.set(entity, aura);
+		ctx.vfx.add(aura, placement(entity.respawning.x));
 	});
 
 	const unsubscribeRemoved = portals.onEntityRemoved.subscribe((entity) => {
-		entity.body?.destroy();
-		entity.body = undefined;
+		const aura = auras.get(entity);
+		if (!aura) return;
+		auras.delete(entity);
+		ctx.vfx.remove(aura);
 	});
 
 	const system: System = () => {
-		const groundY = ctx.app.screen.height - VIEWER_GROUND_MARGIN;
-		const time = performance.now() / 1000;
-
 		for (const entity of portals) {
-			const body = entity.body;
-			if (!(body instanceof Graphics)) continue;
-
+			const aura = auras.get(entity);
+			if (!aura) continue;
 			const { elapsed, duration, x } = entity.respawning;
-			const progress = Math.min(1, elapsed / duration);
-			const pulse = 0.5 + 0.5 * Math.sin(time * 4);
-			const centerY = groundY - PORTAL_RADIUS;
-
-			body.clear();
-
-			body
-				.ellipse(x, centerY, PORTAL_RADIUS * 0.6, PORTAL_RADIUS)
-				.fill({ color: PORTAL_COLOR, alpha: 0.25 + 0.2 * pulse })
-				.ellipse(x, centerY, PORTAL_RADIUS * 0.6, PORTAL_RADIUS)
-				.stroke({
-					color: PORTAL_EDGE,
-					alpha: 0.6 + 0.3 * pulse,
-					width: 2,
-				});
-
-			body
-				.rect(x - BAR_WIDTH / 2, groundY + BAR_GAP, BAR_WIDTH, BAR_HEIGHT)
-				.fill({ color: 0x000000, alpha: 0.5 })
-				.rect(
-					x - BAR_WIDTH / 2,
-					groundY + BAR_GAP,
-					BAR_WIDTH * progress,
-					BAR_HEIGHT,
-				)
-				.fill(PORTAL_COLOR);
+			aura.state = {
+				progress: duration > 0 ? Math.min(1, elapsed / duration) : 1,
+				groundY: groundY(),
+			};
+			ctx.vfx.move(aura, placement(x));
 		}
 	};
 
 	system.dispose = () => {
 		unsubscribeAdded();
 		unsubscribeRemoved();
-		for (const entity of portals) {
-			entity.body?.destroy();
-			entity.body = undefined;
+		for (const aura of auras.values()) {
+			ctx.vfx.remove(aura);
 		}
+		auras.clear();
 	};
 
 	return system;

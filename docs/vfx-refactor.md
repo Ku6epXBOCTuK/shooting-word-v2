@@ -243,8 +243,21 @@ export interface RewardConfig {
 
 ### Шаг 4. Ауры doomsday и портала — 1.5 ч
 
-- [ ] `vfx/auras.ts`: `createDoomsdayAura`, `createPortalAura`
-- [ ] `doomsday-render.ts`, `portal-render.ts` → тонкие диспетчеры
+- [x] `vfx/auras.ts`: `createDoomsdayAura`, `createDoomsdayBolt`,
+      `createPortalAura`
+- [x] `types.ts`: `DoomsdayAuraState`, `PortalAuraState` и карта `AuraStates`
+- [x] `registry.ts`: `createAura<K extends keyof AuraStates>` — вид ауры без
+      состояния невозможно завести, компилятор не найдёт ключ
+- [x] `doomsday-render.ts` (100 → 107 строк) и `portal-render.ts` (74 → 71) —
+      тонкие диспетчеры: создали, положили состояние, снесли
+- [x] `registry.spec.ts`: у каждой ауры есть состояние и фабрика; вид без
+      фабрики в `AURA_KINDS` больше нельзя
+
+`overcharge` убран из `AURA_KINDS` — он заявлен, но ни состояния, ни фабрики не
+имеет. Вернётся в шаге 6 вместе с реальной аурой.
+
+Поле `charge` в состоянии ядра заводил и не использовал — убрал, чтобы не
+плодить мёртвый код. Переработка самого ядра остаётся отдельной задачей бэклога.
 
 ### Шаг 5. Шейдерный щит — 4 ч
 

@@ -1,12 +1,20 @@
 import { describe, expect, test } from "vitest";
-import { REACTION_KINDS } from "./kinds.js";
-import { REACTION_DURATION } from "./durations.js";
 import {
 	ALL_AURA_KINDS,
 	ALL_COATING_KINDS,
 	REGISTERED_AURA_KINDS,
 	REGISTERED_COATING_KINDS,
 } from "./registry.js";
+import { REACTION_KINDS } from "./kinds.js";
+import { REACTION_DURATION } from "./durations.js";
+import type { AuraStates } from "./types.js";
+
+/** Состояния известны только типами, поэтому для проверки нужен список-эталон. */
+const AURA_STATES: AuraStates = {
+	shield: { hp: 0, max: 0, radius: 0 },
+	doomsday: { active: false, shooter: null, shooterRadius: 0 },
+	portal: { progress: 0, groundY: 0 },
+};
 
 describe("vfx registry", () => {
 	test("все зарегистрированные ауры известны сцене", () => {
@@ -40,5 +48,22 @@ describe("vfx registry", () => {
 		expect(Object.keys(REACTION_DURATION).sort()).toEqual(
 			[...REACTION_KINDS].sort(),
 		);
+	});
+
+	test("у каждой зарегистрированной ауры есть состояние в AuraStates", () => {
+		expect(REGISTERED_AURA_KINDS.sort()).toEqual(
+			(Object.keys(AURA_STATES) as string[]).sort(),
+		);
+	});
+
+	test("в AURA_KINDS нет вида без состояния и без фабрики", () => {
+		const withoutState = ALL_AURA_KINDS.filter(
+			(kind) => !(kind in AURA_STATES),
+		);
+		const withoutFactory = ALL_AURA_KINDS.filter(
+			(kind) => !REGISTERED_AURA_KINDS.includes(kind),
+		);
+		expect(withoutState).toEqual([]);
+		expect(withoutFactory).toEqual([]);
 	});
 });

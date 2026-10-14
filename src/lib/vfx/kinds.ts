@@ -18,12 +18,7 @@ export const REACTION_KINDS = [
 export type ReactionKind = (typeof REACTION_KINDS)[number];
 
 /** Долгоживущие эффекты, живущие контейнером в сцене. */
-export const AURA_KINDS = [
-	"shield",
-	"overcharge",
-	"doomsday",
-	"portal",
-] as const;
+export const AURA_KINDS = ["shield", "doomsday", "portal"] as const;
 
 export type AuraKind = (typeof AURA_KINDS)[number];
 

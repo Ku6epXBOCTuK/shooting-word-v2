@@ -1,3 +1,4 @@
+import { createDoomsdayAura, createPortalAura } from "./auras.js";
 import {
 	AURA_KINDS,
 	type AuraKind,
@@ -9,32 +10,36 @@ import { createReactionOf } from "./reactions.js";
 import { createShieldAura } from "./shield.js";
 import { createMetalShimmer } from "./shimmer.js";
 import type {
-	ShieldAuraState,
+	AuraStates,
 	VfxFilter,
 	VfxOptions,
 	VfxReaction,
 	VfxStateful,
 } from "./types.js";
 
-const AURAS: Partial<
-	Record<AuraKind, (o: VfxOptions) => VfxStateful<ShieldAuraState>>
-> = {
+type AuraFactory<K extends keyof AuraStates> = (
+	o: VfxOptions,
+) => VfxStateful<AuraStates[K]>;
+
+/**
+ * Ключи здесь — ровно те, что принимает `createAura`. Завести вид ауры
+ * без состояния нельзя: компилятор не найдёт для него ключ.
+ */
+const AURAS: { [K in keyof AuraStates]?: AuraFactory<K> } = {
 	shield: createShieldAura,
+	doomsday: createDoomsdayAura,
+	portal: createPortalAura,
 };
 
 const COATINGS: Partial<Record<CoatingKind, (o?: VfxOptions) => VfxFilter>> = {
 	ricochetium: () => createMetalShimmer(),
 };
 
-/**
- * Состояние ауры по её виду. Список расширяется по мере появления видов,
- * поэтому возвращается объединение, а не индексированный доступ.
- */
-export function createAura(
-	kind: AuraKind,
+export function createAura<K extends keyof AuraStates>(
+	kind: K,
 	options: VfxOptions,
-): VfxStateful<ShieldAuraState> | undefined {
-	return AURAS[kind]?.(options) as VfxStateful<ShieldAuraState> | undefined;
+): VfxStateful<AuraStates[K]> | undefined {
+	return AURAS[kind]?.(options) as VfxStateful<AuraStates[K]> | undefined;
 }
 
 export function createCoating(
