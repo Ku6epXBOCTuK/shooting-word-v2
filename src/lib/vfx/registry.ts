@@ -1,4 +1,8 @@
-import { createDoomsdayAura, createPortalAura } from "./auras.js";
+import {
+	createDoomsdayAura,
+	createOverchargeAura,
+	createPortalAura,
+} from "./auras.js";
 import {
 	AURA_KINDS,
 	type AuraKind,
@@ -27,6 +31,7 @@ type AuraFactory<K extends keyof AuraStates> = (
  */
 const AURAS: { [K in keyof AuraStates]?: AuraFactory<K> } = {
 	shield: createShieldAura,
+	overcharge: createOverchargeAura,
 	doomsday: createDoomsdayAura,
 	portal: createPortalAura,
 };

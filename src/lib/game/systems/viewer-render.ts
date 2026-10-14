@@ -3,6 +3,8 @@ import { createAura, createCoating } from "../../vfx/registry.js";
 import { shieldHit } from "../../vfx/durations.js";
 import { METAL_SHIMMER_MAX_SHIPS } from "../../vfx/shimmer.js";
 import type {
+	AuraStates,
+	OverchargeAuraState,
 	ShieldAuraState,
 	VfxFilter,
 	VfxStateful,
@@ -44,46 +46,86 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 		scale: ctx.settings.viewerScale,
 	});
 
-	const syncShield = (
+	const overcharges = new Map<Entity, VfxStateful<OverchargeAuraState>>();
+	const auraStores = [shields, overcharges];
+
+	/**
+	 * Ауры, привязанные к компоненту зрителя: появляются вместе с компонентом,
+	 * снимаются вместе с ним. Радиус всегда от размера спрайта, поэтому аура
+	 * одинаково читается при любом `viewerScale`.
+	 */
+	const syncAura = <K extends "shield" | "overcharge">(
 		entity: Positioned,
 		ship: AnimatedSprite,
 		visible: boolean,
+		kind: K,
+		active: boolean,
+		state: AuraStates[K],
+		store: Map<Entity, VfxStateful<AuraStates[K]>>,
 	) => {
-		if (!entity.shield) {
-			const aura = shields.get(entity);
+		if (!active) {
+			const aura = store.get(entity);
 			if (aura) {
 				ctx.vfx.remove(aura);
-				shields.delete(entity);
+				store.delete(entity);
 			}
 			return;
 		}
 
-		let aura = shields.get(entity);
+		let aura = store.get(entity);
 		if (!aura) {
-			aura = createAura("shield", {
-				...placementOf(entity),
-				rng: ctx.rng,
-			});
+			aura = createAura(kind, { ...placementOf(entity), rng: ctx.rng });
 			if (!aura) return;
-			shields.set(entity, aura);
+			store.set(entity, aura);
 			ctx.vfx.add(aura, placementOf(entity));
 		}
 
-		aura.state = {
-			hp: entity.shield.hp,
-			max: SHIELD_MAX_HP,
-			radius: Math.max(ship.width, ship.height) / 2,
-			...shieldHit(entity.shield, entity.position, ctx.now()),
-		};
+		aura.state = state;
 		aura.root.visible = visible;
 		ctx.vfx.move(aura, placementOf(entity));
 	};
 
+	const shipRadius = (ship: AnimatedSprite) =>
+		Math.max(ship.width, ship.height) / 2;
+
+	const syncEffects = (
+		entity: Positioned,
+		ship: AnimatedSprite,
+		visible: boolean,
+	) => {
+		syncAura(
+			entity,
+			ship,
+			visible,
+			"shield",
+			entity.shield !== undefined,
+			{
+				hp: entity.shield?.hp ?? 0,
+				max: SHIELD_MAX_HP,
+				radius: shipRadius(ship),
+				...shieldHit(entity.shield ?? {}, entity.position, ctx.now()),
+			},
+			shields,
+		);
+
+		syncAura(
+			entity,
+			ship,
+			visible,
+			"overcharge",
+			entity.overcharge !== undefined,
+			{ radius: shipRadius(ship) },
+			overcharges,
+		);
+	};
+
 	const dropEffects = (entity: Entity, ship?: AnimatedSprite) => {
-		const aura = shields.get(entity);
-		if (aura) {
-			ctx.vfx.remove(aura);
-			shields.delete(entity);
+		for (const store of auraStores) {
+			const aura = store.get(entity);
+			if (aura) {
+				ctx.vfx.remove(aura);
+				store.delete(entity);
+			}
 		}
 		if (shimmers.delete(entity) && ship) ctx.vfx.unfilter(ship);
 	};
@@ -188,7 +230,7 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 					.fill("#2ecc40");
 			}
 
-			syncShield(entity, ship, visible);
+			syncEffects(entity, ship, visible);
 
 			if (entity.ricochetium && visible) {
 				if (!shimmers.has(entity) && shimmers.size < METAL_SHIMMER_MAX_SHIPS) {

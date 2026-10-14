@@ -17,6 +17,7 @@
 
 	let shieldEnabled = $derived(effects["shield"] ?? false);
 	let armorCoatingEnabled = $derived(effects["ricochetium"] ?? false);
+	let overchargeEnabled = $derived(effects["overcharge"] ?? false);
 
 	const SCALE = 10;
 	const CHARGES = 3;
@@ -113,9 +114,12 @@
 	$effect(() => {
 		const current = ship;
 		if (!layer || !current) return;
-		if (!shieldEnabled) return;
 
-		const aura = createAura("shield", {
+		// Предпросмотр повторяет попадание, чтобы искажение щита было видно.
+		const kind = shieldEnabled ? "shield" : null;
+		if (!kind) return;
+
+		const aura = createAura(kind, {
 			x: current.x,
 			y: current.y,
 			scale: SCALE,
@@ -142,6 +146,27 @@
 	$effect(() => {
 		const current = ship;
 		if (!layer || !current) return;
+		if (!overchargeEnabled) return;
+
+		const aura = createAura("overcharge", {
+			x: current.x,
+			y: current.y,
+			scale: SCALE,
+			rng: Math.random,
+		});
+		if (!aura) return;
+
+		aura.state = { radius: Math.max(current.width, current.height) / 2 };
+		layer.add(aura, { x: current.x, y: current.y, scale: SCALE });
+
+		return () => {
+			layer?.remove(aura);
+		};
+	});
+
+	$effect(() => {
+		const current = ship;
+		if (!layer || !current) return;
 		if (!armorCoatingEnabled) return;
 
 		const coating = createCoating("ricochetium");
@@ -158,6 +183,7 @@
 	Skin number: {skin + 1} <br />
 	Shield: {shieldEnabled} <br />
 	Armor: {armorCoatingEnabled} <br />
+	Overcharge: {overchargeEnabled} <br />
 	<div class="hero-scene" bind:this={container}>
 		<canvas bind:this={canvas}></canvas>
 	</div>

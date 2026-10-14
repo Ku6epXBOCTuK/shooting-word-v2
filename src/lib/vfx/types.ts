@@ -93,12 +93,19 @@ export interface PortalAuraState {
 	groundY: number;
 }
 
+/** Состояние перегрузки оружия. */
+export interface OverchargeAuraState {
+	/** половина большей стороны корабля в мировых пикселях */
+	radius: number;
+}
+
 /**
  * Соответствие вида ауры и её состояния. Реестр не даст завести вид без
  * состояния: ключи здесь и есть допустимые аргументы `createAura`.
  */
 export interface AuraStates {
 	shield: ShieldAuraState;
+	overcharge: OverchargeAuraState;
 	doomsday: DoomsdayAuraState;
 	portal: PortalAuraState;
 }

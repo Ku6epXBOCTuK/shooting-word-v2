@@ -1,4 +1,15 @@
 import type { ChatMessage } from "#lib/chat/port.js";
+import {
+	BATTERY_REWARD,
+	BEACON_REWARD,
+	DOOMSDAY_REWARD,
+	OVERCHARGE_REWARD,
+	rewardVisual,
+	REVIVE_REWARD,
+	RICOCHETIUM_REWARD,
+	SHIELD_REWARD,
+	TIME_STOP_REWARD,
+} from "#lib/features/rewards/config.js";
 import type { RoundRecord } from "#lib/features/rounds/record.js";
 import type { ViewerStore } from "#lib/features/persistence/viewer-store.js";
 import { logger } from "#lib/logger.js";
@@ -24,11 +35,13 @@ import type { GameContext, RenderContext } from "./context.js";
 import { bumpRoundStat, createRoundStats } from "./round-stats.js";
 import { defaultSettings, type GameSettings } from "./settings.js";
 import { spawnViewer } from "./spawn.js";
+import { addReaction } from "./reaction.js";
 import { cleanupGroups, logicGroups, renderGroups } from "./systems/index.js";
 import type { System } from "./systems/types.js";
 import {
 	SESSIONPHASE,
 	type Entity,
+	type Position,
 	type SessionPhase,
 	type Size,
 	type ViewerIdentity,
@@ -94,6 +107,17 @@ export function createGameCore(
 	const groupDefs: { factories: ((ctx: RenderContext) => System)[] }[] = render
 		? [...logicGroups(), ...renderGroups(), ...cleanupGroups()]
 		: [...logicGroups(), ...cleanupGroups()];
+
+	/**
+	 * Короткая обратная связь: зритель должен видеть, что награда сработала,
+	 * даже если у неё нет постоянного эффекта на корабле. Цвет и вид отклика
+	 * берутся из `RewardConfig.visual`.
+	 */
+	const reactToReward = (key: string, at?: Position) => {
+		const visual = rewardVisual(key);
+		if (!visual || !at) return;
+		addReaction(ctx, at, visual.reaction, visual.color);
+	};
 
 	const createGroups = () =>
 		groupDefs.map((group) =>
@@ -181,6 +205,7 @@ export function createGameCore(
 						expiresAt,
 						hp: SHIELD_MAX_HP,
 					});
+					reactToReward(SHIELD_REWARD.key, entity.position);
 				} else if (entity.shield.expiresAt < expiresAt) {
 					entity.shield.expiresAt = expiresAt;
 				}
@@ -203,6 +228,7 @@ export function createGameCore(
 
 				if (!entity.overcharge) {
 					world.addComponent(entity, "overcharge", { expiresAt });
+					reactToReward(OVERCHARGE_REWARD.key, entity.position);
 				} else if (entity.overcharge.expiresAt < expiresAt) {
 					entity.overcharge.expiresAt = expiresAt;
 				}
@@ -225,6 +251,7 @@ export function createGameCore(
 
 				if (!entity.ricochetium) {
 					world.addComponent(entity, "ricochetium", { expiresAt });
+					reactToReward(RICOCHETIUM_REWARD.key, entity.position);
 				} else if (entity.ricochetium.expiresAt < expiresAt) {
 					entity.ricochetium.expiresAt = expiresAt;
 				}
@@ -240,6 +267,7 @@ export function createGameCore(
 						ctx.settings.batteryMax,
 						(entity.batteries ?? 0) + 1,
 					);
+					reactToReward(BATTERY_REWARD.key, entity.position);
 					changed = true;
 					break;
 				}
@@ -253,6 +281,7 @@ export function createGameCore(
 				for (const entity of viewers) {
 					if (entity.viewer.userId !== userId) continue;
 					entity.revives = Math.min(REVIVE_MAX, (entity.revives ?? 0) + 1);
+					reactToReward(REVIVE_REWARD.key, entity.position);
 					changed = true;
 					break;
 				}
@@ -266,6 +295,7 @@ export function createGameCore(
 				for (const entity of viewers) {
 					if (entity.viewer.userId !== userId) continue;
 					entity.beacons = Math.min(BEACON_MAX, (entity.beacons ?? 0) + 1);
+					reactToReward(BEACON_REWARD.key, entity.position);
 					changed = true;
 					break;
 				}
@@ -351,6 +381,7 @@ export function createGameCore(
 				},
 				position: { x: from.x, y: from.y },
 			});
+			reactToReward(DOOMSDAY_REWARD.key, from);
 			return true;
 		},
 
@@ -359,6 +390,10 @@ export function createGameCore(
 
 			world.add({
 				timeStop: { elapsed: 0, duration: TIME_STOP_DURATION },
+			});
+			reactToReward(TIME_STOP_REWARD.key, {
+				x: ctx.screen.width / 2,
+				y: ctx.screen.height / 2,
 			});
 		},
 

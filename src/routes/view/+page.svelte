@@ -3,10 +3,12 @@
 	import Button from "#lib/components/ui/Button.svelte";
 	import ViewShip from "#lib/components/ViewShip.svelte";
 	import { REWARD_CONFIGS } from "#lib/features/rewards/config.ts";
+	import type { RewardVisual } from "#lib/features/rewards/config.ts";
 
-	const rewardsList = REWARD_CONFIGS.map(({ key, title }) => ({
+	const rewardsList = REWARD_CONFIGS.map(({ key, title, visual }) => ({
 		key,
 		title,
+		visual,
 	}));
 
 	let skin: number = $state(0);
@@ -14,6 +16,16 @@
 
 	function toggleEffect(effect: string) {
 		effects[effect] = !effects[effect];
+	}
+
+	function auraOf(visual: RewardVisual): string | null {
+		if (visual.kind === "aura") return visual.aura;
+		if (visual.kind === "coating") return visual.coating;
+		return null;
+	}
+
+	function hex(color: number): string {
+		return `#${color.toString(16).padStart(6, "0")}`;
 	}
 
 	function nextSkin() {
@@ -37,13 +49,48 @@
 		<Button onclick={prevSkin}>Prev Skin</Button>
 		<Button onclick={nextSkin}>Next Skin</Button>
 
-		{#each rewardsList as { key, title } (key)}
-			<Button onclick={() => toggleEffect(key)}>{title}</Button>
+		{#each rewardsList as { key, title, visual } (key)}
+			{@const aura = auraOf(visual)}
+			<span class="reward" class:on={!!effects[key]}>
+				<Button onclick={() => toggleEffect(key)}>
+					<span class="swatch" style={`--tint: ${hex(visual.color)}`}></span>
+					{title}
+				</Button>
+				<small class="kind">{visual.kind}{aura ? `: ${aura}` : ""}</small>
+			</span>
 		{/each}
 	</main>
 </div>
 
 <style>
+	.reward {
+		display: inline-flex;
+		flex-direction: column;
+		align-items: center;
+		border: 1px solid transparent;
+		border-radius: 12px;
+		transition: border-color 0.2s;
+	}
+
+	.reward.on {
+		border-color: color-mix(in srgb, var(--cyan) 45%, transparent);
+	}
+
+	.kind {
+		color: var(--muted);
+		font-size: 11px;
+		padding-bottom: 6px;
+	}
+
+	.swatch {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		background: var(--tint);
+		box-shadow: 0 0 10px 1px var(--tint);
+		flex: 0 0 auto;
+	}
+
 	.scene {
 		--background: #08090d;
 		--foreground: #ecebe7;

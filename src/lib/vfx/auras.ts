@@ -1,6 +1,7 @@
 import { Container, Graphics } from "pixi.js";
 import type {
 	DoomsdayAuraState,
+	OverchargeAuraState,
 	PortalAuraState,
 	VfxFrame,
 	VfxItem,
@@ -84,6 +85,65 @@ export function createDoomsdayBolt(radius: number): VfxItem {
 			root.destroy();
 		},
 	};
+}
+
+const OVERCHARGE_COLOR = 0xffb020;
+const OVERCHARGE_HOT = 0xffe6a0;
+/** сколько дуг в кольце и насколько оно шире корабля */
+const OVERCHARGE_ARCS = 6;
+const OVERCHARGE_SPAN = 0.8;
+const OVERCHARGE_WIDTH = 0.08;
+const OVERCHARGE_SPEED = 1.6;
+const OVERCHARGE_PULSE = 5;
+
+/**
+ * Перегрузка оружия: кольцо из вращающихся дуг вокруг корабля. Заметно от
+ * щита и обмазки — там холодные тона и сплошная оболочка, тут тёплый цвет и
+ * разрывы.
+ */
+export function createOverchargeAura(): VfxStateful<OverchargeAuraState> {
+	const body = new Graphics();
+	const root = new Container();
+	root.addChild(body);
+
+	const aura: VfxStateful<OverchargeAuraState> = {
+		root,
+		state: { radius: 0 },
+
+		update(frame: VfxFrame) {
+			const { radius } = aura.state;
+			body.clear();
+			if (radius <= 0) return;
+
+			const px = (units: number) => Math.max(1, radius * units);
+			const pulse = 0.5 + 0.5 * Math.sin(frame.t * OVERCHARGE_PULSE);
+			const ring = radius * (1 + OVERCHARGE_SPAN) + pulse * radius * 0.08;
+			const step = (Math.PI * 2) / OVERCHARGE_ARCS;
+			const turn = frame.t * OVERCHARGE_SPEED + frame.phase;
+
+			for (let i = 0; i < OVERCHARGE_ARCS; i++) {
+				const start = turn + i * step;
+				body.arc(frame.x, frame.y, ring, start, start + step * 0.62).stroke({
+					color: OVERCHARGE_HOT,
+					alpha: 0.35 + 0.45 * pulse,
+					width: px(OVERCHARGE_WIDTH),
+					cap: "round",
+				});
+			}
+
+			body.circle(frame.x, frame.y, ring * 0.94).stroke({
+				color: OVERCHARGE_COLOR,
+				alpha: 0.25 + 0.2 * pulse,
+				width: px(0.03),
+			});
+		},
+
+		destroy() {
+			root.destroy();
+		},
+	};
+
+	return aura;
 }
 
 const PORTAL_RADIUS = 32;

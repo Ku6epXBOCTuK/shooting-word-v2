@@ -82,7 +82,14 @@ vi.mock("pixi.js", () => {
 	class TextStyle {
 		constructor() {}
 	}
-	return { Graphics, Sprite, AnimatedSprite, Text, TextStyle };
+	class Container {
+		children: unknown[] = [];
+		addChild(...kids: unknown[]) {
+			this.children.push(...kids);
+		}
+		destroy() {}
+	}
+	return { Graphics, Sprite, AnimatedSprite, Text, TextStyle, Container };
 });
 
 interface SavedViewer {
