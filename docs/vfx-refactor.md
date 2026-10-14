@@ -161,21 +161,24 @@ export interface RewardConfig {
 
 Проверка после каждого шага: `npm run check && npm run lint && npm test`.
 
-### Шаг 0. Слой в контексте — 30 мин
-
-- [ ] `context.ts`: добавить `vfx: VfxLayer` в `RenderContext`
-- [ ] `core.ts`: создать слой рядом с `app`, снести в `dispose`
-- [ ] `viewer-persistence.spec.ts:104-113`: фейковый `vfx` в тестовом контексте
-- [ ] `npm run check && npm run test`
-
 ### Шаг 1. Инфраструктура vfx — 1.5 ч
 
-- [ ] `vfx/kinds.ts`: `REACTION_KINDS`, `AURA_KINDS` (без Pixi)
-- [ ] `vfx/types.ts`: `VfxFrame`, `VfxReaction`, `VfxAura`, `VfxFilter`
-- [ ] `vfx/layer.ts`: `add`, `move`, `remove`, `update`, `destroy`
-- [ ] `vfx/registry.ts`: `kind → фабрика`
-- [ ] `vfx/layer.spec.ts`: фейковый `stage` + фейковые эффекты, порядок
+Выполнен первым: от него зависит шаг 0.
+
+- [x] `vfx/kinds.ts`: `REACTION_KINDS`, `AURA_KINDS` (без Pixi)
+- [x] `vfx/types.ts`: `VfxFrame`, `VfxReaction`, `VfxAura`, `VfxFilter`
+- [x] `vfx/layer.ts`: `add`, `move`, `remove`, `update`, `destroy`
+- [x] `vfx/registry.ts`: `kind → фабрика` — перенесён в шаг 2, фабрик ещё нет
+- [x] `vfx/layer.spec.ts`: фейковый `stage` + фейковые эффекты, порядок
       add/move/remove, накопление `t`
+
+### Шаг 0. Слой в контексте — 30 мин
+
+- [x] `context.ts`: добавить `vfx: VfxLayer` в `RenderContext`
+- [x] `core.ts`: создать слой рядом с `app`, снести в `dispose`
+- [x] `viewer-persistence.spec.ts:104-113`: фейк не понадобился — фейковая сцена
+      уже умеет `addChild`
+- [x] `npm run check && npm run test`
 
 ### Шаг 2. Перенос shield и shimmer — 2 ч
 

@@ -2,6 +2,7 @@ import type { World } from "miniplex";
 import type { Application } from "pixi.js";
 import type { RoundRecord } from "#lib/features/rounds/record.js";
 import type { ViewerStore } from "#lib/features/persistence/index.js";
+import type { VfxLayer } from "#lib/vfx/layer.js";
 import type { GameAssets } from "./assets.js";
 import type { GameSettings } from "./settings.js";
 import type { Entity, Size } from "./types.js";
@@ -21,4 +22,5 @@ export interface GameContext {
 export interface RenderContext extends GameContext {
 	app: Application;
 	assets: GameAssets;
+	vfx: VfxLayer;
 }

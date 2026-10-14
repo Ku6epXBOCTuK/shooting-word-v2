@@ -2,6 +2,7 @@ import type { ChatMessage } from "#lib/chat/port.js";
 import type { RoundRecord } from "#lib/features/rounds/record.js";
 import type { ViewerStore } from "#lib/features/persistence/viewer-store.js";
 import { logger } from "#lib/logger.js";
+import { createVfxLayer, type VfxLayer } from "#lib/vfx/layer.js";
 import { World } from "miniplex";
 import type { Application } from "pixi.js";
 import type { GameAssets } from "./assets.js";
@@ -76,8 +77,18 @@ export function createGameCore(
 	// Spreading ctx into a new object would give `viewersDirty` two independent
 	// bindings and silently drop viewer persistence (no PUT to the backend on
 	// chat messages and reward grants). Attach app/assets onto the shared ctx.
+	//
+	// The vfx layer outlives `reset()` (which recreates every system), so it is
+	// created once here and torn down only in `dispose()`. Render systems own
+	// the effects they put in it and remove them from their own `dispose`.
+	// `layer.ts` imports pixi as types only, so headless stays pixi-free.
+	const vfx = render ? createVfxLayer(render.app.stage) : null;
 	const factoryCtx: RenderContext = render
-		? Object.assign(ctx, { app: render.app, assets: render.assets })
+		? Object.assign(ctx, {
+				app: render.app,
+				assets: render.assets,
+				vfx: vfx as VfxLayer,
+			})
 		: (ctx as RenderContext);
 
 	const groupDefs: { factories: ((ctx: RenderContext) => System)[] }[] = render
@@ -541,6 +552,7 @@ export function createGameCore(
 		dispose() {
 			world.clear();
 			disposeGroups();
+			vfx?.destroy();
 		},
 	};
 }
