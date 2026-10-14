@@ -13,8 +13,7 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 	const sessions = ctx.world.with("session");
 	const words = ctx.world.with("word");
 	const projectiles = ctx.world.with("homing");
-	const stars = ctx.world.with("star");
-	const explosions = ctx.world.with("explosion");
+	const reactions = ctx.world.with("vfx");
 	const viewers = ctx.world.with("viewer");
 	const banners = ctx.world.with("banner");
 
@@ -31,8 +30,7 @@ export const createSessionSystem: SystemFactory = (ctx) => {
 	const clearScene = () => {
 		expireAll(words);
 		expireAll(projectiles);
-		expireAll(stars);
-		expireAll(explosions);
+		expireAll(reactions);
 	};
 
 	const setPhase = (entity: With<Entity, "session">, phase: SessionPhase) => {

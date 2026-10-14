@@ -6,16 +6,9 @@ import {
 	DOOMSDAY_SPARK_INTERVAL,
 	DOOMSDAY_SPARK_INTERVAL_INTRO,
 } from "../config.js";
+import { addReaction } from "../reaction.js";
 import { bumpRoundStat } from "../round-stats.js";
 import type { SystemFactory } from "./types.js";
-
-const SPARK_TTL_MIN = 0.6;
-const SPARK_TTL_SPREAD = 0.8;
-const SPARK_SPEED_INTRO_MIN = 400;
-const SPARK_SPEED_INTRO_SPREAD = 600;
-const SPARK_SPEED_MIN = 200;
-const SPARK_SPEED_SPREAD = 500;
-const SPARK_RADIUS_INTRO = 4;
 
 export const createDoomsdaySystem: SystemFactory = (ctx) => {
 	const devices = ctx.world.with("doomsday", "position");
@@ -34,10 +27,7 @@ export const createDoomsdaySystem: SystemFactory = (ctx) => {
 					device.doomsday.active = true;
 				}
 			} else if (ctx.world.has(target) && !target.expired && target.position) {
-				ctx.world.add({
-					position: { x: target.position.x, y: target.position.y },
-					explosion: { age: 0 },
-				});
+				addReaction(ctx, target.position, "word-destroyed");
 				ctx.world.addComponent(target, "expired", true);
 				for (const session of sessions) {
 					for (const device of devices) {
@@ -72,20 +62,12 @@ export const createDoomsdaySystem: SystemFactory = (ctx) => {
 				state.sparkTimer = intro
 					? DOOMSDAY_SPARK_INTERVAL_INTRO
 					: DOOMSDAY_SPARK_INTERVAL;
-				const angle = ctx.rng() * Math.PI * 2;
-				const speed = intro
-					? SPARK_SPEED_INTRO_MIN + ctx.rng() * SPARK_SPEED_INTRO_SPREAD
-					: SPARK_SPEED_MIN + ctx.rng() * SPARK_SPEED_SPREAD;
-				ctx.world.add({
-					position: { x: device.position.x, y: device.position.y },
-					spark: {
-						vx: Math.cos(angle) * speed,
-						vy: Math.sin(angle) * speed,
-						age: 0,
-						ttl: SPARK_TTL_MIN + ctx.rng() * SPARK_TTL_SPREAD,
-						...(intro ? { radius: SPARK_RADIUS_INTRO } : {}),
-					},
-				});
+				addReaction(
+					ctx,
+					device.position,
+					"device-spark",
+					intro ? ctx.rng() : 0,
+				);
 			}
 
 			state.boltTimer -= dt;

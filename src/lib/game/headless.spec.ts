@@ -81,7 +81,7 @@ test("missed shot flies to a random point and explodes", () => {
 	}
 
 	expect([...game.world.with("bullet")]).toHaveLength(0);
-	expect([...game.world.with("explosion")].length).toBeGreaterThan(0);
+	expect([...game.world.with("vfx")].length).toBeGreaterThan(0);
 	expect([...game.world.with("hitBy")]).toHaveLength(0);
 	expect([...game.world.with("viewer")][0].xp ?? 0).toBe(0);
 

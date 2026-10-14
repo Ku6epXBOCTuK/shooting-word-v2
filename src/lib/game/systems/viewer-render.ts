@@ -1,8 +1,11 @@
-import { AnimatedSprite, Graphics, Text, TextStyle } from "pixi.js";
+﻿import { AnimatedSprite, Graphics, Text, TextStyle } from "pixi.js";
 import { createAura, createCoating } from "../../vfx/registry.js";
-import type { ShieldAuraState } from "../../vfx/shield.js";
 import { METAL_SHIMMER_MAX_SHIPS } from "../../vfx/shimmer.js";
-import type { VfxAura, VfxFilter } from "../../vfx/types.js";
+import type {
+	ShieldAuraState,
+	VfxFilter,
+	VfxStateful,
+} from "../../vfx/types.js";
 import {
 	SHIELD_MAX_HP,
 	VIEWER_LABEL_FONT_SIZE,
@@ -18,7 +21,6 @@ const PLATE_ALPHA = 0.7;
 const HP_BAR_HEIGHT = 3;
 const HP_BAR_GAP = 3;
 
-/** Зритель с позицией — устойчивый срез запроса `with("viewer", "position")`. */
 type Positioned = Entity & { position: Position };
 
 export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
@@ -29,7 +31,7 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 	});
 
 	const appliedSkin = new Map<Entity, number>();
-	const shields = new Map<Entity, VfxAura<ShieldAuraState>>();
+	const shields = new Map<Entity, VfxStateful<ShieldAuraState>>();
 	const shimmers = new Map<Entity, VfxFilter>();
 
 	const shipFrames = (skin: number) =>
@@ -60,7 +62,7 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 			aura = createAura("shield", {
 				...placementOf(entity),
 				rng: ctx.rng,
-			}) as VfxAura<ShieldAuraState> | undefined;
+			});
 			if (!aura) return;
 			shields.set(entity, aura);
 			ctx.vfx.add(aura, placementOf(entity));

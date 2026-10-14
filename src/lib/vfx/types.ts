@@ -1,4 +1,4 @@
-import type { Container, Filter } from "pixi.js";
+import type { Container, Filter, Texture } from "pixi.js";
 
 /** Где в мире стоит эффект и в каком масштабе живёт. */
 export interface VfxPlacement {
@@ -17,19 +17,27 @@ export interface VfxFrame extends VfxPlacement {
 	phase: number;
 }
 
-/** Одноразовый эффект: реакция на событие. */
-export interface VfxReaction {
+/** Минимальный контракт слоя: контейнер, кадр, снос. */
+export interface VfxItem {
 	readonly root: Container;
 	update(frame: VfxFrame): void;
 	destroy(): void;
 }
 
 /**
+ * Одноразовый отклик на событие. Срок жизни объявляет сам эффект — рендер
+ * кладёт его в ECS, чтобы логика знала, когда убрать сущность.
+ */
+export interface VfxReaction extends VfxItem {
+	readonly duration: number;
+}
+
+/**
  * Долгоживущий эффект, привязанный к состоянию (щит, портал, ядро).
- * Структурно совместим с `VfxReaction`, поэтому слой принимает и его.
+ * Структурно совместим с `VfxItem`, поэтому слой принимает и его.
  * Хост держит сильную ссылку и пишет `state` перед `layer.update(dt)`.
  */
-export interface VfxAura<S> extends VfxReaction {
+export interface VfxStateful<S> extends VfxItem {
 	state: S;
 }
 
@@ -43,15 +51,22 @@ export interface VfxFilter {
 export interface VfxOptions extends VfxPlacement {
 	/** случайность, разрешается один раз при создании эффекта */
 	rng: () => number;
-	/** числовой параметр конкретного вида: цвет, сила */
+	/** числовой параметр конкретного вида: цвет, сила, диапазон */
 	value?: number;
+	/** кадры покадровой анимации, если эффект их использует */
+	frames?: readonly Texture[];
+	/** спрайт снаряда, если эффект летящий */
+	bullet?: Texture;
 }
 
 export type VfxReactionFactory = (options: VfxOptions) => VfxReaction;
-export type VfxAuraFactory<S> = (options: VfxOptions) => VfxAura<S>;
 
-/** Что вешается в слой как дочерний объект сцены. */
-export type VfxLayerItem = VfxReaction;
-
-/** Что вешается фильтром на чужой объект. */
-export type VfxFilterTarget = Container;
+/** Состояние щита. Только числа — без Pixi, переиспользуется в ECS-типах. */
+export interface ShieldAuraState {
+	/** сколько зарядов осталось */
+	hp: number;
+	/** сколько зарядов бывает всего */
+	max: number;
+	/** половина большей стороны корабля в мировых пикселях, уже с учётом масштаба */
+	radius: number;
+}

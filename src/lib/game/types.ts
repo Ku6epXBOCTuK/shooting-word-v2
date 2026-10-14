@@ -1,3 +1,4 @@
+import type { ReactionKind } from "#lib/vfx/kinds.js";
 import type { Graphics, Sprite, Text } from "pixi.js";
 
 export interface Position {
@@ -61,8 +62,11 @@ export interface Bullet {
 	miss?: boolean;
 }
 
-export interface Explosion {
+export interface Vfx {
+	kind: ReactionKind;
 	age: number;
+	ttl: number;
+	value?: number;
 }
 
 export interface EnemyShot {
@@ -71,21 +75,6 @@ export interface EnemyShot {
 
 export interface Armed {
 	enqueuedAt: number;
-}
-
-export interface Ricochet {
-	vx: number;
-	vy: number;
-	age: number;
-	ttl: number;
-}
-
-export interface Spark {
-	vx: number;
-	vy: number;
-	age: number;
-	ttl: number;
-	radius?: number;
 }
 
 export interface Hitpoints {
@@ -170,12 +159,6 @@ export interface Respawning {
 	x: number;
 }
 
-export interface Star {
-	age: number;
-	ttl: number;
-	startY: number;
-}
-
 export interface EntityComponents {
 	position: Position;
 	position3: Position3;
@@ -189,12 +172,9 @@ export interface EntityComponents {
 	homing: Homing;
 	arrived: boolean;
 	bullet: Bullet;
-	star: Star;
-	explosion: Explosion;
+	vfx: Vfx;
 	enemyShot: EnemyShot;
 	armed: Armed;
-	ricochet: Ricochet;
-	spark: Spark;
 	hp: Hitpoints;
 	shield: Shield;
 	overcharge: Overcharge;

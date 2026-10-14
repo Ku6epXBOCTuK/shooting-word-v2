@@ -8,6 +8,8 @@ export const REACTION_KINDS = [
 	"word-destroyed",
 	"bullet-miss",
 	"viewer-destroyed",
+	"word-kill-mark",
+	"device-spark",
 	"doomsday",
 	"timestop",
 	"reward",

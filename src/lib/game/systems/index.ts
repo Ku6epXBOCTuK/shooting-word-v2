@@ -1,4 +1,4 @@
-import type { RenderSystemGroup, SystemGroup } from "./types.js";
+﻿import type { RenderSystemGroup, SystemGroup } from "./types.js";
 import { createSessionSystem } from "./session.js";
 import { createRoundResetSystem } from "./round-reset.js";
 import { createRoundLogSystem } from "./round-log.js";
@@ -9,6 +9,8 @@ import { createLifetimeSystem } from "./lifetime.js";
 import { createDoomsdaySystem } from "./doomsday.js";
 import { createTimeStopSystem } from "./time-stop.js";
 import { createDoomsdayRenderSystem } from "./doomsday-render.js";
+import { createVfxRenderSystem } from "./vfx-render.js";
+import { createVfxSystem } from "./vfx.js";
 import { createWalkSystem } from "./walk.js";
 import { createMeasureSystem } from "./measure.js";
 import { createShieldSystem } from "./shield.js";
@@ -24,15 +26,7 @@ import { createEnemyFireSystem } from "./enemy-fire.js";
 import { createBulletHitSystem } from "./bullet-hit.js";
 import { createWordKillSystem } from "./word-kill.js";
 import { createBulletRenderSystem } from "./bullet-render.js";
-import { createStarSystem } from "./star.js";
-import { createStarRenderSystem } from "./star-render.js";
-import { createExplosionSystem } from "./explosion.js";
-import { createExplosionRenderSystem } from "./explosion-render.js";
 import { createEnemyShotHitSystem } from "./enemy-shot-hit.js";
-import { createRicochetSystem } from "./ricochet.js";
-import { createRicochetRenderSystem } from "./ricochet-render.js";
-import { createSparkSystem } from "./spark.js";
-import { createSparkRenderSystem } from "./spark-render.js";
 import { createEnemyShotRenderSystem } from "./enemy-shot-render.js";
 import { createViewerTimeoutSystem } from "./viewer-timeout.js";
 import { createViewerPersistenceSystem } from "./viewer-persistence.js";
@@ -78,12 +72,9 @@ export function logicGroups(): SystemGroup[] {
 				createBulletHitSystem,
 				createWordKillSystem,
 				createEnemyShotHitSystem,
-				createRicochetSystem,
-				createSparkSystem,
-				createStarSystem,
 				createDoomsdaySystem,
 				createTimeStopSystem,
-				createExplosionSystem,
+				createVfxSystem,
 			],
 		},
 		{
@@ -116,11 +107,8 @@ export function renderGroups(): RenderSystemGroup[] {
 				createViewerRenderSystem,
 				createBulletRenderSystem,
 				createEnemyShotRenderSystem,
-				createRicochetRenderSystem,
-				createSparkRenderSystem,
-				createStarRenderSystem,
+				createVfxRenderSystem,
 				createDoomsdayRenderSystem,
-				createExplosionRenderSystem,
 				createVfxTickSystem,
 			],
 		},

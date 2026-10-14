@@ -3,30 +3,38 @@ import {
 	type AuraKind,
 	COATING_KINDS,
 	type CoatingKind,
+	type ReactionKind,
 } from "./kinds.js";
+import { createReactionOf } from "./reactions.js";
 import { createShieldAura } from "./shield.js";
 import { createMetalShimmer } from "./shimmer.js";
 import type {
-	VfxAura,
-	VfxAuraFactory,
+	ShieldAuraState,
 	VfxFilter,
 	VfxOptions,
+	VfxReaction,
+	VfxStateful,
 } from "./types.js";
 
-const AURAS: Partial<Record<AuraKind, VfxAuraFactory<unknown>>> = {
-	shield: createShieldAura as VfxAuraFactory<unknown>,
+const AURAS: Partial<
+	Record<AuraKind, (o: VfxOptions) => VfxStateful<ShieldAuraState>>
+> = {
+	shield: createShieldAura,
 };
 
 const COATINGS: Partial<Record<CoatingKind, (o?: VfxOptions) => VfxFilter>> = {
 	ricochetium: () => createMetalShimmer(),
 };
 
-/** Ауры набираются по одному на каждое значение, появятся в шагах 4 и 6. */
+/**
+ * Состояние ауры по её виду. Список расширяется по мере появления видов,
+ * поэтому возвращается объединение, а не индексированный доступ.
+ */
 export function createAura(
 	kind: AuraKind,
 	options: VfxOptions,
-): VfxAura<unknown> | undefined {
-	return AURAS[kind]?.(options);
+): VfxStateful<ShieldAuraState> | undefined {
+	return AURAS[kind]?.(options) as VfxStateful<ShieldAuraState> | undefined;
 }
 
 export function createCoating(
@@ -34,6 +42,13 @@ export function createCoating(
 	options?: VfxOptions,
 ): VfxFilter | undefined {
 	return COATINGS[kind]?.(options);
+}
+
+export function createReaction(
+	kind: ReactionKind,
+	options: VfxOptions,
+): VfxReaction {
+	return createReactionOf(kind, options);
 }
 
 export function hasAura(kind: string): kind is AuraKind {

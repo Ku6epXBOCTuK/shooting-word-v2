@@ -1,4 +1,6 @@
 import { describe, expect, test } from "vitest";
+import { REACTION_KINDS } from "./kinds.js";
+import { REACTION_DURATION } from "./durations.js";
 import {
 	ALL_AURA_KINDS,
 	ALL_COATING_KINDS,
@@ -29,5 +31,14 @@ describe("vfx registry", () => {
 			(ALL_COATING_KINDS as readonly string[]).includes(kind),
 		);
 		expect(overlap).toEqual([]);
+	});
+
+	test("у каждого вида отклика есть срок жизни", () => {
+		expect(REACTION_KINDS.every((kind) => REACTION_DURATION[kind] > 0)).toBe(
+			true,
+		);
+		expect(Object.keys(REACTION_DURATION).sort()).toEqual(
+			[...REACTION_KINDS].sort(),
+		);
 	});
 });

@@ -1,8 +1,9 @@
-import { STAR_TTL, VIEWER_HEIGHT } from "../config.js";
+import { VIEWER_HEIGHT } from "../config.js";
+import { addReaction } from "../reaction.js";
 import { bumpRoundStat } from "../round-stats.js";
 import type { SystemFactory } from "./types.js";
 
-const STAR_HEAD_OFFSET = 20;
+const KILL_MARK_OFFSET = 20;
 
 export const createWordKillSystem: SystemFactory = (ctx) => {
 	const killed = ctx.world.with("word", "hitBy", "expired", "position");
@@ -11,10 +12,7 @@ export const createWordKillSystem: SystemFactory = (ctx) => {
 
 	return () => {
 		for (const entity of killed) {
-			ctx.world.add({
-				position: { x: entity.position.x, y: entity.position.y },
-				explosion: { age: 0 },
-			});
+			addReaction(ctx, entity.position, "word-destroyed");
 
 			for (const viewer of viewers) {
 				if (viewer.viewer.userId === entity.hitBy.shooterId) {
@@ -33,11 +31,14 @@ export const createWordKillSystem: SystemFactory = (ctx) => {
 					const halfHeight =
 						(viewer.size?.height ?? VIEWER_HEIGHT * ctx.settings.viewerScale) /
 						2;
-					const startY = viewer.position.y - halfHeight - STAR_HEAD_OFFSET;
-					ctx.world.add({
-						position: { x: viewer.position.x, y: startY },
-						star: { age: 0, ttl: STAR_TTL, startY },
-					});
+					addReaction(
+						ctx,
+						{
+							x: viewer.position.x,
+							y: viewer.position.y - halfHeight - KILL_MARK_OFFSET,
+						},
+						"word-kill-mark",
+					);
 					break;
 				}
 			}

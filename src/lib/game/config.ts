@@ -76,27 +76,11 @@ export const ENEMY_BOTTOM_MARGIN = 90;
 export const BULLET_SPEED = 700;
 export const BULLET_RADIUS = 4;
 export const BULLET_HIT_DISTANCE = 30;
-
-export const STAR_TTL = 0.8;
-export const STAR_RISE = 40;
-export const STAR_RADIUS = 10;
-export const STAR_SPIN = Math.PI * 3;
-
-export const EXPLOSION_FRAME_LABELS = ["f11", "f12", "g12", "g13"];
-export const EXPLOSION_FRAME_DURATION = 0.08;
-export const EXPLOSION_SCALE = 2;
 export const BULLET_SCALE = 2;
 
 export const ENEMY_SHOT_SPEED = 400;
 export const ENEMY_SHOT_DAMAGE_CHANCE = 0.5;
 export const RICOCHETIUM_DAMAGE_CHANCE_FACTOR = 0.5;
-export const RICOCHET_TTL = 0.6;
-export const RICOCHET_SPEED_FACTOR = 2;
-export const SPARK_COUNT = 5;
-export const SPARK_TTL = 0.35;
-export const SPARK_HIT_COUNT = 10;
-export const SPARK_HIT_TTL = 0.5;
-export const SPARK_SPEED = 180;
 export const ENEMY_SHOT_HIT_DISTANCE = 20;
 
 export const ARMED_FUSE_MS = 1000;

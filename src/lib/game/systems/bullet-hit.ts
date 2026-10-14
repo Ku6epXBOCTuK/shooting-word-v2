@@ -1,4 +1,5 @@
 import { bumpRoundStat } from "../round-stats.js";
+import { addReaction } from "../reaction.js";
 import type { SystemFactory } from "./types.js";
 
 export const createBulletHitSystem: SystemFactory = (ctx) => {
@@ -11,10 +12,7 @@ export const createBulletHitSystem: SystemFactory = (ctx) => {
 			const target = entity.homing.target;
 
 			if (entity.bullet.miss) {
-				ctx.world.add({
-					position: { x: entity.position.x, y: entity.position.y },
-					explosion: { age: 0 },
-				});
+				addReaction(ctx, entity.position, "bullet-miss");
 				for (const viewer of viewers) {
 					if (viewer.viewer.userId !== entity.bullet.shooterId) continue;
 					for (const session of sessions) {

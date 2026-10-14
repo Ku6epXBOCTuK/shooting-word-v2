@@ -1,15 +1,6 @@
-import {
-	ENEMY_SHOT_SPEED,
-	RICOCHET_SPEED_FACTOR,
-	RICOCHET_TTL,
-	SHIELD_REGEN_INTERVAL,
-	SPARK_COUNT,
-	SPARK_HIT_COUNT,
-	SPARK_HIT_TTL,
-	SPARK_SPEED,
-	SPARK_TTL,
-} from "../config.js";
+import { SHIELD_REGEN_INTERVAL } from "../config.js";
 import { logger } from "#lib/logger.js";
+import { addReaction } from "../reaction.js";
 import type { SystemFactory } from "./types.js";
 
 export const createEnemyShotHitSystem: SystemFactory = (ctx) => {
@@ -19,35 +10,13 @@ export const createEnemyShotHitSystem: SystemFactory = (ctx) => {
 		for (const entity of hits) {
 			const target = entity.homing.target;
 
-			const isHit = entity.enemyShot.damage > 0;
-			const sparkCount = isHit ? SPARK_HIT_COUNT : SPARK_COUNT;
-			const sparkTtl = isHit ? SPARK_HIT_TTL : SPARK_TTL;
-			for (let i = 0; i < sparkCount; i++) {
-				const angle = ctx.rng() * Math.PI * 2;
-				const speed = SPARK_SPEED * (0.5 + ctx.rng() * 0.5);
-				ctx.world.add({
-					position: { x: entity.position.x, y: entity.position.y },
-					spark: {
-						vx: Math.cos(angle) * speed,
-						vy: Math.sin(angle) * speed,
-						age: 0,
-						ttl: sparkTtl,
-					},
-				});
-			}
+			addReaction(
+				ctx,
+				entity.position,
+				entity.enemyShot.damage > 0 ? "ship-hit" : "ship-ricochet",
+			);
 
 			if (entity.enemyShot.damage === 0) {
-				const angle = -Math.PI / 4 - ctx.rng() * (Math.PI / 2);
-				const speed = ENEMY_SHOT_SPEED * RICOCHET_SPEED_FACTOR;
-				ctx.world.add({
-					position: { x: entity.position.x, y: entity.position.y },
-					ricochet: {
-						vx: Math.cos(angle) * speed,
-						vy: Math.sin(angle) * speed,
-						age: 0,
-						ttl: RICOCHET_TTL,
-					},
-				});
 				ctx.world.addComponent(entity, "expired", true);
 				continue;
 			}
@@ -71,13 +40,7 @@ export const createEnemyShotHitSystem: SystemFactory = (ctx) => {
 					if (target.hp.current <= 0 && !target.dead) {
 						ctx.world.addComponent(target, "dead", true);
 						if (target.position) {
-							ctx.world.add({
-								position: {
-									x: target.position.x,
-									y: target.position.y,
-								},
-								explosion: { age: 0 },
-							});
+							addReaction(ctx, target.position, "viewer-destroyed");
 						}
 						logger.debug(`[game] died: ${target.viewer?.user ?? "?"}`);
 					}

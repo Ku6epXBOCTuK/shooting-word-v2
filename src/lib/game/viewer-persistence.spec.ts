@@ -101,16 +101,18 @@ function createRenderedGame() {
 		},
 	});
 	const now = 1_000_000;
-	const app = {
-		stage: { addChild() {} },
-		screen: { width: 800, height: 600 },
-	} as unknown as Application;
 	const assets = {
 		explosion: [],
 		bullet: {},
 		ships: [[]],
 	} as unknown as GameAssets;
-	const render: GameCoreRender = { app, assets };
+	const render: GameCoreRender = {
+		app: {
+			stage: { addChild() {}, removeChild() {} },
+			screen: { width: 800, height: 600 },
+		} as unknown as Application,
+		assets,
+	};
 
 	const game = createGameCore(
 		{

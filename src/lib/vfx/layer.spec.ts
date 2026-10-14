@@ -1,7 +1,7 @@
-import { describe, expect, test, vi } from "vitest";
+﻿import { describe, expect, test, vi } from "vitest";
 import type { Container, Filter } from "pixi.js";
 import { createVfxLayer } from "./layer.js";
-import type { VfxFrame, VfxLayerItem, VfxPlacement } from "./types.js";
+import type { VfxFrame, VfxItem, VfxPlacement } from "./types.js";
 
 function fakeStage() {
 	const children: unknown[] = [];
@@ -24,7 +24,7 @@ function fakeEffect() {
 		},
 		destroy,
 	};
-	return effect as VfxLayerItem & {
+	return effect as VfxItem & {
 		frames: VfxFrame[];
 		destroy: typeof destroy;
 	};

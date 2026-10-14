@@ -1,6 +1,6 @@
 import { Assets, Rectangle, Texture } from "pixi.js";
 import { asset } from "$app/paths";
-import { EXPLOSION_FRAME_LABELS } from "./config.js";
+import { EXPLOSION_FRAME_LABELS } from "#lib/vfx/durations.js";
 import { frameRect } from "./frame-label.js";
 import { SHIP_SHEETS } from "./ships.js";
 

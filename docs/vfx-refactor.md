@@ -208,17 +208,38 @@ export interface RewardConfig {
 
 ### Шаг 3. Единый отклик — 3 ч
 
-- [ ] `game/types.ts`: добавить `Vfx`, убрать `Spark`/`Ricochet`/`Star`/
-      `Explosion` из интерфейсов и `EntityComponents`
-- [ ] `vfx/reactions.ts`: все одноразовые отклики + переехавшие константы
-- [ ] `systems/vfx.ts` (логика): `age += dt`, `expired` при `ttl`
-- [ ] `systems/vfx-render.ts`: создать/тикать/снести по `registry.ts`
-- [ ] переписать спавн в `bullet-hit.ts`, `word-kill.ts`, `enemy-shot-hit.ts`
-- [ ] удалить 8 файлов систем
-- [ ] `systems/index.ts`: убрать 8 фабрик, добавить 2
-- [ ] `config.ts`: убрать переехавшие константы
-- [ ] `headless.spec.ts:84`: `world.with("explosion")` → `world.with("vfx")`
-- [ ] `assets.ts`, `viewer-persistence.spec.ts:109`: поправить моки
+- [x] `game/types.ts`: добавлен `Vfx`, убраны `Spark`/`Ricochet`/`Star`/
+      `Explosion`
+- [x] `vfx/durations.ts`: сроки жизни откликов **без Pixi** — их читает логика
+      ECS, а не рендер
+- [x] `game/reaction.ts`: `addReaction(ctx, at, kind, value)` — единственный
+      способ завести отклик
+- [x] `vfx/reactions.ts`: 10 откликов. `word-kill-mark` отделён от
+      `word-destroyed`: звезда рисуется над кораблём стрелка, а не на месте
+      слова
+- [x] `systems/vfx.ts` (логика): `age += dt`, `expired` при `ttl`
+- [x] `systems/vfx-render.ts`: создать/тикать/снести по `registry.ts`
+- [x] переписан спавн в `bullet-hit.ts`, `word-kill.ts`, `enemy-shot-hit.ts`,
+      `doomsday.ts`
+- [x] удалены 8 файлов систем
+- [x] `systems/index.ts`: −8 фабрик, +2
+- [x] `config.ts`: `STAR_*`, `SPARK_*`, `RICOCHET_*`, `EXPLOSION_*` ушли в vfx
+- [x] `headless.spec.ts:84`: `world.with("explosion")` → `world.with("vfx")`
+- [x] `assets.ts` берёт метки кадров из `vfx/durations.ts`;
+      `viewer-persistence.spec.ts` — фейк сцены дополнен `removeChild`
+- [x] `registry.spec.ts`: каждый вид отклика имеет срок жизни
+
+Виды откликов: `ship-hit`, `ship-ricochet`, `word-destroyed`, `bullet-miss`,
+`viewer-destroyed`, `word-kill-mark`, `device-spark`, `doomsday`, `timestop`,
+`reward`.
+
+Рикошет-попадание слито с искрами в один отклик `ship-ricochet`: и то и другое —
+реакция на одно и то же событие. Искры ядра устройства стали `device-spark` с
+`value` вместо отдельной сущности на искру.
+
+Рендер больше не проставляет `ttl`: срок берётся из таблицы при создании
+сущности, иначе headless-сборка (где рендер-систем нет) снимала бы отклик в
+первом же кадре.
 
 ### Шаг 4. Ауры doomsday и портала — 1.5 ч
 

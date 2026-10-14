@@ -1,6 +1,6 @@
 import { SHIELD_MAX_HP } from "#lib/game/config.ts";
 import { Container, Graphics } from "pixi.js";
-import type { VfxAura, VfxFrame } from "./types.js";
+import type { ShieldAuraState, VfxFrame, VfxStateful } from "./types.js";
 
 const OUTLINE_COLOR = 0x3fa9ff;
 const RIM_COLOR = 0xcfeaff;
@@ -24,25 +24,16 @@ const PIP_GAP = 0.5;
 const PIP_RADIUS = 0.156;
 const PIP_MIN_STROKE = 1;
 
-export interface ShieldAuraState {
-	/** сколько зарядов осталось */
-	hp: number;
-	/** сколько зарядов бывает всего */
-	max: number;
-	/** половина большей стороны корабля в мировых пикселях, уже с учётом масштаба */
-	radius: number;
-}
-
 /**
  * Силовой щит. Все размеры — доли радиуса корабля, поэтому щит одинаково
  * читается при любом `viewerScale`.
  */
-export function createShieldAura(): VfxAura<ShieldAuraState> {
+export function createShieldAura(): VfxStateful<ShieldAuraState> {
 	const body = new Graphics();
 	const root = new Container();
 	root.addChild(body);
 
-	const aura: VfxAura<ShieldAuraState> = {
+	const aura: VfxStateful<ShieldAuraState> = {
 		root,
 		state: { hp: SHIELD_MAX_HP, max: SHIELD_MAX_HP, radius: 0 },
 

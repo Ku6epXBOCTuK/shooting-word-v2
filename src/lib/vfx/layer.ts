@@ -1,47 +1,32 @@
-import type { Container } from "pixi.js";
-import type {
-	VfxFilter,
-	VfxFrame,
-	VfxLayerItem,
-	VfxPlacement,
-	VfxFilterTarget,
-} from "./types.js";
+﻿import type { Container } from "pixi.js";
+import type { VfxFilter, VfxFrame, VfxItem, VfxPlacement } from "./types.js";
 
 const PHASE_RATE = 0.013;
 
 interface ChildEntry {
-	effect: VfxLayerItem;
+	effect: VfxItem;
 	at: VfxPlacement;
 }
 
 export interface VfxLayer {
-	/** накопленное время, одинаковое для всех эффектов слоя */
 	readonly time: number;
-	add(effect: VfxLayerItem, at: VfxPlacement): void;
-	move(effect: VfxLayerItem, at: VfxPlacement): void;
-	/** снимает эффект со сцены и уничтожает его */
-	remove(effect: VfxLayerItem): void;
-	/** навешивает фильтр на спрайт; повторный вызов для того же спрайта заменяет фильтр */
-	filter(target: VfxFilterTarget, vfx: VfxFilter): void;
-	/** снимает фильтр со спрайта и уничтожает его */
-	unfilter(target: VfxFilterTarget): void;
+	add(effect: VfxItem, at: VfxPlacement): void;
+	move(effect: VfxItem, at: VfxPlacement): void;
+	remove(effect: VfxItem): void;
+	filter(target: Container, vfx: VfxFilter): void;
+	unfilter(target: Container): void;
 	update(dt: number): void;
 	destroy(): void;
 }
 
-/**
- * Слой одноразовых эффектов и фильтров. Держит общее накопленное время,
- * крепление к сцене и снос — чтобы рендер-системы и страница просмотра не
- * дублировали это у себя.
- */
 export function createVfxLayer(stage: Container): VfxLayer {
 	const children: ChildEntry[] = [];
-	const filters = new Map<VfxFilterTarget, VfxFilter>();
+	const filters = new Map<Container, VfxFilter>();
 	const frame: VfxFrame = { dt: 0, t: 0, x: 0, y: 0, scale: 1, phase: 0 };
 	let time = 0;
 	let destroyed = false;
 
-	const find = (effect: VfxLayerItem) =>
+	const find = (effect: VfxItem) =>
 		children.find((entry) => entry.effect === effect);
 
 	return {
