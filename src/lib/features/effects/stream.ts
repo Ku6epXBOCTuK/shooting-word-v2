@@ -1,4 +1,4 @@
-import { resolve } from "$app/paths";
+import type { ConsumableSync } from "#lib/features/persistence/viewer-store.js";
 import {
 	BATTERY_REWARD,
 	BEACON_REWARD,
@@ -9,6 +9,7 @@ import {
 	type ActiveRicochetium,
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
+import { resolve } from "$app/paths";
 import { shouldReload } from "./version.js";
 
 interface RewardEffect {
@@ -17,6 +18,8 @@ interface RewardEffect {
 	userName: string;
 	redemptionId?: string;
 	rewardId?: string;
+	/** Абсолютные счётчики расходников после серверного начисления. */
+	counts?: Partial<Record<"batteries" | "revives" | "beacons", number>>;
 }
 
 interface EffectsResponse {
@@ -35,6 +38,8 @@ interface EffectsGame {
 	grantBatteries(userIds: string[]): void;
 	grantRevives(userIds: string[]): void;
 	grantBeacons(userIds: string[]): void;
+	/** Синк абсолютных счётчиков, начисленных сервером. */
+	applyConsumables(entries: ConsumableSync[]): void;
 	doomsday(userId: string): boolean;
 	timeStop(): void;
 }
@@ -79,25 +84,33 @@ export function applyEffects(
 		});
 	}
 
-	const batteryUserIds = response.effects
-		.filter((effect) => effect.key === BATTERY_REWARD.key)
-		.map((effect) => effect.userId);
-	if (batteryUserIds.length > 0) {
-		game.grantBatteries(batteryUserIds);
+	// Сервер начисляет расходники в профиль сам и присылает абсолютные
+	// счётчики — применяем их как синк. Если счётчиков нет (старая версия
+	// сервера), падаем обратно на локальное `+1`, как раньше.
+	const consumables: ConsumableSync[] = [];
+	const legacyBatteries: string[] = [];
+	const legacyRevives: string[] = [];
+	const legacyBeacons: string[] = [];
+	for (const effect of response.effects) {
+		if (effect.counts) {
+			consumables.push({ userId: effect.userId, ...effect.counts });
+			continue;
+		}
+		if (effect.key === BATTERY_REWARD.key) legacyBatteries.push(effect.userId);
+		if (effect.key === REVIVE_REWARD.key) legacyRevives.push(effect.userId);
+		if (effect.key === BEACON_REWARD.key) legacyBeacons.push(effect.userId);
 	}
-
-	const reviveUserIds = response.effects
-		.filter((effect) => effect.key === REVIVE_REWARD.key)
-		.map((effect) => effect.userId);
-	if (reviveUserIds.length > 0) {
-		game.grantRevives(reviveUserIds);
+	if (consumables.length > 0) {
+		game.applyConsumables(consumables);
 	}
-
-	const beaconUserIds = response.effects
-		.filter((effect) => effect.key === BEACON_REWARD.key)
-		.map((effect) => effect.userId);
-	if (beaconUserIds.length > 0) {
-		game.grantBeacons(beaconUserIds);
+	if (legacyBatteries.length > 0) {
+		game.grantBatteries(legacyBatteries);
+	}
+	if (legacyRevives.length > 0) {
+		game.grantRevives(legacyRevives);
+	}
+	if (legacyBeacons.length > 0) {
+		game.grantBeacons(legacyBeacons);
 	}
 
 	for (const effect of response.effects) {

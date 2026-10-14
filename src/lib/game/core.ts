@@ -11,7 +11,12 @@ import {
 	TIME_STOP_REWARD,
 } from "#lib/features/rewards/config.js";
 import type { RoundRecord } from "#lib/features/rounds/record.js";
-import type { ViewerStore } from "#lib/features/persistence/viewer-store.js";
+import type {
+	ConsumableField,
+	ConsumableSync,
+	StoredViewer,
+	ViewerStore,
+} from "#lib/features/persistence/viewer-store.js";
 import { logger } from "#lib/logger.js";
 import { createVfxLayer, type VfxLayer } from "#lib/vfx/layer.js";
 import { World } from "miniplex";
@@ -47,6 +52,24 @@ import {
 	type ViewerIdentity,
 } from "./types.js";
 
+/**
+ * Поднимает локальный счётчик до серверного значения (не выше лимита).
+ * Возвращает true, если счётчик изменился.
+ */
+const syncConsumable = (
+	entity: Entity,
+	field: ConsumableField,
+	value: number | undefined,
+	cap: number,
+): boolean => {
+	if (value === undefined) return false;
+	const current = entity[field] ?? 0;
+	const next = Math.min(cap, Math.max(current, value));
+	if (next === current) return false;
+	entity[field] = next;
+	return true;
+};
+
 export interface GameCoreOptions {
 	screen: Size;
 	settings?: GameSettings;
@@ -79,6 +102,7 @@ export function createGameCore(
 		settings: options.settings ?? defaultSettings(),
 		viewerStore: options.viewerStore,
 		viewersDirty: false,
+		viewerProfiles: new Map<string, StoredViewer>(),
 		onRoundEnd: options.onRoundEnd,
 		now: options.now ?? Date.now,
 		rng: options.rng ?? Math.random,
@@ -137,14 +161,47 @@ export function createGameCore(
 		});
 	let session = createSession();
 
+	const findViewer = (userId: string): Entity | undefined => {
+		for (const entity of viewers) {
+			if (entity.viewer.userId === userId) return entity;
+		}
+		return undefined;
+	};
+
+	/**
+	 * Применяет сохранённый профиль к уже существующей сущности (зритель успел
+	 * написать в чат, пока грузили профили). Счётчики не опускаются ниже
+	 * текущих — то, что уже начислено в этой сессии, не теряется.
+	 */
+	const adoptProfile = (entity: Entity, profile: StoredViewer) => {
+		if (!entity.viewer) return;
+		entity.xp = Math.max(entity.xp ?? 0, profile.xp ?? 0);
+		entity.batteries = Math.max(entity.batteries ?? 0, profile.batteries ?? 0);
+		entity.revives = Math.max(entity.revives ?? 0, profile.revives ?? 0);
+		entity.beacons = Math.max(entity.beacons ?? 0, profile.beacons ?? 0);
+		entity.viewer.skin = profile.skin ?? entity.viewer.skin;
+	};
+
 	const restoreViewers = async () => {
 		const now = ctx.now();
 		for (const viewer of await ctx.viewerStore.load()) {
+			if (viewer.bot) continue;
+			// Профиль кэшируется целиком — в том числе для протухших: на экран
+			// такой зритель не спавнится, но скин, опыт и расходники вернутся
+			// при первом сообщении в чат.
+			ctx.viewerProfiles.set(viewer.userId, viewer);
+
+			const entity = findViewer(viewer.userId);
+			if (entity) {
+				adoptProfile(entity, viewer);
+				continue;
+			}
+
 			if (now - viewer.lastSeen < VIEWER_TIMEOUT_MS) {
 				spawnViewer(ctx, viewer, viewer);
 			} else {
 				logger.info(
-					`[viewers] skip stale ${viewer.user} (${viewer.userId}), idle ${Math.round((now - viewer.lastSeen) / 3_600_000)}h`,
+					`[viewers] keep ${viewer.user} (${viewer.userId}) off-screen, idle ${Math.round((now - viewer.lastSeen) / 3_600_000)}h`,
 				);
 			}
 		}
@@ -183,11 +240,20 @@ export function createGameCore(
 				}
 			}
 
-			spawnViewer(ctx, {
-				...identity,
-				lastSeen: ctx.now(),
-				skin: Math.floor(ctx.rng() * SHIP_COUNT),
-			});
+			// Возвращение после таймаута (или после перезагрузки виджета):
+			// скин и расходники берутся из профиля, а не рандомятся заново.
+			const profile = identity.bot
+				? undefined
+				: ctx.viewerProfiles.get(identity.userId);
+			spawnViewer(
+				ctx,
+				{
+					...identity,
+					lastSeen: ctx.now(),
+					skin: profile?.skin ?? Math.floor(ctx.rng() * SHIP_COUNT),
+				},
+				profile ?? {},
+			);
 			ctx.viewersDirty = true;
 		},
 
@@ -297,6 +363,36 @@ export function createGameCore(
 					entity.beacons = Math.min(BEACON_MAX, (entity.beacons ?? 0) + 1);
 					reactToReward(BEACON_REWARD.key, entity.position);
 					changed = true;
+					break;
+				}
+			}
+			if (changed) ctx.viewersDirty = true;
+		},
+
+		/**
+		 * Синк абсолютных счётчиков с сервера: сервер уже начислил награду в
+		 * профиль, виджет просто поднимает локальное значение (никакого второго
+		 * `+1`). Значение ниже локального не откатывает — трата батареи в этой
+		 * сессии важнее пришедшего снимка.
+		 */
+		applyConsumables: (entries: ConsumableSync[]) => {
+			let changed = false;
+			for (const entry of entries) {
+				for (const entity of viewers) {
+					if (entity.viewer.userId !== entry.userId) continue;
+					changed =
+						syncConsumable(
+							entity,
+							"batteries",
+							entry.batteries,
+							ctx.settings.batteryMax,
+						) || changed;
+					changed =
+						syncConsumable(entity, "revives", entry.revives, REVIVE_MAX) ||
+						changed;
+					changed =
+						syncConsumable(entity, "beacons", entry.beacons, BEACON_MAX) ||
+						changed;
 					break;
 				}
 			}

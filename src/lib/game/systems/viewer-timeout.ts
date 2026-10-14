@@ -1,6 +1,7 @@
 import { logger } from "#lib/logger.js";
 import type { With } from "miniplex";
 import { VIEWER_TIMEOUT_MS } from "../config.js";
+import { captureProfile } from "../profiles.js";
 import type { Entity } from "../types.js";
 import type { SystemFactory } from "./types.js";
 
@@ -30,6 +31,9 @@ export const createViewerTimeoutSystem: SystemFactory = (ctx) => {
 			logger.info(
 				`[viewer-timeout] removing ${entity.viewer.user} (${entity.viewer.userId}), idle ${Math.round((now - entity.viewer.lastSeen) / 3_600_000)}h`,
 			);
+			// Корабль уходит с экрана, профиль — нет: фиксируем последнее
+			// состояние, чтобы опыт, скин и расходники пережили таймаут.
+			captureProfile(ctx, entity);
 			ctx.world.remove(entity);
 		}
 		ctx.viewersDirty = true;

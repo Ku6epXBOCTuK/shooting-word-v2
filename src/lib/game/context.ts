@@ -1,6 +1,7 @@
 import type { World } from "miniplex";
 import type { Application } from "pixi.js";
 import type { RoundRecord } from "#lib/features/rounds/record.js";
+import type { StoredViewer } from "#lib/features/persistence/viewer-store.js";
 import type { ViewerStore } from "#lib/features/persistence/index.js";
 import type { VfxLayer } from "#lib/vfx/layer.js";
 import type { GameAssets } from "./assets.js";
@@ -13,6 +14,11 @@ export interface GameContext {
 	settings: GameSettings;
 	viewerStore: ViewerStore;
 	viewersDirty: boolean;
+	/**
+	 * Профили зрителей живут вне мира: таймаут убирает сущность с экрана,
+	 * но опыт, скин и расходники остаются и уходят в сохранение.
+	 */
+	viewerProfiles: Map<string, StoredViewer>;
 	onRoundEnd?: (record: RoundRecord) => void;
 	now(): number;
 	rng(): number;

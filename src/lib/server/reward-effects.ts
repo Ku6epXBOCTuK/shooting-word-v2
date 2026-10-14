@@ -43,6 +43,8 @@ export interface RewardEffect {
 	rewardTitle: string;
 	redemptionId: string;
 	rewardId: string;
+	/** Абсолютные счётчики расходников после серверного начисления. */
+	counts?: Partial<Record<ConsumableField, number>>;
 }
 
 export interface EffectPush {
@@ -235,17 +237,6 @@ export async function refundRedemption(
 	);
 }
 
-function pendingCount(
-	broadcasterId: string,
-	key: string,
-	userId: string,
-): number {
-	const queue = queues.get(broadcasterId) ?? [];
-	return queue.filter(
-		(effect: RewardEffect) => effect.key === key && effect.userId === userId,
-	).length;
-}
-
 function storedCount(
 	broadcasterId: string,
 	userId: string,
@@ -261,6 +252,7 @@ function queueEffect(
 	broadcaster: Broadcaster,
 	key: string | null,
 	event: RedemptionEvent & { rewardId: string },
+	counts?: Partial<Record<ConsumableField, number>>,
 ): void {
 	const effect: RewardEffect = {
 		key,
@@ -269,6 +261,7 @@ function queueEffect(
 		rewardTitle: event.rewardTitle,
 		redemptionId: event.id,
 		rewardId: event.rewardId,
+		...(counts ? { counts } : {}),
 	};
 	if (hasEffectSubscribers(broadcaster.userId)) {
 		notifySubscribers(broadcaster.userId, {
@@ -309,7 +302,6 @@ type RewardEvent = RedemptionEvent & { rewardId: string };
 
 interface CheckContext {
 	storedCount(field: ConsumableField): number;
-	pendingCount(key: string): number;
 	effectActive(key: string): boolean;
 	shieldActive(): boolean;
 	overchargeActive(): boolean;
@@ -317,7 +309,21 @@ interface CheckContext {
 }
 
 interface GrantContext {
-	queueEffect(key: string): void;
+	queueEffect(
+		key: string,
+		counts?: Partial<Record<ConsumableField, number>>,
+	): void;
+	/**
+	 * Начисляет расходник в профиль зрителя на сервере и ставит эффект в
+	 * очередь с абсолютным счётчиком — виджет применяет его как синк,
+	 * а не как `+1`.
+	 */
+	grantConsumable(
+		key: string,
+		field: ConsumableField,
+		cap: number,
+		event: RewardEvent,
+	): number;
 	pushShield(shield: ActiveShield): void;
 	pushOvercharge(overcharge: ActiveOvercharge): void;
 	pushRicochetium(ricochetium: ActiveRicochetium): void;
@@ -326,33 +332,46 @@ interface GrantContext {
 
 interface RewardHandler {
 	check?: (ctx: CheckContext, settings: GameSettings) => string | null;
-	grant?: (ctx: GrantContext, event: RewardEvent) => void;
+	grant?: (
+		ctx: GrantContext,
+		event: RewardEvent,
+		settings: GameSettings,
+	) => void;
 }
 
 function overLimit(
-	key: string,
 	field: ConsumableField,
 	max: (settings: GameSettings) => number,
 ): RewardHandler["check"] {
+	// Начисление уже лежит в профиле (grantConsumable), поэтому лимит сверяется
+	// только с базой — очередь эффектов больше не считается отдельно.
 	return (ctx, settings) =>
-		ctx.storedCount(field) + ctx.pendingCount(key) >= max(settings)
-			? "over limit"
-			: null;
+		ctx.storedCount(field) >= max(settings) ? "over limit" : null;
 }
 
 const REWARD_HANDLERS: Record<string, RewardHandler> = {
 	[BATTERY_REWARD.key]: {
-		check: overLimit(
-			BATTERY_REWARD.key,
-			"batteries",
-			(settings) => settings.batteryMax,
-		),
+		check: overLimit("batteries", (settings) => settings.batteryMax),
+		grant: (ctx, event, settings) => {
+			ctx.grantConsumable(
+				BATTERY_REWARD.key,
+				"batteries",
+				settings.batteryMax,
+				event,
+			);
+		},
 	},
 	[REVIVE_REWARD.key]: {
-		check: overLimit(REVIVE_REWARD.key, "revives", () => REVIVE_MAX),
+		check: overLimit("revives", () => REVIVE_MAX),
+		grant: (ctx, event) => {
+			ctx.grantConsumable(REVIVE_REWARD.key, "revives", REVIVE_MAX, event);
+		},
 	},
 	[BEACON_REWARD.key]: {
-		check: overLimit(BEACON_REWARD.key, "beacons", () => BEACON_MAX),
+		check: overLimit("beacons", () => BEACON_MAX),
+		grant: (ctx, event) => {
+			ctx.grantConsumable(BEACON_REWARD.key, "beacons", BEACON_MAX, event);
+		},
 	},
 	[SHIELD_REWARD.key]: {
 		check: (ctx) => (ctx.shieldActive() ? "shield already active" : null),
@@ -410,8 +429,6 @@ async function handleRedemption(
 	const checkCtx: CheckContext = {
 		storedCount: (field) =>
 			storedCount(broadcaster.userId, event.userId, field),
-		pendingCount: (effectKey) =>
-			pendingCount(broadcaster.userId, effectKey, event.userId),
 		effectActive: (effectKey) =>
 			(timers.get(broadcaster.userId)?.get(effectKey) ?? 0) > Date.now(),
 		shieldActive: () => {
@@ -431,7 +448,33 @@ async function handleRedemption(
 	};
 
 	const grantCtx: GrantContext = {
-		queueEffect: (effectKey) => queueEffect(broadcaster, effectKey, event),
+		queueEffect: (effectKey, counts) =>
+			queueEffect(broadcaster, effectKey, event, counts),
+		grantConsumable: (effectKey, field, cap, redemption) => {
+			let value: number;
+			try {
+				value = viewers.increment(
+					broadcaster.userId,
+					redemption.userId,
+					field,
+					1,
+					cap,
+					{ user: redemption.userName },
+				);
+			} catch (error) {
+				// Профиль не записался — старый путь: виджет начислит сам.
+				logger.error(
+					`[effects] failed to persist ${field} for ${redemption.userName}: ${error instanceof Error ? error.message : String(error)}`,
+				);
+				queueEffect(broadcaster, effectKey, redemption);
+				return 0;
+			}
+			logger.info(
+				`[effects] ${redemption.userName}: ${field} -> ${value} (${broadcaster.login})`,
+			);
+			queueEffect(broadcaster, effectKey, redemption, { [field]: value });
+			return value;
+		},
 		pushShield: (shield) => {
 			let shieldMap = shields.get(broadcaster.userId);
 			if (!shieldMap) {
@@ -505,7 +548,7 @@ async function handleRedemption(
 	}
 
 	if (handler?.grant) {
-		handler.grant(grantCtx, event);
+		handler.grant(grantCtx, event, settings);
 	} else {
 		queueEffect(broadcaster, key, event);
 	}

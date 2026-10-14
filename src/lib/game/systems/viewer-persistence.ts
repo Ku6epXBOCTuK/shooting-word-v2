@@ -1,5 +1,5 @@
-import type { StoredViewer } from "#lib/features/persistence/index.js";
 import { SESSIONPHASE } from "../types.js";
+import { captureProfile } from "../profiles.js";
 import type { SystemFactory } from "./types.js";
 
 export const createViewerPersistenceSystem: SystemFactory = (ctx) => {
@@ -17,16 +17,17 @@ export const createViewerPersistenceSystem: SystemFactory = (ctx) => {
 		if (!ctx.viewersDirty) return;
 		ctx.viewersDirty = false;
 
-		const stored: StoredViewer[] = [];
-		for (const entity of viewers) {
-			stored.push({
-				...entity.viewer,
-				xp: entity.xp ?? 0,
-				batteries: entity.batteries ?? 0,
-				revives: entity.revives ?? 0,
-				beacons: entity.beacons ?? 0,
-			});
-		}
-		void ctx.viewerStore.save(stored);
+		// Список собирается только после чтения базы: сохранение не может
+		// обогнать загрузку и записать неполный список поверх полного.
+		// restoreViewers подписался на тот же промис раньше и успевает
+		// наполнить профили первым.
+		void ctx.viewerStore.load().then(() => {
+			// «профили + текущие корабли»: протухшие и вышедшие зрители
+			// остаются в списке, пока жив их профиль.
+			for (const entity of viewers) {
+				captureProfile(ctx, entity);
+			}
+			void ctx.viewerStore.save([...ctx.viewerProfiles.values()]);
+		});
 	};
 };

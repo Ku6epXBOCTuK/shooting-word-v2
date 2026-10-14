@@ -1,46 +1,13 @@
 import { dev } from "$app/env";
-import { VIEWER_TIMEOUT_MS } from "#lib/game/config.js";
+import type { StoredViewer } from "#lib/features/persistence/index.js";
 import { normalizeSettings } from "#lib/game/settings.js";
 import { logger } from "#lib/logger.js";
 import { resolveBroadcaster } from "#lib/server/resolve-broadcaster.js";
 import { storage } from "#lib/server/storage/index.js";
-import { viewers } from "#lib/server/viewers/index.js";
+import { viewers, type ViewerProfile } from "#lib/server/viewers/index.js";
 import type { RequestHandler } from "./$types";
 
 export const prerender = false;
-
-interface StoredViewer {
-	userId: string;
-	lastSeen?: number;
-	[key: string]: unknown;
-}
-
-function purgeStale(
-	broadcasterId: string,
-	stored: StoredViewer[],
-): StoredViewer[] {
-	const now = Date.now();
-	const fresh = stored.filter(
-		(viewer) =>
-			typeof viewer.lastSeen !== "number" ||
-			now - viewer.lastSeen < VIEWER_TIMEOUT_MS,
-	);
-
-	if (fresh.length !== stored.length) {
-		viewers.save(
-			broadcasterId,
-			fresh.map((viewer) => ({ userId: viewer.userId, data: viewer })),
-		);
-		logger.info(
-			`[viewers] purged ${stored.length - fresh.length} stale: ${stored
-				.filter((viewer) => !fresh.includes(viewer))
-				.map((viewer) => viewer.userId)
-				.join(", ")}`,
-		);
-	}
-
-	return fresh;
-}
 
 export const GET: RequestHandler = ({ params, url, cookies }) => {
 	const broadcaster = resolveBroadcaster(cookies, url);
@@ -49,12 +16,7 @@ export const GET: RequestHandler = ({ params, url, cookies }) => {
 	}
 
 	if (params.key === "viewers") {
-		return Response.json(
-			purgeStale(
-				broadcaster.userId,
-				viewers.load<StoredViewer>(broadcaster.userId),
-			),
-		);
+		return Response.json(viewers.load(broadcaster.userId));
 	}
 
 	if (params.key === "settings") {
@@ -87,17 +49,30 @@ export const PUT: RequestHandler = async ({
 	}
 
 	if (params.key === "viewers") {
-		const body = (await readJson(request)) as StoredViewer[] | null;
+		const body = await readJson(request);
 		if (!Array.isArray(body)) {
 			return Response.json(null, { status: 400 });
 		}
 
-		viewers.save(
-			broadcaster.userId,
-			body
-				.filter((viewer) => typeof viewer.userId === "string")
-				.map((viewer) => ({ userId: viewer.userId, data: viewer })),
-		);
+		// Семантика — merge: присланные записи обновляются по userId, чужие
+		// профили не удаляются. Записи без версии (старый виджет) считаем
+		// свежими по часам сервера — так старый клиент продолжает работать,
+		// но больше не может стереть чужие строки.
+		const now = Date.now();
+		const profiles: ViewerProfile[] = [];
+		for (const entry of body) {
+			if (typeof entry !== "object" || entry === null) continue;
+			const viewer = entry as Partial<StoredViewer>;
+			if (typeof viewer.userId !== "string") continue;
+			profiles.push({
+				userId: viewer.userId,
+				data: viewer,
+				updatedAt:
+					typeof viewer.updatedAt === "number" ? viewer.updatedAt : now,
+			});
+		}
+
+		viewers.upsert(broadcaster.userId, profiles);
 
 		return Response.json({ ok: true });
 	}
