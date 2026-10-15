@@ -1,7 +1,6 @@
 import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
 import type {
 	AppRewardStatus,
-	ChannelReward,
 	RewardsManageResult,
 } from "#lib/features/rewards/port.js";
 import {
@@ -50,7 +49,6 @@ function matchReward(
 const NOT_AUTHORIZED = {
 	available: false,
 	reason: "not authorized, visit /auth/twitch/login",
-	rewards: [],
 };
 
 async function pruneOrphanRewards(context: {
@@ -105,11 +103,6 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 		);
 		const removed = await pruneOrphanRewards(context);
 		const data = all.filter(({ id }) => !removed.has(id));
-		const rewards: ChannelReward[] = data.map(({ id, title, cost }) => ({
-			id,
-			title,
-			cost,
-		}));
 
 		const effRewards = effectiveRewards(context.rewards);
 		const appRewards: AppRewardStatus[] = REWARD_CONFIGS.map((config) => {
@@ -137,13 +130,12 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 			};
 		});
 
-		return Response.json({ available: true, rewards, appRewards });
+		return Response.json({ available: true, appRewards });
 	} catch {
 		return Response.json(
 			{
 				available: false,
 				reason: "failed to load rewards, check scope and affiliate status",
-				rewards: [],
 			},
 			{ status: 502 },
 		);

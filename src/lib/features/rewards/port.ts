@@ -1,9 +1,3 @@
-export interface ChannelReward {
-	id: string;
-	title: string;
-	cost: number;
-}
-
 export interface RewardsStatus {
 	available: boolean;
 	reason?: string;
@@ -37,7 +31,6 @@ export interface RewardsImportResult {
 
 export interface RewardsPort {
 	status(uuid?: string): Promise<RewardsStatus>;
-	listRewards(uuid?: string): Promise<ChannelReward[]>;
 	listAppRewards(uuid?: string): Promise<AppRewardStatus[]>;
 	updateAll(uuid?: string): Promise<RewardsManageResult>;
 	update(key: string, uuid?: string): Promise<RewardsManageResult>;

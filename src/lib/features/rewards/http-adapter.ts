@@ -1,7 +1,6 @@
 import { resolve } from "$app/paths";
 import type {
 	AppRewardStatus,
-	ChannelReward,
 	RewardsImportResult,
 	RewardsManageResult,
 	RewardsPort,
@@ -11,7 +10,6 @@ import type {
 interface RewardsResponse {
 	available: boolean;
 	reason?: string;
-	rewards: ChannelReward[];
 	appRewards?: AppRewardStatus[];
 }
 
@@ -42,11 +40,6 @@ export class HttpRewardsAdapter implements RewardsPort {
 	async status(uuid?: string): Promise<RewardsStatus> {
 		const { available, reason } = await this.request(uuid);
 		return { available, reason };
-	}
-
-	async listRewards(uuid?: string): Promise<ChannelReward[]> {
-		const { rewards } = await this.request(uuid);
-		return rewards;
 	}
 
 	async listAppRewards(uuid?: string): Promise<AppRewardStatus[]> {
