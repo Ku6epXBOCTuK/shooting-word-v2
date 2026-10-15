@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.23.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/cd4abc6850f33b3f4f16f3323dccd52530a0073e..0.23.0) - 2026-10-15
+#### Features
+- add logs to file - ([7dc41cf](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/7dc41cf9c360f495f2921d7e4cdc48d7e61aebae)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.22.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/621ab7cc2667c8cbe0eb4de51167a178ea1cb4c3..0.22.0) - 2026-10-15
 #### Features
 - check is reward diverged from twitch - ([c0589c0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/c0589c0d32c3d909185fe5165b9101a40c58d573)) - Ku6epXBOCTuK
