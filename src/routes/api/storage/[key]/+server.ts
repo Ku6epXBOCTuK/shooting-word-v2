@@ -4,6 +4,7 @@ import { normalizeRewards } from "#lib/features/rewards/settings.js";
 import { normalizeSettings } from "#lib/game/settings.js";
 import { logger } from "#lib/logger.js";
 import { resolveBroadcaster } from "#lib/server/resolve-broadcaster.js";
+import { requireWidgetWriter } from "#lib/server/widget-writer.js";
 import { storage } from "#lib/server/storage/index.js";
 import { viewers, type ViewerProfile } from "#lib/server/viewers/index.js";
 import type { RequestHandler } from "./$types";
@@ -48,10 +49,9 @@ export const PUT: RequestHandler = async ({
 	cookies,
 	request,
 }) => {
-	const broadcaster = resolveBroadcaster(cookies, url);
-	if (!broadcaster) {
-		return Response.json(null, { status: 404 });
-	}
+	const access = requireWidgetWriter(cookies, url, request);
+	if (access instanceof Response) return access;
+	const broadcaster = access;
 
 	if (params.key === "viewers") {
 		const body = await readJson(request);

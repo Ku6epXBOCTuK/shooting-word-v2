@@ -1,6 +1,6 @@
 import { logger } from "#lib/logger.js";
-import { resolveBroadcaster } from "#lib/server/resolve-broadcaster.js";
 import { refundRedemption } from "#lib/server/reward-effects.js";
+import { requireWidgetWriter } from "#lib/server/widget-writer.js";
 import type { RequestHandler } from "./$types";
 
 export const prerender = false;
@@ -12,10 +12,9 @@ interface RejectBody {
 }
 
 export const POST: RequestHandler = async ({ cookies, url, request }) => {
-	const broadcaster = resolveBroadcaster(cookies, url);
-	if (!broadcaster) {
-		return Response.json(null, { status: 404 });
-	}
+	const access = requireWidgetWriter(cookies, url, request);
+	if (access instanceof Response) return access;
+	const broadcaster = access;
 
 	let body: RejectBody;
 	try {

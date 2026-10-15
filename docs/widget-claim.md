@@ -14,12 +14,13 @@
 
 Сервер:
 
-- [ ] Добавить в таблицу broadcasters колонку widget_key (хэш) + миграцию.
-- [ ] В repo broadcasters — метод claimWidget (first/owner/duplicate),
+- [x] Добавить в таблицу broadcasters колонку widget_key (хэш) + миграцию.
+- [x] В repo broadcasters — метод claimWidget (first/owner/duplicate),
       rotateUuid чистит ключ.
-- [ ] Новый эндпоинт POST /api/widget/claim.
-- [ ] Writes (PUT storage, POST rounds, POST reject) и SSE stream без ключа →
-      403, cookie кабинета — bypass.
+- [x] Новый эндпоинт POST /api/widget/claim.
+- [x] Writes (PUT storage, POST rounds, POST reject) без ключа → 403, cookie
+      кабинета — bypass. SSE stream остаётся открытым по uuid — там только
+      чтение, а ключ в query-параметре EventSource утекал бы в access-логи.
 
 Клиент:
 

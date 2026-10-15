@@ -1,13 +1,23 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import type { DatabaseSync } from "node:sqlite";
 import type { AccessToken } from "@twurple/auth";
-import type { Broadcaster, BroadcastersRepo } from "./port.js";
+import type { Broadcaster, BroadcastersRepo, WidgetClaim } from "./port.js";
+
+const hashWidgetKey = (key: string): string =>
+	createHash("sha256").update(key).digest("hex");
+
+const keysMatch = (stored: string, key: string): boolean => {
+	const a = Buffer.from(stored, "hex");
+	const b = createHash("sha256").update(key).digest();
+	return a.length === b.length && timingSafeEqual(a, b);
+};
 
 interface BroadcasterRow {
 	user_id: string;
 	login: string;
 	display_name: string | null;
 	widget_uuid: string;
+	widget_key: string | null;
 	token: string;
 }
 
@@ -35,6 +45,9 @@ export class SqliteBroadcastersRepo implements BroadcastersRepo {
 			.all() as { name: string }[];
 		if (!columns.some((column) => column.name === "display_name")) {
 			this.db.exec("ALTER TABLE broadcasters ADD COLUMN display_name TEXT");
+		}
+		if (!columns.some((column) => column.name === "widget_key")) {
+			this.db.exec("ALTER TABLE broadcasters ADD COLUMN widget_key TEXT");
 		}
 	}
 
@@ -83,10 +96,26 @@ export class SqliteBroadcastersRepo implements BroadcastersRepo {
 			.run(JSON.stringify(token), userId);
 	}
 
+	claimWidget(widgetUuid: string, key: string): WidgetClaim | null {
+		const row = this.db
+			.prepare("SELECT widget_key FROM broadcasters WHERE widget_uuid = ?")
+			.get(widgetUuid) as { widget_key: string | null } | undefined;
+		if (!row) return null;
+		if (row.widget_key === null) {
+			this.db
+				.prepare("UPDATE broadcasters SET widget_key = ? WHERE widget_uuid = ?")
+				.run(hashWidgetKey(key), widgetUuid);
+			return "first";
+		}
+		return keysMatch(row.widget_key, key) ? "owner" : "duplicate";
+	}
+
 	rotateUuid(userId: string): string {
 		const widgetUuid = randomUUID();
 		this.db
-			.prepare("UPDATE broadcasters SET widget_uuid = ? WHERE user_id = ?")
+			.prepare(
+				"UPDATE broadcasters SET widget_uuid = ?, widget_key = NULL WHERE user_id = ?",
+			)
 			.run(widgetUuid, userId);
 		return widgetUuid;
 	}

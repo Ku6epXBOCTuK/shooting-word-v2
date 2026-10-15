@@ -2,6 +2,7 @@ import { isRoundRecord } from "#lib/features/rounds/record.js";
 import { logger } from "#lib/logger.js";
 import { resolveBroadcaster } from "#lib/server/resolve-broadcaster.js";
 import { rounds } from "#lib/server/rounds/index.js";
+import { requireWidgetWriter } from "#lib/server/widget-writer.js";
 import type { RequestHandler } from "./$types";
 
 export const prerender = false;
@@ -25,10 +26,9 @@ export const GET: RequestHandler = ({ url, cookies }) => {
 };
 
 export const POST: RequestHandler = async ({ url, cookies, request }) => {
-	const broadcaster = resolveBroadcaster(cookies, url);
-	if (!broadcaster) {
-		return Response.json(null, { status: 404 });
-	}
+	const access = requireWidgetWriter(cookies, url, request);
+	if (access instanceof Response) return access;
+	const broadcaster = access;
 
 	let body: unknown;
 	try {

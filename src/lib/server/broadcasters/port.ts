@@ -8,6 +8,8 @@ export interface Broadcaster {
 	token: AccessToken;
 }
 
+export type WidgetClaim = "first" | "owner" | "duplicate";
+
 export interface BroadcastersRepo {
 	upsert(
 		userId: string,
@@ -18,6 +20,7 @@ export interface BroadcastersRepo {
 	byUserId(userId: string): Broadcaster | null;
 	byUuid(widgetUuid: string): Broadcaster | null;
 	updateToken(userId: string, token: AccessToken): void;
+	claimWidget(widgetUuid: string, key: string): WidgetClaim | null;
 	rotateUuid(userId: string): string;
 	remove(userId: string): void;
 }
