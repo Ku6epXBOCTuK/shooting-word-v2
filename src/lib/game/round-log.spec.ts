@@ -144,7 +144,6 @@ describe("round log", () => {
 		game.joinViewer({ userId: "u2", user: "u2", login: "u2" });
 		const entities = [...game.world.with("viewer", "hp")];
 		const [fragile, tank] = entities;
-		// второй держит раунд живым, пока первый ждёт возврата
 		if (!tank?.hp || !fragile?.hp) throw new Error("viewers missing");
 		tank.hp.max = 10_000;
 		tank.hp.current = 10_000;

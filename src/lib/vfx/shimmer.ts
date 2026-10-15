@@ -9,7 +9,6 @@ export const METAL_SHIMMER_CURVE = 0.9;
 export const METAL_SHIMMER_DETAIL = 0.25;
 export const METAL_SHIMMER_SATURATION = 1.8;
 export const METAL_SHIMMER_GAIN = 1.8;
-/** сколько кораблей одновременно носят обмазку */
 export const METAL_SHIMMER_MAX_SHIPS = 10;
 
 const METAL_SHIMMER_FRAGMENT = /* glsl */ `
@@ -91,7 +90,6 @@ void main() {
 }
 `;
 
-/** Обмазка рикошетиумом: жидкий металл поверх корабля. */
 export function createMetalShimmer(
 	aspect: number = VIEWER_WIDTH / VIEWER_HEIGHT,
 ): VfxFilter {

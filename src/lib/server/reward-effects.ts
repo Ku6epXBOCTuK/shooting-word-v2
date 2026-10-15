@@ -43,7 +43,6 @@ export interface RewardEffect {
 	rewardTitle: string;
 	redemptionId: string;
 	rewardId: string;
-	/** Абсолютные счётчики расходников после серверного начисления. */
 	counts?: Partial<Record<ConsumableField, number>>;
 }
 
@@ -313,11 +312,8 @@ interface GrantContext {
 		key: string,
 		counts?: Partial<Record<ConsumableField, number>>,
 	): void;
-	/**
-	 * Начисляет расходник в профиль зрителя на сервере и ставит эффект в
-	 * очередь с абсолютным счётчиком — виджет применяет его как синк,
-	 * а не как `+1`.
-	 */
+	// NOTE: grants the consumable into the viewer profile on the server and queues
+	// the effect with an absolute count, which the widget applies as a sync, not `+1`.
 	grantConsumable(
 		key: string,
 		field: ConsumableField,
@@ -343,8 +339,6 @@ function overLimit(
 	field: ConsumableField,
 	max: (settings: GameSettings) => number,
 ): RewardHandler["check"] {
-	// Начисление уже лежит в профиле (grantConsumable), поэтому лимит сверяется
-	// только с базой — очередь эффектов больше не считается отдельно.
 	return (ctx, settings) =>
 		ctx.storedCount(field) >= max(settings) ? "over limit" : null;
 }
@@ -462,7 +456,6 @@ async function handleRedemption(
 					{ user: redemption.userName },
 				);
 			} catch (error) {
-				// Профиль не записался — старый путь: виджет начислит сам.
 				logger.error(
 					`[effects] failed to persist ${field} for ${redemption.userName}: ${error instanceof Error ? error.message : String(error)}`,
 				);

@@ -14,10 +14,8 @@ export interface GameContext {
 	settings: GameSettings;
 	viewerStore: ViewerStore;
 	viewersDirty: boolean;
-	/**
-	 * Профили зрителей живут вне мира: таймаут убирает сущность с экрана,
-	 * но опыт, скин и расходники остаются и уходят в сохранение.
-	 */
+	// NOTE: viewer profiles live outside the world: a timeout removes the entity
+	// from screen, but xp, skin and ammo stay here and reach persistence.
 	viewerProfiles: Map<string, StoredViewer>;
 	onRoundEnd?: (record: RoundRecord) => void;
 	now(): number;

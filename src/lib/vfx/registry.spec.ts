@@ -7,7 +7,6 @@ import {
 } from "./registry.js";
 import type { AuraStates } from "./types.js";
 
-/** Состояния известны только типами, поэтому для проверки нужен список-эталон. */
 const AURA_STATES: AuraStates = {
 	shield: { hp: 0, max: 0, radius: 0, hit: 0, hitDir: { x: 0, y: 1 } },
 	overcharge: { radius: 0 },

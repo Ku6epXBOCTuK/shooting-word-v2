@@ -1,16 +1,14 @@
-import type { DatabaseSync } from "node:sqlite";
 import type {
 	ConsumableField,
 	StoredViewer,
 } from "#lib/features/persistence/index.js";
 import { logger } from "#lib/logger.js";
+import type { DatabaseSync } from "node:sqlite";
 import type { ViewerProfile, ViewersRepo } from "./port.js";
 
-/**
- * Профиль живёт дольше, чем корабль на экране: таймаут снимает зрителя с
- * экрана, но опыт, скин и расходники продолжают храниться. Строки старше
- * срока хранения (и боты) вычищаются один раз — при открытии базы.
- */
+// NOTE: a profile outlives its on-screen ship (timeout only removes the viewer
+// entity), so rows older than the retention window and bots are purged once,
+// when the database is opened.
 export const PROFILE_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
 
 function parseProfile(raw: string): StoredViewer | null {
@@ -43,7 +41,7 @@ export class SqliteViewersRepo implements ViewersRepo {
 		this.purge();
 	}
 
-	/** Дозаполняет схему старых баз, где таблица создана без `updated_at`. */
+	// NOTE: backfills the schema of databases created before updated_at existed.
 	private migrate(): void {
 		const columns = this.db.prepare("PRAGMA table_info(viewers)").all() as {
 			name: string;
@@ -54,7 +52,6 @@ export class SqliteViewersRepo implements ViewersRepo {
 		);
 	}
 
-	/** Вычищает ботов и протухшие профили при открытии базы. */
 	purge(): void {
 		const rows = this.db
 			.prepare("SELECT broadcaster_id, user_id, data FROM viewers")
@@ -111,8 +108,8 @@ export class SqliteViewersRepo implements ViewersRepo {
 
 	upsert(broadcasterId: string, profiles: ViewerProfile[]): void {
 		if (profiles.length === 0) return;
-		// Merge по userId: отсутствующие в запросе профили не трогаются вовсе,
-		// а запись с более старой версией не перетирает свежую.
+		// NOTE: Merge by userId: profiles missing from the batch are left untouched,
+		// and a row with an older updated_at never overwrites a fresher one.
 		const insert = this.db.prepare(`
 			INSERT INTO viewers (broadcaster_id, user_id, data, updated_at)
 			VALUES (?, ?, ?, ?)
@@ -165,9 +162,6 @@ export class SqliteViewersRepo implements ViewersRepo {
 		);
 		const data: StoredViewer = { ...current, [field]: value, updatedAt: now };
 
-		// Начисление намеренное и серверное: пишем без сравнения версий, чтобы
-		// устаревший снапшот виджета не откатил его (синк счётчиков починит
-		// содержимое у виджета при следующей записи).
 		this.db
 			.prepare(
 				`INSERT INTO viewers (broadcaster_id, user_id, data, updated_at)

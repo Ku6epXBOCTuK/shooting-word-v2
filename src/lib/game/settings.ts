@@ -57,12 +57,9 @@ export type GameSettings = {
 			: string;
 };
 
-/**
- * Представление `GameSettings` для обхода динамическим ключом. Точный
- * mapped-тип выше не позволяет индексироваться `def.key` из схемы, а всё, что
- * ходит по ключу (UI, парсеры, нормализаторы), работает через это
- * представление. Приведение живёт здесь, а не у каждого вызывающего.
- */
+// NOTE: the exact mapped type above cannot be indexed by def.key, so everything
+// that walks the schema by key (UI, parsers, normalizers) goes through this
+// view and the cast lives here instead of at every call site.
 export type SettingsMap = Record<string, SettingValue>;
 
 export function readSetting(

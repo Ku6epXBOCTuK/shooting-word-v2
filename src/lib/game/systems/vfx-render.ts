@@ -2,15 +2,12 @@ import { createReaction } from "../../vfx/registry.js";
 import type { VfxOptions, VfxReaction } from "../../vfx/types.js";
 import type { RenderSystemFactory, System } from "./types.js";
 
-/** Устойчивый срез запроса `with("vfx", "position")`. */
 type ReactionEntity = { position: { x: number; y: number } } & {
 	vfx: { kind: import("../../vfx/kinds.js").ReactionKind; value?: number };
 };
 
-/**
- * Рисует отклики на события. Логика (`systems/vfx.ts`) только старит сущности
- * и снимает `expired`; вид и срок жизни эффекта решает `vfx/reactions.ts`.
- */
+// NOTE: only draws. What a reaction looks like and how long it lives is decided
+// by the registry; systems/vfx.ts only ages the entity and sets expired.
 export const createVfxRenderSystem: RenderSystemFactory = (ctx) => {
 	const reactions = ctx.world.with("vfx", "position");
 	const effects = new Map<object, VfxReaction>();

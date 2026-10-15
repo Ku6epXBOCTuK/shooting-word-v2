@@ -53,7 +53,6 @@
 	const statusLabel = (status: AppRewardStatus): string =>
 		!status.exists ? "не создана" : status.enabled ? "включена" : "выключена";
 
-	// Значение для поля: оверрайд, иначе дефолт из конфига (без dev-префикса).
 	const fieldValue = (
 		reward: RewardConfig,
 		field: keyof RewardOverrides,

@@ -6,7 +6,7 @@ const RETRIES = 3;
 const RETRY_DELAY_MS = 500;
 
 export class HttpStorageAdapter implements StoragePort {
-	/** Последний снапшот вытесняет предыдущие: запись не накапливается. */
+	// NOTE: only the latest snapshot is kept: writes never accumulate.
 	private queued: { key: string; value: unknown } | null = null;
 	private chain: Promise<void> = Promise.resolve();
 
@@ -26,10 +26,8 @@ export class HttpStorageAdapter implements StoragePort {
 		}
 	}
 
-	/**
-	 * Записи идут в одну очередь (каждая ждёт предыдущую) — снапшоты не могут
-	 * прийти на сервер в обратном порядке. Ошибки ретраятся, а не глотаются.
-	 */
+	// NOTE: writes go through one chain, each awaiting the previous one, so snapshots
+	// can never reach the server out of order. Errors are retried, not swallowed.
 	save(key: string, value: unknown): Promise<void> {
 		this.queued = { key, value };
 		this.chain = this.chain.then(() => {

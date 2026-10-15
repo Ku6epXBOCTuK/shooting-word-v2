@@ -6,11 +6,8 @@ import type { With } from "miniplex";
 import type { GameContext } from "./context.js";
 import type { Entity } from "./types.js";
 
-/**
- * Переносит состояние корабля в профиль зрителя. Профиль живёт вне мира:
- * таймаут убирает сущность с экрана, но не стирает опыт, скин и расходники.
- * Боты в профили не попадают — им нечего сохранять.
- */
+// NOTE: the profile lives outside the world, so a viewer timeout drops the
+// entity but must not erase xp, skin or ammo. Bots are skipped: nothing to save.
 export function captureProfile(
 	ctx: GameContext,
 	entity: With<Entity, "viewer">,

@@ -1,10 +1,7 @@
 import type { RenderSystemFactory } from "./types.js";
 
-/**
- * Единственное место, где двигается время слоя эффектов. Идёт последним в
- * группе рендера: остальные системы успевают записать состояние своих эффектов,
- * и они обновляются в том же кадре, без задержки.
- */
+// NOTE: must stay last in the render group: earlier systems have written their
+// effect state, so a reaction lands on screen in the same frame, not one later.
 export const createVfxTickSystem: RenderSystemFactory =
 	(ctx) => (dt: number) => {
 		ctx.vfx.update(dt);

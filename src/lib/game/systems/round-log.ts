@@ -75,8 +75,6 @@ export const createRoundLogSystem: SystemFactory = (ctx) => {
 	const finish = (entity: With<Entity, "session">) => {
 		if (durationSec <= 0) return;
 
-		// разрушение и возврат прилетают в группах, которые идут после этой
-		// системы: последние переходы она не видела
 		countDeaths();
 		countRevives();
 

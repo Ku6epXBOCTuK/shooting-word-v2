@@ -259,9 +259,9 @@ export async function runSimulation(params: SimParams): Promise<SimStats> {
 	let stepCount = 0;
 	for (let t = 0; t < params.durationSec; t += DT) {
 		nowMs += DT * 1000;
-		// viewerStore.save() ставит микрозадачи на каждый dirty-тик; синхронный
-		// цикл не даёт им выполниться, и они копятся, удерживая контексты (OOM на
-		// калибровке). Периодически даём очереди дренироваться.
+		// NOTE: viewerStore.save() queues a microtask on every dirty tick; a sync loop
+		// never lets them run, so they pile up holding contexts (OOM during calibration).
+		// Yield periodically so the queue drains.
 		if (++stepCount % 100 === 0) await Promise.resolve();
 
 		const viewerById: ViewersById = new Map();

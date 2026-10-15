@@ -59,10 +59,6 @@ export const PUT: RequestHandler = async ({
 			return Response.json(null, { status: 400 });
 		}
 
-		// Семантика — merge: присланные записи обновляются по userId, чужие
-		// профили не удаляются. Записи без версии (старый виджет) считаем
-		// свежими по часам сервера — так старый клиент продолжает работать,
-		// но больше не может стереть чужие строки.
 		const now = Date.now();
 		const profiles: ViewerProfile[] = [];
 		for (const entry of body) {

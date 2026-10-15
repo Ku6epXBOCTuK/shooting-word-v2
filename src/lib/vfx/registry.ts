@@ -25,10 +25,6 @@ type AuraFactory<K extends keyof AuraStates> = (
 	o: VfxOptions,
 ) => VfxStateful<AuraStates[K]>;
 
-/**
- * Ключи здесь — ровно те, что принимает `createAura`. Завести вид ауры
- * без состояния нельзя: компилятор не найдёт для него ключ.
- */
 const AURAS: { [K in keyof AuraStates]?: AuraFactory<K> } = {
 	shield: createShieldAura,
 	overcharge: createOverchargeAura,

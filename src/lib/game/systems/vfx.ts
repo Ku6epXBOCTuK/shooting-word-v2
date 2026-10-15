@@ -1,10 +1,7 @@
 import type { SystemFactory } from "./types.js";
 
-/**
- * Единственное место, где стареют отклики. Эффект сам объявляет свой срок
- * жизни, рендер кладёт его в `ttl` при создании — здесь только таймер и
- * метка `expired`, которую подберёт `cleanupSystem`.
- */
+// NOTE: age/ttl are only a timer; the render system sets ttl on creation.
+// This system only ages reactions and flags expired, which cleanupSystem removes.
 export const createVfxSystem: SystemFactory = (ctx) => {
 	const reactions = ctx.world.with("vfx");
 

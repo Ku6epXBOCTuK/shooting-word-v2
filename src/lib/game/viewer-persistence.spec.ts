@@ -1,20 +1,16 @@
-import { expect, test, vi } from "vitest";
-import type { Application } from "pixi.js";
-import { createGameCore, type GameCoreRender } from "./core.js";
-import type { GameAssets } from "./assets.js";
-import { VIEWER_TIMEOUT_MS } from "./config.js";
 import {
 	ViewerStore,
 	type StoredViewer,
 } from "#lib/features/persistence/viewer-store.js";
+import type { Application } from "pixi.js";
+import { expect, test, vi } from "vitest";
+import type { GameAssets } from "./assets.js";
+import { VIEWER_TIMEOUT_MS } from "./config.js";
+import { createGameCore, type GameCoreRender } from "./core.js";
 
-// The bug this guards against only exists on the rendered path, where
-// createGameCore used to spread ctx into a *new* object for the factory
-// context. That split gave `viewersDirty` two independent bindings: the public
-// API (joinViewer, grantBatteries, …) wrote the original, while the
-// viewer-persistence system read the copy — so chat joins and reward grants
-// never triggered a save (no PUT to the backend). Stub pixi.js so the render
-// systems can run headlessly and the shared-context contract is exercised.
+// NOTE: createGameCore used to spread ctx into a new object for the factory
+// context, which gave viewersDirty two independent bindings, so joins and
+// grants never saved. That path only exists when rendering, hence the stub.
 vi.mock("pixi.js", () => {
 	class Graphics {
 		visible = true;
@@ -105,11 +101,11 @@ interface SavedViewer {
 	updatedAt?: number;
 }
 
-/** Прогоняет отложенные цепочки сохранения (load → capture → save). */
+// NOTE: lets the deferred load/capture/save chain settle.
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 interface GameOptions {
-	/** Что вернёт первый load(): список профилей или управляемый промис. */
+	// NOTE: what the first load() resolves with: a profile list or a controllable promise.
 	load?: Promise<StoredViewer[]> | StoredViewer[];
 }
 
@@ -170,7 +166,7 @@ test("reward battery grant persists viewer via the shared context (rendered path
 
 	game.joinViewer({ userId: "u1", user: "alice", login: "alice" });
 	game.step(0.1);
-	await flush(); // initial persist clears the dirty flag
+	await flush();
 	saved.length = 0;
 
 	game.grantBatteries(["u1"]);
@@ -183,9 +179,6 @@ test("reward battery grant persists viewer via the shared context (rendered path
 	game.dispose();
 });
 
-// Регрессия на главную потерю данных: таймаут снимал сущность с экрана, и
-// снапшот сохранялся уже без неё — запись зрителя стиралась из базы вместе
-// с опытом, скином и расходниками. Теперь у сущности есть профиль вне мира.
 test("timed-out viewer keeps their profile in the saved list", async () => {
 	const { game, saved, setNow } = createRenderedGame();
 
@@ -199,7 +192,7 @@ test("timed-out viewer keeps their profile in the saved list", async () => {
 	saved.length = 0;
 
 	setNow(1_000_000 + VIEWER_TIMEOUT_MS + 60_000);
-	game.step(1.1); // таймаут проверяется раз в секунду
+	game.step(1.1); // NOTE: timeout scan runs once per second.
 	await flush();
 
 	expect([...game.world.with("viewer")]).toHaveLength(0);
@@ -210,8 +203,6 @@ test("timed-out viewer keeps their profile in the saved list", async () => {
 	game.dispose();
 });
 
-// Протухший зритель не занимает экран, но его профиль живёт: при первом
-// сообщении в чат возвращаются скин, опыт и расходники.
 test("stale viewer returns with skin and progress on rejoin", async () => {
 	const stored: StoredViewer[] = [
 		{
@@ -240,9 +231,6 @@ test("stale viewer returns with skin and progress on rejoin", async () => {
 	game.dispose();
 });
 
-// Гонка на старте: сообщение в чат приходит раньше ответа GET. Раньше такое
-// сохранение писало неполный список и стирало остальных зрителей, а restore
-// создавал дубль сущности.
 test("chat message during the initial load neither duplicates nor wipes viewers", async () => {
 	let release: (value: StoredViewer[]) => void = () => {};
 	const load = new Promise<StoredViewer[]>((resolve) => {
@@ -266,7 +254,7 @@ test("chat message during the initial load neither duplicates nor wipes viewers"
 	game.joinViewer({ userId: "u1", user: "alice", login: "alice" });
 	game.step(0.1);
 	await flush();
-	expect(saved).toHaveLength(0); // до чтения базы не сохраняем
+	expect(saved).toHaveLength(0); // NOTE: no save before the store read resolves.
 
 	release(stored);
 	await flush();
@@ -284,9 +272,6 @@ test("chat message during the initial load neither duplicates nor wipes viewers"
 	game.dispose();
 });
 
-// Сервер начисляет расходники в профиль и присылает абсолютные счётчики:
-// виджет поднимает значение до серверного, но не считает `+1` заново и не
-// откатывает потраченное в этой сессии.
 test("server counts are synced without double counting", async () => {
 	const { game, saved } = createRenderedGame();
 
@@ -300,13 +285,11 @@ test("server counts are synced without double counting", async () => {
 	await flush();
 	expect(saved.at(-1)?.[0]?.batteries).toBe(4);
 
-	// повторный синк того же значения ничего не меняет
 	game.applyConsumables([{ userId: "u1", batteries: 4 }]);
 	game.step(0.1);
 	await flush();
 	expect(saved.at(-1)?.[0]?.batteries).toBe(4);
 
-	// более низкое значение не откатывает локальную трату
 	game.applyConsumables([{ userId: "u1", batteries: 1 }]);
 	game.step(0.1);
 	await flush();

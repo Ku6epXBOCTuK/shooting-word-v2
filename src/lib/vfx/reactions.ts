@@ -34,7 +34,8 @@ const FLARE_MAX_RADIUS = 64;
 const FLARE_WIDTH = 3;
 const DEFAULT_FLARE_COLOR = 0xffffff;
 
-/** Отсчёт собственного времени внутри эффекта: первый кадр — ноль. */
+// NOTE: effects count time from their own first frame because frame.t is the
+// absolute host clock.
 function clock() {
 	let start = -1;
 	return (frame: VfxFrame) => {
@@ -92,7 +93,6 @@ function createSparks(spec: SparkSpec): Effect {
 	};
 }
 
-/** Взрыв кадрами. Сколько именно кадров — решают ассеты. */
 const createExplosion: Effect = (options) => {
 	const frames = options.frames ?? [];
 	const sprite = new Sprite(frames[0]);
@@ -121,7 +121,6 @@ const createExplosion: Effect = (options) => {
 	};
 };
 
-/** Звезда над кораблём стрелка: «ты попал». */
 const createKillMark: Effect = () => {
 	const body = new Graphics()
 		.star(0, 0, 5, STAR_RADIUS, STAR_RADIUS * 0.45)
@@ -146,7 +145,6 @@ const createKillMark: Effect = () => {
 	};
 };
 
-/** Промах: искры по месту попадания плюс улетающая рикошет-пуля. */
 const createShipRicochet: Effect = (options) => {
 	const sparks = createSparks({
 		count: SPARK_COUNT,
@@ -183,7 +181,6 @@ const createShipRicochet: Effect = (options) => {
 	};
 };
 
-/** Расходящаяся вспышка: заряд устройства, остановка времени, награда. */
 function createFlare(color: number, kind: ReactionKind): Effect {
 	const duration = REACTION_DURATION[kind];
 

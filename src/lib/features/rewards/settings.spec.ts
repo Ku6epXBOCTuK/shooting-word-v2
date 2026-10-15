@@ -123,7 +123,6 @@ describe("effectiveRewards", () => {
 		);
 		expect(effective).toBeDefined();
 		expect(effective!.cost).toBe(777);
-		// прочие поля остаются дефолтными
 		expect(stripDevTitle(effective!.title)).toBe(shield.title);
 		expect(effective!.description).toBe(shield.description);
 		expect(effective!.cooldown).toBe(shield.cooldown);
@@ -228,7 +227,6 @@ describe("isDiverged", () => {
 	});
 
 	it("сверяет эффективное (с dev-префиксом) с живым значением Twitch", () => {
-		// На Twitch в dev-режиме заголовок хранится с префиксом, как и effective.
 		const eff = effectiveRewards({ shield: { cost: 300 } }).find(
 			(item) => item.key === "shield",
 		)!;

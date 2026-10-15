@@ -1,46 +1,46 @@
 import type { ChatMessage } from "#lib/chat/port.js";
-import {
-	BATTERY_REWARD,
-	BEACON_REWARD,
-	DOOMSDAY_REWARD,
-	OVERCHARGE_REWARD,
-	rewardVisual,
-	REVIVE_REWARD,
-	RICOCHETIUM_REWARD,
-	SHIELD_REWARD,
-	TIME_STOP_REWARD,
-} from "#lib/features/rewards/config.js";
-import type { RoundRecord } from "#lib/features/rounds/record.js";
 import type {
 	ConsumableField,
 	ConsumableSync,
 	StoredViewer,
 	ViewerStore,
 } from "#lib/features/persistence/viewer-store.js";
+import {
+	BATTERY_REWARD,
+	BEACON_REWARD,
+	DOOMSDAY_REWARD,
+	OVERCHARGE_REWARD,
+	REVIVE_REWARD,
+	rewardVisual,
+	RICOCHETIUM_REWARD,
+	SHIELD_REWARD,
+	TIME_STOP_REWARD,
+} from "#lib/features/rewards/config.js";
+import type { RoundRecord } from "#lib/features/rounds/record.js";
 import { logger } from "#lib/logger.js";
 import { createVfxLayer, type VfxLayer } from "#lib/vfx/layer.js";
 import { World } from "miniplex";
 import type { Application } from "pixi.js";
 import type { GameAssets } from "./assets.js";
-import { SHIP_COUNT } from "./ships.js";
 import {
+	BEACON_DELAY,
+	BEACON_MAX,
 	BULLET_HIT_DISTANCE,
 	BULLET_SPEED,
 	DOOMSDAY_DURATION,
-	TIME_STOP_DURATION,
-	BEACON_DELAY,
-	BEACON_MAX,
 	REVIVE_MAX,
 	SHIELD_MAX_HP,
+	TIME_STOP_DURATION,
 	VIEWER_GROUND_MARGIN,
 	VIEWER_HEIGHT,
 	VIEWER_TIMEOUT_MS,
 } from "./config.js";
 import type { GameContext, RenderContext } from "./context.js";
+import { addReaction } from "./reaction.js";
 import { bumpRoundStat, createRoundStats } from "./round-stats.js";
 import { defaultSettings, type GameSettings } from "./settings.js";
+import { SHIP_COUNT } from "./ships.js";
 import { spawnViewer } from "./spawn.js";
-import { addReaction } from "./reaction.js";
 import { cleanupGroups, logicGroups, renderGroups } from "./systems/index.js";
 import type { System } from "./systems/types.js";
 import {
@@ -52,10 +52,8 @@ import {
 	type ViewerIdentity,
 } from "./types.js";
 
-/**
- * Поднимает локальный счётчик до серверного значения (не выше лимита).
- * Возвращает true, если счётчик изменился.
- */
+// NOTE: raises the local counter to the server value and never rolls it back,
+// so what was already earned or spent this session survives a stale snapshot.
 const syncConsumable = (
 	entity: Entity,
 	field: ConsumableField,
@@ -108,17 +106,9 @@ export function createGameCore(
 		rng: options.rng ?? Math.random,
 		measureText: options.measureText,
 	};
-	// factoryCtx MUST be the same object as ctx, not a shallow copy: the public
-	// API (joinViewer, grantBatteries, repair, …) writes ctx.viewersDirty, while
+	// NOTE: factoryCtx MUST be the same object as ctx, not a copy: the public API
+	// (joinViewer, grantBatteries, repair, ...) writes ctx.viewersDirty, while
 	// systems (notably viewer-persistence) read it from the factory context.
-	// Spreading ctx into a new object would give `viewersDirty` two independent
-	// bindings and silently drop viewer persistence (no PUT to the backend on
-	// chat messages and reward grants). Attach app/assets onto the shared ctx.
-	//
-	// The vfx layer outlives `reset()` (which recreates every system), so it is
-	// created once here and torn down only in `dispose()`. Render systems own
-	// the effects they put in it and remove them from their own `dispose`.
-	// `layer.ts` imports pixi as types only, so headless stays pixi-free.
 	const vfx = render ? createVfxLayer(render.app.stage) : null;
 	const factoryCtx: RenderContext = render
 		? Object.assign(ctx, {
@@ -132,11 +122,8 @@ export function createGameCore(
 		? [...logicGroups(), ...renderGroups(), ...cleanupGroups()]
 		: [...logicGroups(), ...cleanupGroups()];
 
-	/**
-	 * Короткая обратная связь: зритель должен видеть, что награда сработала,
-	 * даже если у неё нет постоянного эффекта на корабле. Цвет и вид отклика
-	 * берутся из `RewardConfig.visual`.
-	 */
+	// NOTE: fires even for rewards with no lasting effect on the ship, so the
+	// viewer still sees the reward land; look and colour come from RewardConfig.visual.
 	const reactToReward = (key: string, at?: Position) => {
 		const visual = rewardVisual(key);
 		if (!visual || !at) return;
@@ -168,11 +155,9 @@ export function createGameCore(
 		return undefined;
 	};
 
-	/**
-	 * Применяет сохранённый профиль к уже существующей сущности (зритель успел
-	 * написать в чат, пока грузили профили). Счётчики не опускаются ниже
-	 * текущих — то, что уже начислено в этой сессии, не теряется.
-	 */
+	// NOTE: a viewer can chat before profiles finish loading, so the saved
+	// profile lands on an existing entity; counters are max()-ed so progress
+	// made in this session is never lost.
 	const adoptProfile = (entity: Entity, profile: StoredViewer) => {
 		if (!entity.viewer) return;
 		entity.xp = Math.max(entity.xp ?? 0, profile.xp ?? 0);
@@ -186,9 +171,6 @@ export function createGameCore(
 		const now = ctx.now();
 		for (const viewer of await ctx.viewerStore.load()) {
 			if (viewer.bot) continue;
-			// Профиль кэшируется целиком — в том числе для протухших: на экран
-			// такой зритель не спавнится, но скин, опыт и расходники вернутся
-			// при первом сообщении в чат.
 			ctx.viewerProfiles.set(viewer.userId, viewer);
 
 			const entity = findViewer(viewer.userId);
@@ -240,8 +222,6 @@ export function createGameCore(
 				}
 			}
 
-			// Возвращение после таймаута (или после перезагрузки виджета):
-			// скин и расходники берутся из профиля, а не рандомятся заново.
 			const profile = identity.bot
 				? undefined
 				: ctx.viewerProfiles.get(identity.userId);
@@ -369,12 +349,8 @@ export function createGameCore(
 			if (changed) ctx.viewersDirty = true;
 		},
 
-		/**
-		 * Синк абсолютных счётчиков с сервера: сервер уже начислил награду в
-		 * профиль, виджет просто поднимает локальное значение (никакого второго
-		 * `+1`). Значение ниже локального не откатывает — трата батареи в этой
-		 * сессии важнее пришедшего снимка.
-		 */
+		// NOTE: the server already granted the reward into the profile, so this
+		// only raises the local value, never a second +1.
 		applyConsumables: (entries: ConsumableSync[]) => {
 			let changed = false;
 			for (const entry of entries) {

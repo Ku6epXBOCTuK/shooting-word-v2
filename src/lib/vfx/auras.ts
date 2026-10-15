@@ -11,14 +11,9 @@ import type {
 const CORE_RADIUS = 72;
 const CORE_COLOR = 0xff3322;
 const AURA_COLOR = 0xff2211;
-/** отступ кольца ауры от края корабля, в долях радиуса */
 const AURA_GAP = 0.4;
 const CORE_PULSE = 6;
 
-/**
- * Ядро устройства doomsday и кольцо вокруг корабля стрелка.
- * Позиция ядра приходит размещением, позиция стрелка — состоянием.
- */
 export function createDoomsdayAura(): VfxStateful<DoomsdayAuraState> {
 	const body = new Graphics();
 	const root = new Container();
@@ -38,6 +33,8 @@ export function createDoomsdayAura(): VfxStateful<DoomsdayAuraState> {
 
 			const pulse = 0.5 + 0.5 * Math.sin(frame.t * CORE_PULSE);
 
+			// NOTE: the core is drawn at the placement, the ring at the shooter ship
+			// tracked in state, so the two can sit on different ships.
 			if (shooter) {
 				body
 					.circle(
@@ -69,7 +66,6 @@ export function createDoomsdayAura(): VfxStateful<DoomsdayAuraState> {
 	return aura;
 }
 
-/** Летящий снаряд устройства: круг, который ведёт хост. */
 export function createDoomsdayBolt(radius: number): VfxItem {
 	const body = new Graphics().circle(0, 0, radius).fill(0xff3322);
 	const root = new Container();
@@ -89,18 +85,12 @@ export function createDoomsdayBolt(radius: number): VfxItem {
 
 const OVERCHARGE_COLOR = 0xffb020;
 const OVERCHARGE_HOT = 0xffe6a0;
-/** сколько дуг в кольце и насколько оно шире корабля */
 const OVERCHARGE_ARCS = 6;
 const OVERCHARGE_SPAN = 0.8;
 const OVERCHARGE_WIDTH = 0.08;
 const OVERCHARGE_SPEED = 1.6;
 const OVERCHARGE_PULSE = 5;
 
-/**
- * Перегрузка оружия: кольцо из вращающихся дуг вокруг корабля. Заметно от
- * щита и обмазки — там холодные тона и сплошная оболочка, тут тёплый цвет и
- * разрывы.
- */
 export function createOverchargeAura(): VfxStateful<OverchargeAuraState> {
 	const body = new Graphics();
 	const root = new Container();
@@ -154,10 +144,6 @@ const BAR_HEIGHT = 4;
 const BAR_GAP = 8;
 const PORTAL_PULSE = 4;
 
-/**
- * Портал возврата. Позиция по вертикали host знает лучше эффекта: линия земли
- * зависит от высоты экрана.
- */
 export function createPortalAura(): VfxStateful<PortalAuraState> {
 	const body = new Graphics();
 	const root = new Container();
@@ -168,6 +154,8 @@ export function createPortalAura(): VfxStateful<PortalAuraState> {
 		state: { progress: 0, groundY: 0 },
 
 		update(frame: VfxFrame) {
+			// NOTE: the host supplies groundY because the ground line depends on the
+			// viewer height, which the effect cannot know.
 			const { progress, groundY } = aura.state;
 			const pulse = 0.5 + 0.5 * Math.sin(frame.t * PORTAL_PULSE);
 

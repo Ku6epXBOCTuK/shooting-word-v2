@@ -17,7 +17,7 @@ export class LocalStorageAdapter implements StoragePort {
 		try {
 			localStorage.setItem(PREFIX + key, JSON.stringify(value));
 		} catch {
-			// storage full or unavailable — ignore
+			// NOTE: required comment for empty block
 		}
 	}
 }

@@ -9,20 +9,12 @@ import {
 } from "pixi.js";
 import type { ShieldAuraState, VfxFrame, VfxStateful } from "./types.js";
 
-/**
- * Настройки щита. Всё, что имеет смысл крутить, вынесено сюда.
- *
- * Геометрия: `radius` приходит из состояния — это половина большей стороны
- * корабля в мировых пикселях, уже с учётом `viewerScale`. `SHIELD_FACTOR`
- * задаёт, насколько щит шире корабля. Шейдер и кольца считаются от одного и
- * того же `SHIELD_FACTOR`, поэтому края всегда совпадают.
- */
+// NOTE: the shader and the rings derive their edge from the same
+// SHIELD_FACTOR so their borders always coincide.
 const SHIELD_FACTOR = 1.3;
-/** амплитуда «дыхания», доля радиуса корабля */
 const BREATH = 0.05;
 const BREATH_SPEED = 1.5;
 
-/** гало вокруг щита: сколько колец и насколько далеко от края */
 const HALO_RINGS = 3;
 const HALO_STEP = 0.12;
 const HALO_ALPHA = 0.05;
@@ -46,12 +38,8 @@ const PIP_GAP = 0.5;
 const PIP_RADIUS = 0.156;
 const PIP_MIN_STROKE = 1;
 
-/**
- * Искажение от попадания — то, что крутится в первую очередь.
- *
- * Эти три константы попадают в шейдер строкой ниже, поэтому менять их
- * можно только здесь.
- */
+// NOTE: these three are interpolated into the fragment shader below, so they can
+// only be changed here.
 export const SHIELD_HIT_PUSH = 0.5;
 export const SHIELD_HIT_RINGS = 14;
 export const SHIELD_HIT_FLASH = 0.9;
@@ -66,8 +54,6 @@ uniform float uCharge;
 uniform float uHit;
 uniform vec2 uHitDir;
 
-// Стандартные uniform'ы фильтра Pixi. Нужны, чтобы привести координаты к
-// локальным: при фильтре vTextureCoord не обязана покрывать 0..1.
 uniform vec4 uOutputFrame;
 uniform vec4 uInputSize;
 
@@ -93,8 +79,6 @@ void main() {
 		return;
 	}
 
-	// Форму даёт сама текстура: альфа линейно падает от центра к краю,
-	// поэтому r = 1 - alpha и не зависит от того, как Pixi считает UV.
 	float r = clamp(1.0 - base.a, 0.0, 1.0);
 
 	vec2 span = max(uOutputFrame.zw * uInputSize.zw, vec2(1e-6));
@@ -102,8 +86,6 @@ void main() {
 
 	float flow = uTime * 0.6;
 
-	// Точка удара выталкивает узоры — это и есть искажение. Считаем её до
-	// смещения, чтобы вспышка осталась на месте удара.
 	vec2 hitPos = normalize(uHitDir + vec2(1e-5, 0.0));
 	vec2 delta = p - hitPos;
 	float hitDist = length(delta) + 1e-4;
@@ -114,7 +96,6 @@ void main() {
 
 	float angle = atan(p.y, p.x);
 
-	// перелив: волны бегут по кругу и по радиусу, шум ломает правильность
 	float warp = noise(p * 3.0 + flow) * 2.0;
 	float ripple = sin(r * 9.0 - flow * 2.0 + warp);
 	float swirl = sin(angle * 3.0 + flow);
@@ -122,7 +103,6 @@ void main() {
 	float wave = 0.5 + 0.5 * (ripple * 0.6 + swirl * 0.4);
 	float rim = pow(r, 3.0);
 
-	// вспышка в точке удара и волны, расходящиеся от неё
 	float flash = strength * smoothstep(0.55, 0.0, hitDist);
 	float rings = sin(hitDist * ${SHIELD_HIT_RINGS.toFixed(1)} - (1.0 - uHit) * 12.0) * strength;
 	float impact = flash + rings * 0.35;
@@ -142,12 +122,9 @@ void main() {
 }
 `;
 
-/**
- * Текстура-круг: альфа линейно падает от центра к краю. Благодаря этому
- * шейдер получает точную форму и точный радиус, не завися от того, как Pixi
- * считает координаты текстуры для фильтра. Углов квадрата прозрачны, поэтому
- * спрайт можно спокойно тянуть на весь диаметр щита.
- */
+// NOTE: the alpha ramp gives the shader an exact shape and radius regardless of
+// how Pixi maps filter texture coordinates, and the transparent corners let the
+// sprite stretch to the full shield diameter.
 const DISC_SIZE = 256;
 let discTexture: Texture | null = null;
 
@@ -175,12 +152,6 @@ function getDiscTexture(): Texture {
 	return discTexture;
 }
 
-/**
- * Силовой щит: переливающаяся шейдерная оболочка плюс точки зарядов.
- *
- * Форму щита даёт текстура-круг, шейдер только красит её содержимое, поэтому
- * спрайт можно тянуть на любой размер и край всегда совпадёт с кольцами.
- */
 export function createShieldAura(): VfxStateful<ShieldAuraState> {
 	const bubble = Sprite.from(getDiscTexture());
 	bubble.anchor.set(0.5);
@@ -229,7 +200,6 @@ export function createShieldAura(): VfxStateful<ShieldAuraState> {
 			if (radius <= 0) return;
 
 			const px = (units: number) => Math.max(0.5, radius * units);
-			// Единственный источник правды: видимый край щита.
 			const edge =
 				radius * SHIELD_FACTOR +
 				Math.sin(frame.t * BREATH_SPEED + frame.phase) * radius * BREATH;

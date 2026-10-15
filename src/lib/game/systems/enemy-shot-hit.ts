@@ -28,7 +28,6 @@ export const createEnemyShotHitSystem: SystemFactory = (ctx) => {
 						target.shield.hp - entity.enemyShot.damage,
 					);
 					target.shield.regenIn ??= SHIELD_REGEN_INTERVAL;
-					// для искажения щита: когда прилетел удар и откуда
 					target.shield.hitAt = ctx.now();
 					target.shield.hitFrom = { ...entity.position };
 					logger.debug(

@@ -7,10 +7,6 @@ import type { System, RenderSystemFactory } from "./types.js";
 
 const BOLT_RADIUS = 4;
 
-/**
- * Рисует устройство doomsday. Логика (спавн, заморозка, взрывы) живёт в
- * `systems/doomsday.ts`, вид — в `vfx/auras.ts`, здесь только состояние.
- */
 export const createDoomsdayRenderSystem: RenderSystemFactory = (ctx) => {
 	const devices = ctx.world.with("doomsday", "position");
 	const bolts = ctx.world.with("doomsdayBolt", "position");

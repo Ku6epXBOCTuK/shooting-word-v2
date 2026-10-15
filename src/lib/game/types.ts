@@ -86,9 +86,8 @@ export interface Shield {
 	expiresAt: number;
 	hp: number;
 	regenIn?: number;
-	/** когда последний раз потратили заряд — для искажения щита */
+	// NOTE: hitAt and hitFrom only feed the shield-distortion aura.
 	hitAt?: number;
-	/** откуда прилетел снаряд — для искажения щита */
 	hitFrom?: Position;
 }
 

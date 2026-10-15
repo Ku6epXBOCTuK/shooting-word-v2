@@ -1,5 +1,5 @@
-import { SESSIONPHASE } from "../types.js";
 import { captureProfile } from "../profiles.js";
+import { SESSIONPHASE } from "../types.js";
 import type { SystemFactory } from "./types.js";
 
 export const createViewerPersistenceSystem: SystemFactory = (ctx) => {
@@ -17,13 +17,9 @@ export const createViewerPersistenceSystem: SystemFactory = (ctx) => {
 		if (!ctx.viewersDirty) return;
 		ctx.viewersDirty = false;
 
-		// Список собирается только после чтения базы: сохранение не может
-		// обогнать загрузку и записать неполный список поверх полного.
-		// restoreViewers подписался на тот же промис раньше и успевает
-		// наполнить профили первым.
+		// NOTE: The profile list is built only after the store read: a save must not
+		// overtake the load and overwrite the full list with a partial one.
 		void ctx.viewerStore.load().then(() => {
-			// «профили + текущие корабли»: протухшие и вышедшие зрители
-			// остаются в списке, пока жив их профиль.
 			for (const entity of viewers) {
 				captureProfile(ctx, entity);
 			}

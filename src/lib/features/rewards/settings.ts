@@ -51,7 +51,6 @@ export const REWARDS_SCHEMA = [
 	},
 ] as const satisfies SettingDef[];
 
-/** Настраиваемые поля награды. Храним только оверрайды (дельты). */
 export interface RewardOverrides {
 	title?: string;
 	description?: string;
@@ -61,7 +60,6 @@ export interface RewardOverrides {
 
 export type RewardSettings = Partial<Record<REWARD_KEYS, RewardOverrides>>;
 
-/** Полный набор значений всех наград из дефолтов `REWARD_CONFIGS`. */
 export function defaultRewards(): Record<REWARD_KEYS, RewardOverrides> {
 	const result = {} as Record<REWARD_KEYS, RewardOverrides>;
 	for (const config of REWARD_CONFIGS) {
@@ -75,7 +73,6 @@ export function defaultRewards(): Record<REWARD_KEYS, RewardOverrides> {
 	return result;
 }
 
-/** Приводит сырые данные хранилища к оверрайдам, валидируя по `REWARDS_SCHEMA`. */
 export function normalizeRewards(raw: unknown): RewardSettings {
 	const result: RewardSettings = {};
 	if (typeof raw !== "object" || raw === null) return result;
@@ -116,17 +113,12 @@ export function effectiveTitle(title: string): string {
 	return dev ? `${DEV_TITLE_PREFIX}${title}` : title;
 }
 
-/** Убирает dev-префикс с заголовка, подтянутого из Twitch. */
 export function stripDevTitle(title: string): string {
 	return title.startsWith(DEV_TITLE_PREFIX)
 		? title.slice(DEV_TITLE_PREFIX.length)
 		: title;
 }
 
-/**
- * Единственное место мержа дефолтов (`REWARD_CONFIGS`) и оверрайдов.
- * Мерж идёт поле-в-поле: `override ?? default`.
- */
 export function effectiveRewards(rewards: RewardSettings): EffectiveReward[] {
 	return REWARD_CONFIGS.map((config) => {
 		const override = rewards[config.key as REWARD_KEYS] ?? {};
@@ -140,7 +132,6 @@ export function effectiveRewards(rewards: RewardSettings): EffectiveReward[] {
 	});
 }
 
-/** Живые значения награды на Twitch (подмножество полей HelixCustomReward). */
 export interface LiveReward {
 	title: string;
 	cost: number;
@@ -148,12 +139,6 @@ export interface LiveReward {
 	globalCooldown: number | null | undefined;
 }
 
-/**
- * Расходится ли живая награда на Twitch с нашими эффективными значениями.
- * Сравнение поле-в-поле; `prompt`/`globalCooldown` приводятся к нашим
- * представлениям (пустая строка / 0), чтобы отсутствующие на Twitch значения
- * не считались расхождением.
- */
 export function isDiverged(
 	effective: EffectiveReward,
 	live: LiveReward,

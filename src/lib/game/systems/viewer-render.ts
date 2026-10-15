@@ -49,11 +49,8 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 	const overcharges = new Map<Entity, VfxStateful<OverchargeAuraState>>();
 	const auraStores = [shields, overcharges];
 
-	/**
-	 * Ауры, привязанные к компоненту зрителя: появляются вместе с компонентом,
-	 * снимаются вместе с ним. Радиус всегда от размера спрайта, поэтому аура
-	 * одинаково читается при любом `viewerScale`.
-	 */
+	// NOTE: aura radius always derives from the sprite size, so auras read the same
+	// at any viewerScale.
 	const syncAura = <K extends "shield" | "overcharge">(
 		entity: Positioned,
 		ship: AnimatedSprite,

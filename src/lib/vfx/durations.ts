@@ -31,26 +31,20 @@ export const REACTION_DURATION: Record<ReactionKind, number> = {
 	reward: FLARE_TTL,
 };
 
-/** как быстро искажение щита от попадания гаснет, мс */
 export const SHIELD_HIT_DECAY_MS = 450;
 
 export interface ShieldHit {
-	/** 0..1 — насколько сильно искажение сейчас */
 	hit: number;
-	/** единичный вектор от точки удара к кораблю */
 	hitDir: { x: number; y: number };
 }
 
-/** Что помнит щит о последнем попадании — ровно это, и ничего лишнего. */
 export interface ShieldHitMark {
 	hitAt?: number;
 	hitFrom?: { x: number; y: number };
 }
 
-/**
- * Переводит «когда и откуда прилетел удар» в состояние шейдера. Внутри ауры
- * нет часов: затухание целиком считается здесь, а она получает готовые числа.
- */
+// NOTE: the aura has no clock of its own, so the whole hit decay is computed
+// here and the aura receives finished numbers.
 export function shieldHit(
 	mark: ShieldHitMark,
 	at: { x: number; y: number },
@@ -60,7 +54,6 @@ export function shieldHit(
 	const dx = at.x - (mark.hitFrom?.x ?? at.x);
 	const dy = at.y - (mark.hitFrom?.y ?? at.y);
 	const length = Math.hypot(dx, dy);
-	// удара не было или он пришёл ровно в центр — падаем на «сверху»
 	if (!Number.isFinite(age) || length < 1e-6) {
 		return {
 			hit: Math.max(0, 1 - age / SHIELD_HIT_DECAY_MS),

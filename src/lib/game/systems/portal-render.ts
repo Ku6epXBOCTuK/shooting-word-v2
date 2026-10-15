@@ -5,10 +5,6 @@ import type { System, RenderSystemFactory } from "./types.js";
 
 const PORTAL_RADIUS = 32;
 
-/**
- * Рисует портал возврата. Логика (сколько ждать, когда вернуться) живёт в
- * `systems/respawn-scheduler.ts` и `respawn.ts`, вид — в `vfx/auras.ts`.
- */
 export const createPortalRenderSystem: RenderSystemFactory = (ctx) => {
 	const portals = ctx.world.with("respawning", "position");
 	const auras = new Map<object, VfxStateful<PortalAuraState>>();

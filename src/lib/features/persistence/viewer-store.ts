@@ -8,18 +8,14 @@ export type ConsumableField = (typeof CONSUMABLE_FIELDS)[number];
 
 export type StoredViewer = Viewer & {
 	xp: number;
-	/**
-	 * Версия содержимого: обновляется только при реальном изменении данных.
-	 * Сервер не даёт записи с более старой версией перетереть свежую — это
-	 * защищает от отката устаревшим снапшотом (вторая вкладка, гонка на старте).
-	 */
+	// NOTE: content version, bumped only on real data changes; the server rejects
+	// a record with an older version so a stale snapshot (second tab, start race)
+	// cannot roll back fresher data.
 	updatedAt?: number;
 } & Record<ConsumableField, number>;
 
-/**
- * Абсолютные счётчики расходников с сервера: виджет применяет их как синк
- * (берёт максимум), а не как `+1` — двойное начисление исключено.
- */
+// NOTE: absolute server-side consumable counts; the widget applies them as a sync
+// (max) instead of `+1`, so double granting is impossible.
 export interface ConsumableSync {
 	userId: string;
 	batteries?: number;
@@ -45,7 +41,6 @@ function isStoredViewer(value: unknown): value is StoredViewer {
 	);
 }
 
-/** Поля, по которым сравнивается содержимое профиля (без версии updatedAt). */
 const PROFILE_FIELDS = [
 	"userId",
 	"user",
@@ -65,11 +60,8 @@ function contentKey(viewer: StoredViewer): string {
 	);
 }
 
-/**
- * Сливает свежее состояние корабля с профилем: неизменённый профиль
- * возвращает как есть (версия не двигается — остальные писатели не получают
- * ложный сигнал «данные изменились»), изменённый — помечает версией `now`.
- */
+// NOTE: an unchanged profile is returned as is so the version stays put and other
+// writers are not told "data changed"; a changed one is stamped with `now`.
 export function mergeProfile(
 	prev: StoredViewer | undefined,
 	next: StoredViewer,
@@ -84,10 +76,8 @@ export class ViewerStore {
 
 	constructor(private readonly storage: StoragePort) {}
 
-	/**
-	 * Первая загрузка запускает чтение, повторные ждут тот же промис:
-	 * сохранения не могут обогнать чтение и записать неполный список.
-	 */
+	// NOTE: first load starts the read, later calls await the same promise so a
+	// save cannot overtake the read and persist a partial list.
 	load(): Promise<StoredViewer[]> {
 		this.loading ??= this.fetch();
 		return this.loading;

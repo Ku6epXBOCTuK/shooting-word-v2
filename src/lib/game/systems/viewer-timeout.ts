@@ -31,8 +31,8 @@ export const createViewerTimeoutSystem: SystemFactory = (ctx) => {
 			logger.info(
 				`[viewer-timeout] removing ${entity.viewer.user} (${entity.viewer.userId}), idle ${Math.round((now - entity.viewer.lastSeen) / 3_600_000)}h`,
 			);
-			// Корабль уходит с экрана, профиль — нет: фиксируем последнее
-			// состояние, чтобы опыт, скин и расходники пережили таймаут.
+			// NOTE: The ship leaves the screen, the profile does not: capture last state
+			// so xp, skin and ammo survive the timeout.
 			captureProfile(ctx, entity);
 			ctx.world.remove(entity);
 		}

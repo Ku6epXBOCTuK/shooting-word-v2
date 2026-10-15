@@ -3,11 +3,8 @@ import type { ReactionKind } from "#lib/vfx/kinds.js";
 import type { GameContext } from "./context.js";
 import type { Position } from "./types.js";
 
-/**
- * Единственный способ завести отклик на событие. Срок жизни берётся из
- * таблицы видов, поэтому логика остаётся headless: рендер-система только
- * читает `vfx.kind`, когда рисует.
- */
+// NOTE: ttl comes from the kind table, which keeps this logic headless: the
+// render system only reads vfx.kind when it draws.
 export function addReaction(
 	ctx: GameContext,
 	at: Position,

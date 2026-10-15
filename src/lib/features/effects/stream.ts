@@ -18,7 +18,6 @@ interface RewardEffect {
 	userName: string;
 	redemptionId?: string;
 	rewardId?: string;
-	/** Абсолютные счётчики расходников после серверного начисления. */
 	counts?: Partial<Record<"batteries" | "revives" | "beacons", number>>;
 }
 
@@ -38,7 +37,6 @@ interface EffectsGame {
 	grantBatteries(userIds: string[]): void;
 	grantRevives(userIds: string[]): void;
 	grantBeacons(userIds: string[]): void;
-	/** Синк абсолютных счётчиков, начисленных сервером. */
 	applyConsumables(entries: ConsumableSync[]): void;
 	doomsday(userId: string): boolean;
 	timeStop(): void;
@@ -84,9 +82,6 @@ export function applyEffects(
 		});
 	}
 
-	// Сервер начисляет расходники в профиль сам и присылает абсолютные
-	// счётчики — применяем их как синк. Если счётчиков нет (старая версия
-	// сервера), падаем обратно на локальное `+1`, как раньше.
 	const consumables: ConsumableSync[] = [];
 	const legacyBatteries: string[] = [];
 	const legacyRevives: string[] = [];
@@ -155,7 +150,7 @@ export function startEffectsStream(
 			}
 			applyEffects(game, response, reject);
 		} catch {
-			// malformed event - ignore, stream stays open
+			// NOTE: required comment for empty block
 		}
 	};
 	return () => source.close();

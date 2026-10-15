@@ -160,7 +160,6 @@ const VISUALS = new Map<string, RewardVisual>(
 	REWARD_CONFIGS.map((reward) => [reward.key, reward.visual]),
 );
 
-/** Визуал награды по ключу. `undefined`, если ключ неизвестен. */
 export function rewardVisual(key: string): RewardVisual | undefined {
 	return VISUALS.get(key);
 }

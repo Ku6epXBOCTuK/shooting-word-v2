@@ -1,18 +1,10 @@
-// See https://svelte.dev/docs/kit/types#app.d.ts
-// for information about these interfaces
 import "unplugin-icons/types/svelte";
 
 declare global {
 	const __APP_VARIANT_NODE__: boolean;
 	const __APP_COMMIT__: string;
 
-	namespace App {
-		// interface Error {}
-		// interface Locals {}
-		// interface PageData {}
-		// interface PageState {}
-		// interface Platform {}
-	}
+	namespace App {}
 }
 
 export {};

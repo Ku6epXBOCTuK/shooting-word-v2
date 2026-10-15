@@ -21,7 +21,6 @@
 
 	const SCALE = 10;
 	const CHARGES = 3;
-	/** как часто предпросмотр имитирует попадание, сек */
 	const HIT_CYCLE = 2.5;
 	const DECAY_SEC = SHIELD_HIT_DECAY_MS / 1000;
 
@@ -59,8 +58,6 @@
 				}
 				const aura = shield;
 				if (aura) {
-					// предпросмотр повторяет попадание, чтобы искажение было видно.
-					// Всё в секундах: decay — тоже.
 					const sinceHit = elapsed % HIT_CYCLE;
 					aura.state.hit = sinceHit < DECAY_SEC ? 1 - sinceHit / DECAY_SEC : 0;
 					aura.state.hitDir = {
@@ -115,7 +112,6 @@
 		const current = ship;
 		if (!layer || !current) return;
 
-		// Предпросмотр повторяет попадание, чтобы искажение щита было видно.
 		const kind = shieldEnabled ? "shield" : null;
 		if (!kind) return;
 

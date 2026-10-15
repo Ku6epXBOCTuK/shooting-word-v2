@@ -6,9 +6,7 @@ const FX_DIR = fileURLToPath(new URL("../static/fx/", import.meta.url));
 
 const DEFAULT_GRID = { cellWidth: 16, cellHeight: 16, offsetX: 0, offsetY: 0 };
 
-const SHEET_GRIDS = {
-	// "fire.png": { cellWidth: 16, cellHeight: 16, offsetX: 0, offsetY: 0 },
-};
+const SHEET_GRIDS = {};
 
 function pngSize(path) {
 	const buffer = readFileSync(path);

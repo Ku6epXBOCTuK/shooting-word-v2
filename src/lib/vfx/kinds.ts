@@ -1,7 +1,5 @@
-/**
- * Виды эффектов. Файл намеренно без Pixi: его импортирует
- * `features/rewards/config.ts`, который живёт на сервере.
- */
+// NOTE: intentionally Pixi-free: features/rewards/config.ts imports this file
+// and runs on the server.
 export const REACTION_KINDS = [
 	"ship-hit",
 	"ship-ricochet",
@@ -17,7 +15,6 @@ export const REACTION_KINDS = [
 
 export type ReactionKind = (typeof REACTION_KINDS)[number];
 
-/** Долгоживущие эффекты, живущие контейнером в сцене. */
 export const AURA_KINDS = [
 	"shield",
 	"overcharge",
@@ -27,7 +24,6 @@ export const AURA_KINDS = [
 
 export type AuraKind = (typeof AURA_KINDS)[number];
 
-/** Эффекты-фильтры, навешиваемые на чужой спрайт. */
 export const COATING_KINDS = ["ricochetium"] as const;
 
 export type CoatingKind = (typeof COATING_KINDS)[number];
