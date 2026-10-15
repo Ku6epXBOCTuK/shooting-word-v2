@@ -23,6 +23,17 @@ export interface AppRewardStatus {
 	enabled: boolean;
 }
 
+export interface RewardsImportResult {
+	ok: boolean;
+	overrides?: {
+		title?: string;
+		description?: string;
+		cost?: number;
+		cooldown?: number;
+	};
+	reason?: string;
+}
+
 export interface RewardsPort {
 	status(uuid?: string): Promise<RewardsStatus>;
 	listRewards(uuid?: string): Promise<ChannelReward[]>;
@@ -35,4 +46,5 @@ export interface RewardsPort {
 		enabled: boolean,
 		uuid?: string,
 	): Promise<RewardsManageResult>;
+	importReward(key: string, uuid?: string): Promise<RewardsImportResult>;
 }

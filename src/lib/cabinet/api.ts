@@ -1,5 +1,8 @@
 import { rewards } from "#lib/features/rewards/index.js";
-import type { AppRewardStatus } from "#lib/features/rewards/port.js";
+import type {
+	AppRewardStatus,
+	RewardsImportResult,
+} from "#lib/features/rewards/port.js";
 import {
 	normalizeRewards,
 	type RewardSettings,
@@ -132,6 +135,10 @@ export async function rotateWidgetUuid(): Promise<string | null> {
 export async function updateAllRewards(): Promise<boolean> {
 	const result = await rewards.updateAll();
 	return result.ok;
+}
+
+export async function importReward(key: string): Promise<RewardsImportResult> {
+	return rewards.importReward(key);
 }
 
 export async function updateReward(key: string): Promise<boolean> {

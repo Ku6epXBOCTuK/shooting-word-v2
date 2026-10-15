@@ -7,6 +7,7 @@ import type {
 import {
 	effectiveRewards,
 	normalizeRewards,
+	stripDevTitle,
 } from "#lib/features/rewards/settings.js";
 import { logger } from "#lib/logger.js";
 import { resolveBroadcaster } from "#lib/server/resolve-broadcaster.js";
@@ -306,6 +307,42 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 				created: [reward.title],
 				updated: [],
 				deleted: 0,
+			});
+		}
+
+		if (action === "import") {
+			const key = body.key;
+			if (!key) {
+				return Response.json(FAILURE("missing `key`"), { status: 400 });
+			}
+			const effective = effectiveRewards(context.rewards).find(
+				(item) => item.key === key,
+			);
+			if (!effective) {
+				return Response.json(FAILURE("unknown reward key"), { status: 400 });
+			}
+
+			const existingReward = matchReward(
+				existing,
+				context.userId,
+				key,
+				effective.title,
+			);
+			if (!existingReward) {
+				return Response.json({
+					ok: false,
+					reason: "reward not created on Twitch yet",
+				});
+			}
+
+			return Response.json({
+				ok: true,
+				overrides: {
+					title: stripDevTitle(existingReward.title),
+					description: existingReward.prompt ?? "",
+					cost: existingReward.cost,
+					cooldown: existingReward.globalCooldown ?? 0,
+				},
 			});
 		}
 

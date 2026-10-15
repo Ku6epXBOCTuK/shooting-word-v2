@@ -10,6 +10,7 @@
 		type RewardSettings,
 	} from "#lib/features/rewards/settings.js";
 	import type { SettingValue } from "#lib/game/settings.js";
+	import DownloadIcon from "~icons/lucide/download";
 	import SaveIcon from "~icons/lucide/notebook-pen";
 	import EditIcon from "~icons/lucide/pencil";
 	import ToggleIcon from "~icons/lucide/power";
@@ -22,6 +23,7 @@
 		busy: boolean;
 		ontoggle: (key: string, enabled: boolean) => void;
 		onSave: (key: string) => void;
+		onImport: (key: string) => void;
 		onFieldChange: (
 			key: string,
 			field: keyof RewardOverrides,
@@ -29,8 +31,15 @@
 		) => void;
 	}
 
-	let { statuses, rewards, busy, ontoggle, onSave, onFieldChange }: Props =
-		$props();
+	let {
+		statuses,
+		rewards,
+		busy,
+		ontoggle,
+		onSave,
+		onImport,
+		onFieldChange,
+	}: Props = $props();
 
 	let expanded = $state<string | null>(null);
 
@@ -81,6 +90,13 @@
 					<Button disabled={busy} onclick={() => onSave(reward.key)}>
 						<Icon as={SaveIcon} />
 						Сохранить
+					</Button>
+					<Button
+						disabled={busy || !status.exists}
+						onclick={() => onImport(reward.key)}
+					>
+						<Icon as={DownloadIcon} />
+						Забрать из Twitch
 					</Button>
 					<Button
 						disabled={busy}

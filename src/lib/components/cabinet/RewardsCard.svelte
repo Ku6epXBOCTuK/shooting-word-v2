@@ -1,6 +1,7 @@
 <script lang="ts">
 	import {
 		deleteAllRewards,
+		importReward,
 		listAppRewards,
 		saveRewards,
 		toggleReward,
@@ -47,6 +48,28 @@
 			...rewardSettings,
 			[key]: { ...current, [field]: value },
 		};
+	};
+
+	const onImport = async (key: string) => {
+		busy = true;
+		result = null;
+
+		const res = await importReward(key);
+		if (!res.ok || !res.overrides) {
+			result = res.reason ?? "Не удалось забрать значения из Twitch";
+			busy = false;
+			return;
+		}
+
+		rewardSettings = {
+			...rewardSettings,
+			[key]: { ...res.overrides },
+		};
+		const saved = await saveRewards(rewardSettings);
+		result = saved
+			? "Значения забраны из Twitch и сохранены"
+			: "Значения забраны, но не сохранены";
+		busy = false;
 	};
 
 	const onSaveReward = async (key: string) => {
@@ -144,6 +167,7 @@
 					ontoggle={onToggle}
 					onSave={onSaveReward}
 					{onFieldChange}
+					{onImport}
 				/>
 			{/if}
 		</div>

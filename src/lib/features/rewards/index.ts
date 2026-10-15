@@ -1,22 +1,24 @@
 import { REWARDS_ENABLED } from "../variant.js";
-import type { RewardsPort } from "./port.js";
 import { HttpRewardsAdapter } from "./http-adapter.js";
 import { NullRewardsAdapter } from "./null-adapter.js";
+import type { RewardsPort } from "./port.js";
 
+export { REWARD_CONFIGS } from "./config.js";
+export type { RewardConfig } from "./config.js";
 export type {
 	ChannelReward,
+	RewardsImportResult,
 	RewardsManageResult,
 	RewardsPort,
 	RewardsStatus,
 } from "./port.js";
-export { REWARD_CONFIGS } from "./config.js";
-export type { RewardConfig } from "./config.js";
 export {
 	defaultRewards,
 	effectiveRewards,
 	effectiveTitle,
 	normalizeRewards,
 	REWARDS_SCHEMA,
+	stripDevTitle,
 	type EffectiveReward,
 	type RewardOverrides,
 	type RewardSettings,

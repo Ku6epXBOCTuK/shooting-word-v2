@@ -1,9 +1,9 @@
-import { dev } from "$app/env";
 import {
 	validateStored,
 	type SettingDef,
 	type SettingValue,
 } from "#lib/game/settings.js";
+import { dev } from "$app/env";
 import { REWARD_CONFIGS, type REWARD_KEYS } from "./config.js";
 
 export const REWARDS_SCHEMA = [
@@ -114,6 +114,13 @@ const DEV_TITLE_PREFIX = "Dev: ";
 
 export function effectiveTitle(title: string): string {
 	return dev ? `${DEV_TITLE_PREFIX}${title}` : title;
+}
+
+/** Убирает dev-префикс с заголовка, подтянутого из Twitch. */
+export function stripDevTitle(title: string): string {
+	return title.startsWith(DEV_TITLE_PREFIX)
+		? title.slice(DEV_TITLE_PREFIX.length)
+		: title;
 }
 
 /**
