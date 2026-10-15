@@ -2,6 +2,22 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.22.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/621ab7cc2667c8cbe0eb4de51167a178ea1cb4c3..0.22.0) - 2026-10-15
+#### Features
+- check is reward diverged from twitch - ([c0589c0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/c0589c0d32c3d909185fe5165b9101a40c58d573)) - Ku6epXBOCTuK
+- import rewards from twitch - ([7166fdf](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/7166fdf776944843fe7f7f35e150d606cfcb39e0)) - Ku6epXBOCTuK
+#### Bug Fixes
+- update rewards persistance save - ([7d34d9e](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/7d34d9e0abe02ddce43dd0f6f26f57d0e06001fe)) - Ku6epXBOCTuK
+- update settings form\field components - ([11617c6](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/11617c63661711fd734584299c69faea8aa49d2d)) - Ku6epXBOCTuK
+- game settings type - ([da4a21f](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/da4a21f6a97e78ddc7daa628c41a35c6da928063)) - Ku6epXBOCTuK
+#### Refactoring
+- simplify types - ([444bc3d](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/444bc3d8cd3d3710af5971e7d692afb7af670c8a)) - Ku6epXBOCTuK
+- delete doubling - ([6ee9c8e](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/6ee9c8ee38c5f99e9492d3d26538f138f2c28edd)) - Ku6epXBOCTuK
+- separate rewards from settings - ([f1d9036](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/f1d903607c3ba40ce1134e0b86c9f943518917c5)) - Ku6epXBOCTuK
+- WIP: separate settings and rewards - ([c509002](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/c509002f7fd167c3264c41b86403648332655dfa)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.21.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/694147108691164b42f117aed98bdcb75c52c0d6..0.21.0) - 2026-10-14
 #### Features
 - add persistance viewers data - ([023e2a1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/023e2a106c2f4b583f3861e83bbf6897749c02ea)) - Ku6epXBOCTuK
