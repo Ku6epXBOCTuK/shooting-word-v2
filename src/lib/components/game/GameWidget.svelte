@@ -13,9 +13,10 @@
 		channel: string;
 		uuid?: string;
 		settings?: GameSettings;
+		key?: string;
 	}
 
-	let { channel, uuid, settings }: Props = $props();
+	let { channel, uuid, settings, key }: Props = $props();
 
 	let game: Awaited<ReturnType<typeof bootstrapGame>> | null = null;
 	let stopStream: (() => void) | undefined;
@@ -24,7 +25,7 @@
 		REWARDS_ENABLED && uuid
 			? {
 					onRoundEnd: (record: Parameters<typeof reportRound>[1]) =>
-						reportRound(uuid as string, record),
+						reportRound(uuid as string, record, key),
 				}
 			: {},
 	);
@@ -41,12 +42,14 @@
 	});
 
 	function pixiOverlayReady(app: Application) {
-		void bootstrapGame(app, uuid, settings, roundHooks).then((instance) => {
-			game = instance;
-			if (REWARDS_ENABLED && uuid) {
-				stopStream = startEffectsStream(instance, uuid);
-			}
-		});
+		void bootstrapGame(app, uuid, settings, roundHooks, key).then(
+			(instance) => {
+				game = instance;
+				if (REWARDS_ENABLED && uuid) {
+					stopStream = startEffectsStream(instance, uuid, key);
+				}
+			},
+		);
 	}
 </script>
 

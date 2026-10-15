@@ -1,6 +1,6 @@
+import type { AccessToken } from "@twurple/auth";
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import type { DatabaseSync } from "node:sqlite";
-import type { AccessToken } from "@twurple/auth";
 import type { Broadcaster, BroadcastersRepo, WidgetClaim } from "./port.js";
 
 const hashWidgetKey = (key: string): string =>
@@ -100,14 +100,18 @@ export class SqliteBroadcastersRepo implements BroadcastersRepo {
 		const row = this.db
 			.prepare("SELECT widget_key FROM broadcasters WHERE widget_uuid = ?")
 			.get(widgetUuid) as { widget_key: string | null } | undefined;
-		if (!row) return null;
-		if (row.widget_key === null) {
-			this.db
-				.prepare("UPDATE broadcasters SET widget_key = ? WHERE widget_uuid = ?")
-				.run(hashWidgetKey(key), widgetUuid);
-			return "first";
+		if (row) {
+			if (row.widget_key === null) {
+				this.db
+					.prepare(
+						"UPDATE broadcasters SET widget_key = ? WHERE widget_uuid = ?",
+					)
+					.run(hashWidgetKey(key), widgetUuid);
+				return "first";
+			}
+			return keysMatch(row.widget_key, key) ? "owner" : "duplicate";
 		}
-		return keysMatch(row.widget_key, key) ? "owner" : "duplicate";
+		return null;
 	}
 
 	rotateUuid(userId: string): string {

@@ -122,6 +122,7 @@ export function applyEffects(
 export function startEffectsStream(
 	game: EffectsGame,
 	uuid: string,
+	key?: string,
 ): () => void {
 	const reject = (effect: RewardEffect) => {
 		if (!effect.redemptionId || !effect.rewardId) return;
@@ -129,7 +130,10 @@ export function startEffectsStream(
 			`${resolve("/api/effects/reject")}?uuid=${encodeURIComponent(uuid)}`,
 			{
 				method: "POST",
-				headers: { "content-type": "application/json" },
+				headers: {
+					"content-type": "application/json",
+					...(key ? { "x-widget-key": key } : {}),
+				},
 				body: JSON.stringify({
 					redemptionId: effect.redemptionId,
 					rewardId: effect.rewardId,

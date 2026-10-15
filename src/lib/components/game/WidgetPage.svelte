@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { loadServerSettings } from "#lib/features/persistence/index.js";
 	import {
+		claimWidget,
+		getOrCreateWidgetKey,
+	} from "#lib/features/widget/key.js";
+	import {
 		defaultSettings,
 		parseSettings,
 		type GameSettings,
@@ -14,10 +18,28 @@
 	const uuid = $derived(page.url.searchParams.get("uuid") ?? "");
 
 	let login = $state<string | null>(null);
+	let key = $state<string | null>(null);
 	let settings = $state<GameSettings | undefined>(undefined);
-	let notFound = $state(false);
+	let blocked = $state<"notFound" | "busy" | "unavailable" | null>(null);
 
 	onMount(async () => {
+		if (uuid) {
+			const claim = await claimWidget(uuid, getOrCreateWidgetKey(uuid));
+			if (claim === "duplicate") {
+				blocked = "busy";
+				return;
+			}
+			if (claim === "notFound") {
+				blocked = "notFound";
+				return;
+			}
+			if (claim === "unavailable") {
+				blocked = "unavailable";
+				return;
+			}
+			key = getOrCreateWidgetKey(uuid);
+		}
+
 		const serverSettings = uuid ? await loadServerSettings(uuid) : null;
 		settings = parseSettings(
 			page.url.searchParams,
@@ -29,18 +51,22 @@
 				`${resolve("/api/broadcaster")}?uuid=${encodeURIComponent(uuid)}`,
 			);
 			if (!response.ok) {
-				notFound = true;
+				blocked = "notFound";
 				return;
 			}
 			login = ((await response.json()) as { login: string }).login;
 		} catch {
-			notFound = true;
+			blocked = "unavailable";
 		}
 	});
 </script>
 
-{#if notFound}
+{#if blocked === "notFound"}
 	<p>Неизвестная ссылка виджета.</p>
+{:else if blocked === "busy"}
+	<p>Ссылка уже занята. Перегенерируйте её в кабинете командира.</p>
+{:else if blocked === "unavailable"}
+	<p>Сервер недоступен. Попробуйте открыть виджет позже.</p>
 {:else if login}
-	<GameWidget channel={login} {uuid} {settings} />
+	<GameWidget channel={login} {uuid} {settings} key={key ?? undefined} />
 {/if}

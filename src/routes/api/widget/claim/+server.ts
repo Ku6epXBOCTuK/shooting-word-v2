@@ -8,7 +8,10 @@ export const POST: RequestHandler = async ({ request }) => {
 	let body: unknown;
 	try {
 		body = await request.json();
-	} catch {
+	} catch (error) {
+		logger.warn(
+			`[widget/claim] bad json body: ${error instanceof Error ? error.message : String(error)}`,
+		);
 		return Response.json({ error: "bad json" }, { status: 400 });
 	}
 

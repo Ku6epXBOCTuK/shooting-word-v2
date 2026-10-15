@@ -1,7 +1,7 @@
 # План: клейм uuid ключом (защита виджета от второго подключения)
 
 Сохранено из обсуждения гонки между двумя виджетами (пункт в
-[backlog.md](./backlog.md)). Пока не реализовано.
+[backlog.md](./backlog.md)).
 
 ## Идея
 
@@ -24,17 +24,17 @@
 
 Клиент:
 
-- [ ] features/widget/key.ts — генерация/чтение ключа в localStorage и вызов
+- [x] features/widget/key.ts — генерация/чтение ключа в localStorage и вызов
       claim.
-- [ ] WidgetPage: claim до старта игры; duplicate → экран «ссылка занята», owner
+- [x] WidgetPage: claim до старта игры; duplicate → экран «ссылка занята», owner
       → игра.
-- [ ] Ключ пробросить в http-adapter, reporter, stream (reject); 401/403/404 —
+- [x] Ключ пробросить в http-adapter, reporter, stream (reject); 401/403/404 —
       терминальные, без ретраев.
 
 Проверки:
 
-- [ ] Тесты: claim-семантика, ротация чистит ключ, запись без ключа → 403.
-- [ ] Закрыть пункт в backlog.md, проверить что OBS CEF держит localStorage
+- [x] Тесты: claim-семантика, ротация чистит ключ, запись без ключа → 403.
+- [x] Закрыть пункт в backlog.md, проверить что OBS CEF держит localStorage
       между перезапусками.
 
 ## Ограничения (accepted risk)

@@ -21,9 +21,9 @@ export type {
 	StoredViewer,
 } from "./viewer-store.js";
 
-export function createViewerStore(uuid?: string): ViewerStore {
+export function createViewerStore(uuid?: string, key?: string): ViewerStore {
 	if (REWARDS_ENABLED && uuid) {
-		return new ViewerStore(new HttpStorageAdapter(uuid));
+		return new ViewerStore(new HttpStorageAdapter(uuid, key));
 	}
 	return new ViewerStore(new LocalStorageAdapter());
 }

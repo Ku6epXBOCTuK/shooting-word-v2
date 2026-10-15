@@ -16,6 +16,7 @@ export async function bootstrapGame(
 	uuid?: string,
 	settings: GameSettings = defaultSettings(),
 	hooks: BootstrapHooks = {},
+	key?: string,
 ) {
 	const assets = await loadAssets();
 
@@ -36,7 +37,7 @@ export async function bootstrapGame(
 		{
 			screen: app.screen,
 			settings,
-			viewerStore: createViewerStore(uuid),
+			viewerStore: createViewerStore(uuid, key),
 			onRoundEnd: hooks.onRoundEnd,
 			measureText,
 		},
