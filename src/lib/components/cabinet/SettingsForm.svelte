@@ -1,10 +1,11 @@
 <script lang="ts">
 	import {
+		readSetting,
 		SETTINGS_SCHEMA,
+		writeSetting,
 		type GameSettings,
 		type SettingDef,
 		type SettingScope,
-		type SettingValue,
 	} from "#lib/game/settings.js";
 	import { dev } from "$app/env";
 	import SettingsField from "./SettingsField.svelte";
@@ -23,31 +24,24 @@
 	);
 	const ungrouped = $derived(defs.filter((def) => !def.dev));
 	const devDefs = $derived(defs.filter((def) => def.dev));
-
-	const readValue = (def: SettingDef): SettingValue =>
-		(settings as Record<string, SettingValue>)[def.key];
-
-	const writeValue = (def: SettingDef, value: SettingValue) => {
-		(settings as Record<string, SettingValue>)[def.key] = value;
-	};
 </script>
 
-{#each ungrouped as def (def.key)}
+{#snippet field(def: SettingDef)}
 	<SettingsField
 		{def}
-		value={readValue(def)}
-		onchange={(value) => writeValue(def, value)}
+		value={readSetting(settings, def)}
+		onchange={(value) => writeSetting(settings, def, value)}
 	/>
+{/snippet}
+
+{#each ungrouped as def (def.key)}
+	{@render field(def)}
 {/each}
 
 {#if devDefs.length > 0}
 	<h3 class="group-title">Dev-параметры</h3>
 	{#each devDefs as def (def.key)}
-		<SettingsField
-			{def}
-			value={readValue(def)}
-			onchange={(value) => writeValue(def, value)}
-		/>
+		{@render field(def)}
 	{/each}
 {/if}
 

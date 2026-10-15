@@ -43,40 +43,6 @@ interface StringSettingDef extends BaseSettingDef {
 export type SettingDef =
 	NumberSettingDef | BooleanSettingDef | StringSettingDef;
 
-export type SettingTypeMap = {
-	string: string;
-	number: number;
-	boolean: boolean;
-};
-
-// export interface SettingDef<K extends keyof TypeMapping> {
-// 	key: string;
-// 	param: string;
-// 	label: string;
-// 	type: K;
-// 	scope: SettingScope;
-// 	dev?: boolean;
-// 	group?: string;
-// 	min?: number;
-// 	max?: number;
-// 	step?: number;
-// 	maxLength?: number;
-// 	default: TypeMapping[K];
-// }
-
-// export interface GameSettings {
-// 	viewerScale: number;
-// 	viewerMisses: boolean;
-// 	viewerBaseHp: number;
-// 	enemyDamageChance: number;
-// 	pressureSpawnK: number;
-// 	wordTtl: number;
-// 	batteryHeal: number;
-// 	batteryHealOther: number;
-// 	batteryMax: number;
-// 	respawnDuration: number;
-// }
-
 type SettingEntry = (typeof SETTINGS_SCHEMA)[number];
 
 export type GameSettings = {
@@ -91,9 +57,28 @@ export type GameSettings = {
 			: string;
 };
 
-// export type GameSettings = {
-// 	[K in SettingTypeMap as K["type"]]: K["default"];
-// };
+/**
+ * Представление `GameSettings` для обхода динамическим ключом. Точный
+ * mapped-тип выше не позволяет индексироваться `def.key` из схемы, а всё, что
+ * ходит по ключу (UI, парсеры, нормализаторы), работает через это
+ * представление. Приведение живёт здесь, а не у каждого вызывающего.
+ */
+export type SettingsMap = Record<string, SettingValue>;
+
+export function readSetting(
+	settings: GameSettings,
+	def: SettingDef,
+): SettingValue {
+	return (settings as SettingsMap)[def.key];
+}
+
+export function writeSetting(
+	settings: GameSettings,
+	def: SettingDef,
+	value: SettingValue,
+): void {
+	(settings as SettingsMap)[def.key] = value;
+}
 
 export const SETTINGS_SCHEMA = [
 	{
@@ -227,61 +212,10 @@ export const SETTINGS_SCHEMA = [
 	},
 ] as const satisfies SettingDef[];
 
-// for (const reward of REWARD_CONFIGS) {
-// 	const group = `reward:${reward.key}`;
-// 	SETTING_GROUPS[group] =
-// 		reward.title.charAt(0).toUpperCase() + reward.title.slice(1);
-
-// 	SETTINGS_SCHEMA.push(
-// 		{
-// 			key: `reward.${reward.key}.title`,
-// 			param: `reward_${reward.key}_title`,
-// 			label: "Название",
-// 			type: "string",
-// 			scope: "full",
-// 			group,
-// 			maxLength: 45,
-// 			default: reward.title,
-// 		},
-// 		{
-// 			key: `reward.${reward.key}.description`,
-// 			param: `reward_${reward.key}_description`,
-// 			label: "Описание",
-// 			type: "string",
-// 			scope: "full",
-// 			group,
-// 			maxLength: 200,
-// 			default: reward.description,
-// 		},
-// 		{
-// 			key: `reward.${reward.key}.cost`,
-// 			param: `reward_${reward.key}_cost`,
-// 			label: "Стоимость",
-// 			type: "number",
-// 			scope: "full",
-// 			group,
-// 			min: 1,
-// 			max: 1_000_000,
-// 			default: reward.cost,
-// 		},
-// 		{
-// 			key: `reward.${reward.key}.cooldown`,
-// 			param: `reward_${reward.key}_cooldown`,
-// 			label: "Кулдаун, сек (0 — без кулдауна)",
-// 			type: "number",
-// 			scope: "full",
-// 			group,
-// 			min: 0,
-// 			max: 604_800,
-// 			default: reward.cooldown,
-// 		},
-// 	);
-// }
-
 export function defaultSettings(): GameSettings {
-	const settings = {} as Partial<GameSettings>;
+	const settings: SettingsMap = {};
 	for (const def of SETTINGS_SCHEMA) {
-		(settings as Record<string, SettingValue>)[def.key] = def.default;
+		settings[def.key] = def.default;
 	}
 	return settings as GameSettings;
 }
@@ -289,30 +223,21 @@ export function defaultSettings(): GameSettings {
 const clamp = (value: number, def: NumberSettingDef): number =>
 	Math.min(def.max ?? value, Math.max(def.min ?? value, value));
 
-function coerce<T extends SettingDef>(
-	raw: string,
-	def: T,
-): SettingTypeMap[T["type"]] | undefined {
-	const currentDef = def as unknown as SettingDef;
-	switch (currentDef.type) {
+function coerce(raw: string, def: SettingDef): SettingValue | undefined {
+	switch (def.type) {
 		case "number": {
 			const value = Number(raw);
 			if (!Number.isFinite(value)) return undefined;
-			const clamped = clamp(value, def as NumberSettingDef);
-			return clamped as unknown as SettingTypeMap[T["type"]];
+			return clamp(value, def);
 		}
 		case "boolean": {
-			let result: boolean | undefined;
-			if (raw === "1" || raw === "true") result = true;
-			if (raw === "0" || raw === "false") result = false;
-			return result as unknown as SettingTypeMap[T["type"]];
+			if (raw === "1" || raw === "true") return true;
+			if (raw === "0" || raw === "false") return false;
+			return undefined;
 		}
 		case "string": {
-			const value = raw.slice(0, currentDef.maxLength ?? raw.length);
-			const result = (value.length > 0
-				? value
-				: undefined) as unknown as SettingTypeMap[T["type"]];
-			return result;
+			const value = raw.slice(0, def.maxLength ?? raw.length);
+			return value.length > 0 ? value : undefined;
 		}
 	}
 }
@@ -322,17 +247,17 @@ export function parseSettings(
 	base: GameSettings = defaultSettings(),
 	includeDev = false,
 ): GameSettings {
-	const settings = { ...base };
+	const settings: SettingsMap = { ...base };
 	for (const def of SETTINGS_SCHEMA) {
 		if (def.dev && !includeDev) continue;
 		const raw = params.get(def.param);
 		if (raw === null) continue;
 		const value = coerce(raw, def);
 		if (value !== undefined) {
-			(settings as Record<string, SettingValue>)[def.key] = value;
+			settings[def.key] = value;
 		}
 	}
-	return settings;
+	return settings as GameSettings;
 }
 
 export function serializeSettings(
@@ -374,8 +299,8 @@ export function normalizeSettings(
 	base: GameSettings = defaultSettings(),
 	includeDev = false,
 ): GameSettings {
-	const settings = { ...base };
-	if (typeof raw !== "object" || raw === null) return settings;
+	const settings: SettingsMap = { ...base };
+	if (typeof raw !== "object" || raw === null) return settings as GameSettings;
 
 	for (const def of SETTINGS_SCHEMA) {
 		if (def.dev && !includeDev) continue;
@@ -383,8 +308,8 @@ export function normalizeSettings(
 		if (value === undefined) continue;
 		const valid = validateStored(value, def);
 		if (valid !== undefined) {
-			(settings as Record<string, SettingValue>)[def.key] = valid;
+			settings[def.key] = valid;
 		}
 	}
-	return settings;
+	return settings as GameSettings;
 }
