@@ -227,51 +227,6 @@ export const SETTINGS_SCHEMA = [
 	},
 ] as const satisfies SettingDef[];
 
-export const REWARDS_SCHEMA = [
-	{
-		key: "title",
-		param: "reward_title",
-		label: "Название",
-		type: "string",
-		scope: "full",
-		maxLength: 45,
-		default: "",
-		dev: false,
-	},
-	{
-		key: `description`,
-		param: `description`,
-		label: "Описание",
-		type: "string",
-		scope: "full",
-		maxLength: 200,
-		default: "",
-		dev: false,
-	},
-	{
-		key: "cost",
-		param: "cost",
-		label: "Стоимость",
-		type: "number",
-		scope: "full",
-		min: 1,
-		max: 1_000_000,
-		default: 100,
-		dev: false,
-	},
-	{
-		key: "cooldown",
-		param: "cooldown",
-		label: "Кулдаун, сек (0 — без кулдауна)",
-		type: "number",
-		scope: "full",
-		min: 0,
-		max: 604_800,
-		default: 0,
-		dev: false,
-	},
-] as const satisfies SettingDef[];
-
 // for (const reward of REWARD_CONFIGS) {
 // 	const group = `reward:${reward.key}`;
 // 	SETTING_GROUPS[group] =
@@ -395,7 +350,7 @@ export function serializeSettings(
 	return params;
 }
 
-function validateStored(
+export function validateStored(
 	value: unknown,
 	def: SettingDef,
 ): SettingValue | undefined {

@@ -4,7 +4,7 @@
 	import Icon from "#lib/components/ui/Icon.svelte";
 	import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
 	import type { AppRewardStatus } from "#lib/features/rewards/port.js";
-	import { REWARDS_SCHEMA } from "#lib/game/settings.ts";
+	import { REWARDS_SCHEMA } from "#lib/features/rewards/settings.js";
 	import SaveIcon from "~icons/lucide/notebook-pen";
 	import EditIcon from "~icons/lucide/pencil";
 	import ToggleIcon from "~icons/lucide/power";

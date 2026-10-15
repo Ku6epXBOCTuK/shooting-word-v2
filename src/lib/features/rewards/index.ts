@@ -11,6 +11,16 @@ export type {
 } from "./port.js";
 export { REWARD_CONFIGS } from "./config.js";
 export type { RewardConfig } from "./config.js";
+export {
+	defaultRewards,
+	effectiveRewards,
+	effectiveTitle,
+	normalizeRewards,
+	REWARDS_SCHEMA,
+	type EffectiveReward,
+	type RewardOverrides,
+	type RewardSettings,
+} from "./settings.js";
 
 export const rewards: RewardsPort = REWARDS_ENABLED
 	? new HttpRewardsAdapter()

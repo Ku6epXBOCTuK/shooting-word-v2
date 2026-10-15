@@ -1,5 +1,6 @@
 import { dev } from "$app/env";
 import type { StoredViewer } from "#lib/features/persistence/index.js";
+import { normalizeRewards } from "#lib/features/rewards/settings.js";
 import { normalizeSettings } from "#lib/game/settings.js";
 import { logger } from "#lib/logger.js";
 import { resolveBroadcaster } from "#lib/server/resolve-broadcaster.js";
@@ -21,6 +22,10 @@ export const GET: RequestHandler = ({ params, url, cookies }) => {
 
 	if (params.key === "settings") {
 		return Response.json(storage.load(broadcaster.userId, "settings"));
+	}
+
+	if (params.key === "rewards") {
+		return Response.json(storage.load(broadcaster.userId, "rewards"));
 	}
 
 	return Response.json(null, { status: 400 });
@@ -88,6 +93,17 @@ export const PUT: RequestHandler = async ({
 			"settings",
 			normalizeSettings(body, undefined, dev),
 		);
+
+		return Response.json({ ok: true });
+	}
+
+	if (params.key === "rewards") {
+		const body = await readJson(request);
+		if (typeof body !== "object" || body === null || Array.isArray(body)) {
+			return Response.json(null, { status: 400 });
+		}
+
+		storage.save(broadcaster.userId, "rewards", normalizeRewards(body));
 
 		return Response.json({ ok: true });
 	}
