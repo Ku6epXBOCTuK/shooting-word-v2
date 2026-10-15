@@ -31,7 +31,9 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 
 ENV NODE_ENV=production \
 	PORT=3000 \
-	SQLITE_PATH=/data/app.db
+	SQLITE_PATH=/data/app.db \
+	LOG_DIR=/data/logs \
+	LOG_RETENTION_DAYS=7
 
 VOLUME /data
 EXPOSE 3000

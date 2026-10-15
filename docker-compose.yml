@@ -9,5 +9,12 @@ services:
       TWITCH_CLIENT_SECRET: ${TWITCH_CLIENT_SECRET}
       TWITCH_REDIRECT_URI: ${TWITCH_REDIRECT_URI}
       ORIGIN: ${ORIGIN}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-7}
     volumes:
       - ./data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

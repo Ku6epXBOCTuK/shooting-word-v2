@@ -26,4 +26,5 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 data/app.db
 data/debug-index.log
+data/logs/
 refs/

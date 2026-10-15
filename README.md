@@ -65,6 +65,22 @@ pnpm build:node     # в ./build-node
 pnpm start          # запуск node-версии, http://localhost:3000
 ```
 
+## Логи (node-вариант)
+
+Уровень задаётся `LOG_LEVEL` (`debug|info|warn|error|silent`), по умолчанию
+`info` на сервере и `error` в браузере; в dev всегда `debug`.
+
+- stdout (docker logs): строки вида `2026-10-15T12:00:00.000Z INFO ...`, ротация
+  драйвера `json-file` (10m × 3) настроена в `docker-compose.yml`;
+- файлы: `LOG_DIR` (в Docker — `/data/logs`, на хосте `./data/logs`), файл за
+  день `app-YYYY-MM-DD.log` (UTC), старше `LOG_RETENTION_DAYS` (по умолчанию 7)
+  удаляются при старте и при смене дня.
+
+```sh
+docker compose logs -f app            # текущие логи
+ls ./data/logs && tail -f ./data/logs/app-$(date -u +%F).log
+```
+
 ## Настройка Twitch (node-вариант)
 
 1. Создай приложение в
