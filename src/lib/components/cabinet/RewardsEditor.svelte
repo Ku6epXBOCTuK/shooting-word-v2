@@ -79,6 +79,14 @@
 				>
 					{statusLabel(status)}
 				</span>
+				{#if status.exists && status.diverged}
+					<span
+						class="reward-diverged"
+						title="Значения на Twitch отличаются от ваших — нажмите «Забрать из Twitch» или «Сохранить»"
+					>
+						расходится
+					</span>
+				{/if}
 				<div class="reward-actions">
 					<Button
 						disabled={busy}
@@ -170,6 +178,16 @@
 
 	.status-off {
 		color: var(--orange);
+	}
+
+	.reward-diverged {
+		font-size: 12px;
+		font-weight: 700;
+		color: var(--orange);
+		border: 1px solid color-mix(in srgb, var(--orange) 45%, transparent);
+		background: color-mix(in srgb, var(--orange) 12%, transparent);
+		border-radius: 999px;
+		padding: 3px 9px;
 	}
 
 	.reward-actions {

@@ -139,3 +139,29 @@ export function effectiveRewards(rewards: RewardSettings): EffectiveReward[] {
 		};
 	});
 }
+
+/** Живые значения награды на Twitch (подмножество полей HelixCustomReward). */
+export interface LiveReward {
+	title: string;
+	cost: number;
+	prompt: string | null | undefined;
+	globalCooldown: number | null | undefined;
+}
+
+/**
+ * Расходится ли живая награда на Twitch с нашими эффективными значениями.
+ * Сравнение поле-в-поле; `prompt`/`globalCooldown` приводятся к нашим
+ * представлениям (пустая строка / 0), чтобы отсутствующие на Twitch значения
+ * не считались расхождением.
+ */
+export function isDiverged(
+	effective: EffectiveReward,
+	live: LiveReward,
+): boolean {
+	return (
+		live.title !== effective.title ||
+		live.cost !== effective.cost ||
+		(live.prompt ?? "") !== effective.description ||
+		(live.globalCooldown ?? 0) !== effective.cooldown
+	);
+}

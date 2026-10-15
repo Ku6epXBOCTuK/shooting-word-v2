@@ -21,6 +21,7 @@ export interface AppRewardStatus {
 	key: string;
 	exists: boolean;
 	enabled: boolean;
+	diverged?: boolean;
 }
 
 export interface RewardsImportResult {

@@ -6,6 +6,7 @@ import type {
 } from "#lib/features/rewards/port.js";
 import {
 	effectiveRewards,
+	isDiverged,
 	normalizeRewards,
 	stripDevTitle,
 } from "#lib/features/rewards/settings.js";
@@ -119,10 +120,20 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 				config.key,
 				effective?.title ?? config.title,
 			);
+			const diverged =
+				match !== undefined &&
+				effective !== undefined &&
+				isDiverged(effective, {
+					title: match.title,
+					cost: match.cost,
+					prompt: match.prompt,
+					globalCooldown: match.globalCooldown,
+				});
 			return {
 				key: config.key,
 				exists: Boolean(match),
 				enabled: match?.isEnabled ?? false,
+				diverged,
 			};
 		});
 

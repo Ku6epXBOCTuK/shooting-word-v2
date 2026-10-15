@@ -66,6 +66,7 @@
 			[key]: { ...res.overrides },
 		};
 		const saved = await saveRewards(rewardSettings);
+		statuses = await listAppRewards();
 		result = saved
 			? "Значения забраны из Twitch и сохранены"
 			: "Значения забраны, но не сохранены";

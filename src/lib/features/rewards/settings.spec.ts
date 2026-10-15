@@ -4,9 +4,12 @@ import {
 	defaultRewards,
 	effectiveRewards,
 	effectiveTitle,
+	isDiverged,
 	normalizeRewards,
 	REWARDS_SCHEMA,
 	stripDevTitle,
+	type EffectiveReward,
+	type LiveReward,
 } from "./settings.js";
 
 const findConfig = (key: string) => {
@@ -165,5 +168,77 @@ describe("REWARDS_SCHEMA", () => {
 		expect(REWARDS_SCHEMA.map((def) => def.key).sort()).toEqual(
 			["cooldown", "cost", "description", "title"].sort(),
 		);
+	});
+});
+
+describe("isDiverged", () => {
+	const effective = (over: Partial<EffectiveReward> = {}): EffectiveReward => ({
+		key: "shield",
+		title: "Силовой щит",
+		description: "Щит на 30 минут",
+		cost: 300,
+		cooldown: 0,
+		...over,
+	});
+
+	const live = (over: Partial<LiveReward> = {}): LiveReward => ({
+		title: "Силовой щит",
+		cost: 300,
+		prompt: "Щит на 30 минут",
+		globalCooldown: 0,
+		...over,
+	});
+
+	it("совпадающие значения не считаются расхождением", () => {
+		expect(isDiverged(effective(), live())).toBe(false);
+	});
+
+	it("ловит разное название", () => {
+		expect(isDiverged(effective(), live({ title: "Щит капитана" }))).toBe(true);
+	});
+
+	it("ловит другую стоимость", () => {
+		expect(isDiverged(effective(), live({ cost: 999 }))).toBe(true);
+	});
+
+	it("ловит другое описание", () => {
+		expect(isDiverged(effective(), live({ prompt: "другое" }))).toBe(true);
+	});
+
+	it("ловит другой кулдаун", () => {
+		expect(isDiverged(effective({ cooldown: 60 }), live())).toBe(true);
+		expect(
+			isDiverged(effective({ cooldown: 0 }), live({ globalCooldown: 30 })),
+		).toBe(true);
+	});
+
+	it("отсутствующий на Twitch кулдаун равен нулю, а не расхождению", () => {
+		expect(
+			isDiverged(effective({ cooldown: 0 }), live({ globalCooldown: null })),
+		).toBe(false);
+	});
+
+	it("пустое описание на Twitch совпадает с нашим пустым", () => {
+		expect(
+			isDiverged(effective({ description: "" }), live({ prompt: null })),
+		).toBe(false);
+		expect(
+			isDiverged(effective({ description: "" }), live({ prompt: "есть" })),
+		).toBe(true);
+	});
+
+	it("сверяет эффективное (с dev-префиксом) с живым значением Twitch", () => {
+		// На Twitch в dev-режиме заголовок хранится с префиксом, как и effective.
+		const eff = effectiveRewards({ shield: { cost: 300 } }).find(
+			(item) => item.key === "shield",
+		)!;
+		const sameLive: LiveReward = {
+			title: eff.title,
+			cost: eff.cost,
+			prompt: eff.description,
+			globalCooldown: eff.cooldown,
+		};
+		expect(isDiverged(eff, sameLive)).toBe(false);
+		expect(isDiverged(eff, { ...sameLive, cost: eff.cost + 1 })).toBe(true);
 	});
 });
