@@ -1,20 +1,22 @@
-import type { Cookies } from "@sveltejs/kit";
-import type { ApiClient, HelixCustomReward } from "@twurple/api";
-import { dev } from "$app/env";
-import { rewardIds } from "#lib/server/reward-ids/index.js";
-import { planRewardPrune } from "#lib/server/reward-ids/prune.js";
-import { resolveBroadcaster } from "#lib/server/resolve-broadcaster.js";
-import { storage } from "#lib/server/storage/index.js";
-import { getApiClient } from "#lib/server/twitch-auth.js";
-import type { RequestHandler } from "./$types";
+import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
 import type {
 	AppRewardStatus,
 	ChannelReward,
 	RewardsManageResult,
 } from "#lib/features/rewards/port.js";
-import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
-import { normalizeSettings, type GameSettings } from "#lib/game/settings.js";
+import {
+	effectiveRewards,
+	normalizeRewards,
+} from "#lib/features/rewards/settings.js";
 import { logger } from "#lib/logger.js";
+import { resolveBroadcaster } from "#lib/server/resolve-broadcaster.js";
+import { rewardIds } from "#lib/server/reward-ids/index.js";
+import { planRewardPrune } from "#lib/server/reward-ids/prune.js";
+import { storage } from "#lib/server/storage/index.js";
+import { getApiClient } from "#lib/server/twitch-auth.js";
+import type { Cookies } from "@sveltejs/kit";
+import type { ApiClient, HelixCustomReward } from "@twurple/api";
+import type { RequestHandler } from "./$types";
 
 export const prerender = false;
 
@@ -25,11 +27,9 @@ async function resolveContext(cookies: Cookies, url: URL) {
 	const api = await getApiClient(broadcaster);
 	if (!api) return null;
 
-	const settings = normalizeSettings(
-		storage.load(broadcaster.userId, "settings"),
-	);
+	const rewards = normalizeRewards(storage.load(broadcaster.userId, "rewards"));
 
-	return { api, userId: broadcaster.userId, settings };
+	return { api, userId: broadcaster.userId, rewards };
 }
 
 function matchReward(
@@ -109,16 +109,14 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 			cost,
 		}));
 
+		const effRewards = effectiveRewards(context.rewards);
 		const appRewards: AppRewardStatus[] = REWARD_CONFIGS.map((config) => {
+			const effective = effRewards.find((item) => item.key === config.key);
 			const match = matchReward(
 				data,
 				context.userId,
 				config.key,
-				effectiveTitle(
-					String(
-						context.settings[`reward.${config.key}.title`] ?? config.title,
-					),
-				),
+				effective?.title ?? config.title,
 			);
 			return {
 				key: config.key,
@@ -146,36 +144,6 @@ const FAILURE = (reason: string): RewardsManageResult => ({
 	deleted: 0,
 	reason,
 });
-
-interface EffectiveReward {
-	key: string;
-	title: string;
-	description: string;
-	cost: number;
-	cooldown: number;
-}
-
-const DEV_TITLE_PREFIX = "Dev: ";
-
-function effectiveTitle(title: string): string {
-	return dev ? `${DEV_TITLE_PREFIX}${title}` : title;
-}
-
-function effectiveRewards(settings: GameSettings): EffectiveReward[] {
-	return REWARD_CONFIGS.map((config) => ({
-		key: config.key,
-		title: effectiveTitle(
-			String(settings[`reward.${config.key}.title`] ?? config.title),
-		),
-		cost: Number(settings[`reward.${config.key}.cost`] ?? config.cost),
-		description: String(
-			settings[`reward.${config.key}.description`] ?? config.description,
-		),
-		cooldown: Number(
-			settings[`reward.${config.key}.cooldown`] ?? config.cooldown,
-		),
-	}));
-}
 
 const cooldownData = (cooldown: number) =>
 	cooldown > 0
@@ -207,7 +175,7 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 
 		if (action === "toggle") {
 			const enabled = body.enabled === true;
-			const reward = effectiveRewards(context.settings).find(
+			const reward = effectiveRewards(context.rewards).find(
 				(item) => item.key === body.key,
 			);
 			if (!reward) {
@@ -247,7 +215,7 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 			const created: string[] = [];
 			const updated: string[] = [];
 
-			for (const reward of effectiveRewards(context.settings)) {
+			for (const reward of effectiveRewards(context.rewards)) {
 				const existingReward = matchReward(
 					existing,
 					context.userId,
@@ -289,7 +257,7 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 			if (!key) {
 				return Response.json(FAILURE("missing `key`"), { status: 400 });
 			}
-			const reward = effectiveRewards(context.settings).find(
+			const reward = effectiveRewards(context.rewards).find(
 				(item) => item.key === key,
 			);
 			if (!reward) {
