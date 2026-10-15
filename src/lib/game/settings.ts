@@ -77,18 +77,18 @@ export type SettingTypeMap = {
 // 	respawnDuration: number;
 // }
 
+type SettingEntry = (typeof SETTINGS_SCHEMA)[number];
+
 export type GameSettings = {
 	[
-		I in keyof typeof SETTINGS_SCHEMA as (typeof SETTINGS_SCHEMA)[I] extends {
-			key: infer K extends string;
-		}
+		Def in SettingEntry as Def extends { key: infer K extends string }
 			? K
 			: never
-	]: (typeof SETTINGS_SCHEMA)[I] extends {
-		type: infer T extends keyof SettingTypeMap;
-	}
-		? SettingTypeMap[T]
-		: never;
+	]: Def extends { type: "number" }
+		? number
+		: Def extends { type: "boolean" }
+			? boolean
+			: string;
 };
 
 // export type GameSettings = {
@@ -373,7 +373,9 @@ export function parseSettings(
 		const raw = params.get(def.param);
 		if (raw === null) continue;
 		const value = coerce(raw, def);
-		if (value !== undefined) settings[def.key] = value;
+		if (value !== undefined) {
+			(settings as Record<string, SettingValue>)[def.key] = value;
+		}
 	}
 	return settings;
 }
@@ -426,8 +428,7 @@ export function normalizeSettings(
 		if (value === undefined) continue;
 		const valid = validateStored(value, def);
 		if (valid !== undefined) {
-			const key = def.key as keyof GameSettings;
-			settings[key] = valid as GameSettings[typeof key];
+			(settings as Record<string, SettingValue>)[def.key] = valid;
 		}
 	}
 	return settings;
