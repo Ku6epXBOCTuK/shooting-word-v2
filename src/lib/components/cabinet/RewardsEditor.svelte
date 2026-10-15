@@ -4,21 +4,33 @@
 	import Icon from "#lib/components/ui/Icon.svelte";
 	import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
 	import type { AppRewardStatus } from "#lib/features/rewards/port.js";
-	import { REWARDS_SCHEMA } from "#lib/features/rewards/settings.js";
+	import {
+		REWARDS_SCHEMA,
+		type RewardOverrides,
+		type RewardSettings,
+	} from "#lib/features/rewards/settings.js";
+	import type { SettingValue } from "#lib/game/settings.js";
 	import SaveIcon from "~icons/lucide/notebook-pen";
 	import EditIcon from "~icons/lucide/pencil";
 	import ToggleIcon from "~icons/lucide/power";
 
+	type RewardConfig = (typeof REWARD_CONFIGS)[number];
+
 	interface Props {
 		statuses: AppRewardStatus[];
+		rewards: RewardSettings;
 		busy: boolean;
 		ontoggle: (key: string, enabled: boolean) => void;
 		onSave: (key: string) => void;
+		onFieldChange: (
+			key: string,
+			field: keyof RewardOverrides,
+			value: SettingValue,
+		) => void;
 	}
 
-	let { statuses, busy, ontoggle, onSave }: Props = $props();
-
-	let value: string = $state("");
+	let { statuses, rewards, busy, ontoggle, onSave, onFieldChange }: Props =
+		$props();
 
 	let expanded = $state<string | null>(null);
 
@@ -31,6 +43,15 @@
 
 	const statusLabel = (status: AppRewardStatus): string =>
 		!status.exists ? "не создана" : status.enabled ? "включена" : "выключена";
+
+	// Значение для поля: оверрайд, иначе дефолт из конфига (без dev-префикса).
+	const fieldValue = (
+		reward: RewardConfig,
+		field: keyof RewardOverrides,
+	): SettingValue => {
+		const override = rewards[reward.key as keyof RewardSettings]?.[field];
+		return override !== undefined ? override : reward[field];
+	};
 </script>
 
 <div class="rewards">
@@ -75,7 +96,16 @@
 			{#if isExpanded}
 				<div class="reward-fields">
 					{#each REWARDS_SCHEMA as def (def.key)}
-						<SettingsField {def} {value} />
+						<SettingsField
+							{def}
+							value={fieldValue(reward, def.key as keyof RewardOverrides)}
+							onchange={(value) =>
+								onFieldChange(
+									reward.key,
+									def.key as keyof RewardOverrides,
+									value,
+								)}
+						/>
 					{/each}
 				</div>
 			{/if}

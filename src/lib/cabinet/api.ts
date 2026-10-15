@@ -1,5 +1,9 @@
 import { rewards } from "#lib/features/rewards/index.js";
 import type { AppRewardStatus } from "#lib/features/rewards/port.js";
+import {
+	normalizeRewards,
+	type RewardSettings,
+} from "#lib/features/rewards/settings.js";
 import { REWARDS_ENABLED } from "#lib/features/variant.js";
 import {
 	defaultSettings,
@@ -17,6 +21,7 @@ export interface CabinetSession {
 	rewardsStatus: string | null;
 	appRewards: AppRewardStatus[];
 	settings: GameSettings;
+	rewards: RewardSettings;
 }
 
 export async function loadSession(): Promise<CabinetSession | null> {
@@ -54,6 +59,7 @@ export async function loadSession(): Promise<CabinetSession | null> {
 		rewardsStatus,
 		appRewards,
 		settings: await loadSettings(),
+		rewards: await loadRewards(),
 	};
 }
 
@@ -77,6 +83,34 @@ export async function saveSettings(settings: GameSettings): Promise<boolean> {
 				method: "PUT",
 				headers: { "content-type": "application/json" },
 				body: JSON.stringify(settings),
+			},
+		);
+		return response.ok;
+	} catch {
+		return false;
+	}
+}
+
+export async function loadRewards(): Promise<RewardSettings> {
+	try {
+		const response = await fetch(
+			resolve("/api/storage/[key]", { key: "rewards" }),
+		);
+		if (!response.ok) return {};
+		return normalizeRewards(await response.json());
+	} catch {
+		return {};
+	}
+}
+
+export async function saveRewards(rewards: RewardSettings): Promise<boolean> {
+	try {
+		const response = await fetch(
+			resolve("/api/storage/[key]", { key: "rewards" }),
+			{
+				method: "PUT",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify(rewards),
 			},
 		);
 		return response.ok;

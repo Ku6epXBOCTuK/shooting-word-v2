@@ -2,15 +2,21 @@
 	import {
 		deleteAllRewards,
 		listAppRewards,
+		saveRewards,
 		toggleReward,
+		updateAllRewards,
 		updateReward,
 	} from "#lib/cabinet/api.ts";
 	import LaunchCard from "#lib/components/LaunchCard.svelte";
 	import Button from "#lib/components/ui/Button.svelte";
 	import Icon from "#lib/components/ui/Icon.svelte";
 	import type { AppRewardStatus } from "#lib/features/rewards/port.js";
+	import type {
+		RewardOverrides,
+		RewardSettings,
+	} from "#lib/features/rewards/settings.js";
 	import { REWARDS_ENABLED } from "#lib/features/variant.js";
-	import { logger } from "#lib/logger.ts";
+	import type { SettingValue } from "#lib/game/settings.js";
 	import { untrack } from "svelte";
 	import GiftIcon from "~icons/lucide/gift";
 	import SaveIcon from "~icons/lucide/save";
@@ -21,21 +27,38 @@
 	interface Props {
 		rewardsAuthorized: boolean;
 		appRewards: AppRewardStatus[];
+		rewards: RewardSettings;
 	}
 
-	let { rewardsAuthorized, appRewards }: Props = $props();
+	let { rewardsAuthorized, appRewards, rewards }: Props = $props();
 
 	let statuses = $state(untrack(() => appRewards));
+	let rewardSettings = $state<RewardSettings>(untrack(() => rewards));
 	let busy = $state(false);
 	let result = $state<string | null>(null);
+
+	const onFieldChange = (
+		key: string,
+		field: keyof RewardOverrides,
+		value: SettingValue,
+	) => {
+		const current = rewardSettings[key as keyof RewardSettings] ?? {};
+		rewardSettings = {
+			...rewardSettings,
+			[key]: { ...current, [field]: value },
+		};
+	};
 
 	const onSaveReward = async (key: string) => {
 		busy = true;
 		result = null;
 
-		result = (await updateReward(key))
-			? "Награда обновлена"
-			: "Не удалось обновить награду";
+		const saved = await saveRewards(rewardSettings);
+		const pushed = saved ? await updateReward(key) : false;
+		result =
+			saved && pushed
+				? "Награда сохранена и обновлена"
+				: "Не удалось сохранить награду";
 		statuses = await listAppRewards();
 		busy = false;
 	};
@@ -48,6 +71,27 @@
 		if (!ok) {
 			result = "не удалось удалить награды";
 		}
+		busy = false;
+	};
+
+	const onUpdateAll = async () => {
+		busy = true;
+		result = null;
+
+		const ok = await updateAllRewards();
+		result = ok ? "Награды обновлены" : "Не удалось обновить награды";
+		statuses = await listAppRewards();
+		busy = false;
+	};
+
+	const onSave = async () => {
+		busy = true;
+		result = null;
+
+		const ok = await saveRewards(rewardSettings);
+		result = ok
+			? "Настройки наград сохранены"
+			: "Не удалось сохранить настройки наград";
 		busy = false;
 	};
 
@@ -66,11 +110,6 @@
 		}
 		busy = false;
 	};
-
-	function onUpdateAll() {}
-	function onSave() {
-		logger.info($state.snapshot(appRewards));
-	}
 </script>
 
 {#if REWARDS_ENABLED}
@@ -100,9 +139,11 @@
 			{#if rewardsAuthorized}
 				<RewardsEditor
 					{statuses}
+					{rewards}
 					{busy}
 					ontoggle={onToggle}
 					onSave={onSaveReward}
+					{onFieldChange}
 				/>
 			{/if}
 		</div>
