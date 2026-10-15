@@ -39,7 +39,7 @@
 	subtitle="Применяются к виджету автоматически"
 	icon={SlidersIcon}
 >
-	<SettingsForm {settings} flat />
+	<SettingsForm {settings} />
 
 	{#snippet bottom()}
 		<div class="bottom-row">

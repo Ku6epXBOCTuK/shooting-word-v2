@@ -1,13 +1,14 @@
 <script lang="ts">
 	import FieldLabel from "#lib/components/ui/FieldLabel.svelte";
-	import type { SettingDef } from "#lib/game/settings.js";
+	import type { SettingDef, SettingValue } from "#lib/game/settings.js";
 
 	type Props = {
 		def: SettingDef;
-		value: SettingDef["default"];
+		value: SettingValue;
+		onchange: (value: SettingValue) => void;
 	};
 
-	let { def, value }: Props = $props();
+	let { def, value, onchange }: Props = $props();
 </script>
 
 <div class="field">
@@ -21,7 +22,8 @@
 				min={def.min}
 				max={def.max}
 				step={def.step}
-				bind:value
+				value={Number(value)}
+				oninput={(event) => onchange(Number(event.currentTarget.value))}
 			/>
 			<span class="number-value">{value}</span>
 		</div>
@@ -31,18 +33,25 @@
 			type="number"
 			min={def.min}
 			max={def.max}
-			bind:value
+			value={Number(value)}
+			oninput={(event) => onchange(Number(event.currentTarget.value))}
 		/>
 	{:else if def.type === "boolean"}
-		<input class="checkbox" type="checkbox" bind:checked={value as boolean} />
+		<input
+			class="checkbox"
+			type="checkbox"
+			checked={Boolean(value)}
+			onchange={(event) => onchange(event.currentTarget.checked)}
+		/>
 	{:else}
 		<input
 			class="text-input"
 			type="text"
-			bind:value
+			value={String(value)}
 			maxlength={def.maxLength}
 			autocomplete="off"
 			spellcheck="false"
+			oninput={(event) => onchange(event.currentTarget.value)}
 		/>
 	{/if}
 </div>
