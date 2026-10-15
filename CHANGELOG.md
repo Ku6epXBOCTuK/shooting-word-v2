@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.23.1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/4e6cca0c2590c1a22a67ca0a77e0263d40b110ba..0.23.1) - 2026-10-15
+#### Bug Fixes
+- remove unneeded leaked data - ([4e6cca0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/4e6cca0c2590c1a22a67ca0a77e0263d40b110ba)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.23.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/cd4abc6850f33b3f4f16f3323dccd52530a0073e..0.23.0) - 2026-10-15
 #### Features
 - add logs to file - ([7dc41cf](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/7dc41cf9c360f495f2921d7e4cdc48d7e61aebae)) - Ku6epXBOCTuK
