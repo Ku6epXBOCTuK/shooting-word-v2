@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.24.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/914cfe743ac07838981b0c74efd0d8d2f933a4dc..0.24.0) - 2026-10-16
+#### Features
+- add client side widget key flow - ([1b0197b](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/1b0197b4fa0b5817a708d725b0dfeaaec92f3a6a)) - Ku6epXBOCTuK
+- add widget_key, endpoints, auth - ([7e63b59](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/7e63b5953b684ee5e6c6b585eee7093d3edb81fb)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.23.1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/4e6cca0c2590c1a22a67ca0a77e0263d40b110ba..0.23.1) - 2026-10-15
 #### Bug Fixes
 - remove unneeded leaked data - ([4e6cca0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/4e6cca0c2590c1a22a67ca0a77e0263d40b110ba)) - Ku6epXBOCTuK
