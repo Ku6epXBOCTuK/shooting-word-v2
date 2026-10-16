@@ -13,7 +13,7 @@ import { logger } from "#lib/logger.js";
 import { resolveBroadcaster } from "#lib/server/resolve-broadcaster.js";
 import { rewardIds } from "#lib/server/reward-ids/index.js";
 import { planRewardPrune } from "#lib/server/reward-ids/prune.js";
-import { storage } from "#lib/server/storage/index.js";
+import { rewardSettings } from "#lib/server/reward-settings/index.js";
 import { getApiClient } from "#lib/server/twitch-auth.js";
 import type { Cookies } from "@sveltejs/kit";
 import type { ApiClient, HelixCustomReward } from "@twurple/api";
@@ -28,7 +28,7 @@ async function resolveContext(cookies: Cookies, url: URL) {
 	const api = await getApiClient(broadcaster);
 	if (!api) return null;
 
-	const rewards = normalizeRewards(storage.load(broadcaster.userId, "rewards"));
+	const rewards = normalizeRewards(rewardSettings.load(broadcaster.userId));
 
 	return { api, userId: broadcaster.userId, rewards };
 }

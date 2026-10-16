@@ -32,7 +32,7 @@ import {
 	type RedemptionEvent,
 } from "./redemptions.js";
 import { rewardIds } from "./reward-ids/index.js";
-import { storage } from "./storage/index.js";
+import { settings as settingsRepo } from "./settings/index.js";
 import { getApiClient } from "./twitch-auth.js";
 import { viewers } from "./viewers/index.js";
 
@@ -223,7 +223,7 @@ export async function refundRedemption(
 	reason: string,
 ): Promise<boolean> {
 	const settings = normalizeSettings(
-		storage.load(broadcaster.userId, "settings"),
+		settingsRepo.load(broadcaster.userId),
 		undefined,
 		dev,
 	);
@@ -413,7 +413,7 @@ async function handleRedemption(
 	event: RewardEvent,
 ): Promise<void> {
 	const settings = normalizeSettings(
-		storage.load(broadcaster.userId, "settings"),
+		settingsRepo.load(broadcaster.userId),
 		undefined,
 		dev,
 	);
