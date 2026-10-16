@@ -1,10 +1,16 @@
-import { resolve } from "$app/paths";
 import { logger } from "#lib/logger.js";
+import { resolve } from "$app/paths";
 import type { StoragePort } from "./port.js";
 
 const RETRIES = 3;
 const RETRY_DELAY_MS = 500;
 const TERMINAL_STATUSES = new Set([401, 403, 404]);
+
+const STORAGE_ROUTES: Record<string, string> = {
+	viewers: "/api/viewers",
+	settings: "/api/settings",
+	rewards: "/api/reward-settings",
+};
 
 export class HttpStorageAdapter implements StoragePort {
 	// NOTE: only the latest snapshot is kept: writes never accumulate.
@@ -17,7 +23,9 @@ export class HttpStorageAdapter implements StoragePort {
 	) {}
 
 	private url(key: string): string {
-		return `${resolve("/api/storage/[key]", { key })}?uuid=${encodeURIComponent(this.uuid)}`;
+		const route = STORAGE_ROUTES[key];
+		if (!route) throw new Error(`[storage] unknown key: ${key}`);
+		return `${resolve(route)}?uuid=${encodeURIComponent(this.uuid)}`;
 	}
 
 	private writeHeaders(): Record<string, string> {

@@ -68,9 +68,7 @@ export async function loadSession(): Promise<CabinetSession | null> {
 
 export async function loadSettings(): Promise<GameSettings> {
 	try {
-		const response = await fetch(
-			resolve("/api/storage/[key]", { key: "settings" }),
-		);
+		const response = await fetch(resolve("/api/settings"));
 		if (!response.ok) return defaultSettings();
 		return normalizeSettings(await response.json(), undefined, dev);
 	} catch {
@@ -80,14 +78,11 @@ export async function loadSettings(): Promise<GameSettings> {
 
 export async function saveSettings(settings: GameSettings): Promise<boolean> {
 	try {
-		const response = await fetch(
-			resolve("/api/storage/[key]", { key: "settings" }),
-			{
-				method: "PUT",
-				headers: { "content-type": "application/json" },
-				body: JSON.stringify(settings),
-			},
-		);
+		const response = await fetch(resolve("/api/settings"), {
+			method: "PUT",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify(settings),
+		});
 		return response.ok;
 	} catch {
 		return false;
@@ -96,9 +91,7 @@ export async function saveSettings(settings: GameSettings): Promise<boolean> {
 
 export async function loadRewards(): Promise<RewardSettings> {
 	try {
-		const response = await fetch(
-			resolve("/api/storage/[key]", { key: "rewards" }),
-		);
+		const response = await fetch(resolve("/api/reward-settings"));
 		if (!response.ok) return {};
 		return normalizeRewards(await response.json());
 	} catch {
@@ -108,14 +101,11 @@ export async function loadRewards(): Promise<RewardSettings> {
 
 export async function saveRewards(rewards: RewardSettings): Promise<boolean> {
 	try {
-		const response = await fetch(
-			resolve("/api/storage/[key]", { key: "rewards" }),
-			{
-				method: "PUT",
-				headers: { "content-type": "application/json" },
-				body: JSON.stringify(rewards),
-			},
-		);
+		const response = await fetch(resolve("/api/reward-settings"), {
+			method: "PUT",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify(rewards),
+		});
 		return response.ok;
 	} catch {
 		return false;
