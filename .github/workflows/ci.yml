@@ -1,12 +1,16 @@
-name: deploy
+name: CI
 
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "refs/**"
+      - "*.md"
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   packages: write
   pages: write
   id-token: write
@@ -16,7 +20,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-pages:
+  run-checks:
+    uses: ./.github/workflows/checks.yml
+
+  build:
+    needs: run-checks
     runs-on: ubuntu-latest
     env:
       BASE_PATH: /shooting-word-v2
@@ -36,19 +44,98 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
+      - name: Build static
         run: pnpm run build:static
+
+      - name: Build node
+        run: pnpm run build:node
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./build
 
+      - name: Compute short commit sha
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Docker build (verify)
+        uses: docker/build-push-action@v6
+        with:
+          push: false
+          build-args: APP_COMMIT=${{ env.SHORT_SHA }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  bump:
+    needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      bumped: ${{ steps.check-bump.outputs.bumped }}
+      new_version: ${{ steps.get-tag.outputs.version }}
+
+    steps:
+      - name: Generate Token
+        id: generate_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.XBOCT_BOT_ID }}
+          private-key: ${{ secrets.XBOCT_BOT_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
+          fetch-depth: 0
+
+      - name: Setup Cocogitto
+        uses: ./.github/actions/setup-cocogitto
+
+      - name: Check if bump is needed
+        id: check-bump
+        run: |
+          BUMP_OUTPUT=$(cog bump --auto --dry-run 2>&1)
+
+          if [[ "$BUMP_OUTPUT" == *"No conventional commits"* ]]; then
+            echo "No bump needed."
+            echo "bumped=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected, proceeding..."
+            echo "bumped=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Actual Bump and Push
+        if: steps.check-bump.outputs.bumped == 'true'
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          cog bump --auto --skip-ci
+          git push origin main --tags
+
+      - name: Get New Version
+        id: get-tag
+        if: steps.check-bump.outputs.bumped == 'true'
+        run: |
+          VERSION=$(git describe --tags --abbrev=0)
+          echo "Detected version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+  github-release:
+    needs: bump
+    if: needs.bump.outputs.bumped == 'true'
+    uses: ./.github/workflows/release.yml
+    with:
+      version: ${{ needs.bump.outputs.new_version }}
+    secrets: inherit
+
   deploy-pages:
-    needs: build-pages
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -59,6 +146,7 @@ jobs:
         uses: actions/deploy-pages@v4
 
   deploy-vps:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -88,6 +176,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: APP_COMMIT=${{ env.SHORT_SHA }}
+          cache-from: type=gha
 
       - name: Install sops
         uses: mdgreenwald/mozilla-sops-action@v1
