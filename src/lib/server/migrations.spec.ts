@@ -1,14 +1,6 @@
 import { DatabaseSync } from "node:sqlite";
 import { describe, expect, it } from "vitest";
-import type { Migration } from "./migrations.js";
-import { migrations, runMigrations } from "./migrations.js";
-
-const latestVersion = (): number =>
-	migrations[migrations.length - 1]?.version ?? 0;
-
-const userVersion = (db: DatabaseSync): number =>
-	(db.prepare("PRAGMA user_version").get() as { user_version: number })
-		.user_version;
+import { migrateDb } from "./db-test-utils.js";
 
 const schemaObjects = (db: DatabaseSync, type: string): string[] =>
 	(
@@ -19,68 +11,37 @@ const schemaObjects = (db: DatabaseSync, type: string): string[] =>
 		.map((row) => row.name)
 		.filter((name) => !name.startsWith("sqlite_"));
 
-describe("runMigrations", () => {
-	it("creates the full schema on a fresh database", () => {
+describe("migrateDb", () => {
+	it("creates the full schema on a fresh database", async () => {
 		const db = new DatabaseSync(":memory:");
 
-		runMigrations(db);
+		await migrateDb(db);
 
-		expect(userVersion(db)).toBe(latestVersion());
-		expect(schemaObjects(db, "table").sort()).toEqual([
-			"broadcasters",
-			"reward_ids",
-			"reward_settings",
-			"rounds",
-			"sessions",
-			"settings",
-			"viewers",
-		]);
+		expect(schemaObjects(db, "table")).toEqual(
+			expect.arrayContaining([
+				"broadcasters",
+				"reward_ids",
+				"reward_settings",
+				"rounds",
+				"sessions",
+				"settings",
+				"viewers",
+				"schema_migrations",
+				"schema_migrations_lock",
+			]),
+		);
 		expect(schemaObjects(db, "index")).toContain("rounds_broadcaster");
 	});
 
-	it("is a no-op when run again", () => {
+	it("records applied migrations and is a no-op on the second run", async () => {
 		const db = new DatabaseSync(":memory:");
 
-		runMigrations(db);
-		runMigrations(db);
+		await migrateDb(db);
+		await migrateDb(db);
 
-		expect(userVersion(db)).toBe(latestVersion());
-		expect(schemaObjects(db, "table")).toHaveLength(7);
-	});
-
-	it("rolls back a failing step and does not advance its version", () => {
-		const db = new DatabaseSync(":memory:");
-		const steps: Migration[] = [
-			{
-				version: 1,
-				name: "create",
-				up: (database) => {
-					database.exec("CREATE TABLE probe (x INTEGER)");
-				},
-			},
-			{
-				version: 2,
-				name: "boom",
-				up: (database) => {
-					database.exec("INSERT INTO probe (x) VALUES (1)");
-					throw new Error("step failed");
-				},
-			},
-		];
-
-		expect(() => runMigrations(db, steps)).toThrow("step failed");
-		expect(userVersion(db)).toBe(1);
-		expect(db.prepare("SELECT * FROM probe").all()).toEqual([]);
-	});
-
-	it("rejects steps that are not ordered by version", () => {
-		const db = new DatabaseSync(":memory:");
-		const steps: Migration[] = [
-			{ version: 2, name: "second", up: () => undefined },
-			{ version: 1, name: "first", up: () => undefined },
-		];
-
-		expect(() => runMigrations(db, steps)).toThrow("ordered by version");
-		expect(userVersion(db)).toBe(0);
+		expect(db.prepare("SELECT name FROM schema_migrations").all()).toEqual([
+			{ name: "001_initial_schema.js" },
+		]);
+		expect(schemaObjects(db, "table")).toHaveLength(9);
 	});
 });

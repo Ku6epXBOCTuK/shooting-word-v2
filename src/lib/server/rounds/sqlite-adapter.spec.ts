@@ -4,7 +4,7 @@ import {
 	ROUND_OUTCOME,
 	type RoundRecord,
 } from "#lib/features/rounds/record.js";
-import { runMigrations } from "../migrations.js";
+import { migrateDb } from "../db-test-utils.js";
 import {
 	ROUNDS_KEPT_PER_BROADCASTER,
 	SqliteRoundsRepo,
@@ -33,9 +33,9 @@ const record = (overrides: Partial<RoundRecord> = {}): RoundRecord => ({
 describe("SqliteRoundsRepo", () => {
 	let repo: SqliteRoundsRepo;
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		const db = new DatabaseSync(":memory:");
-		runMigrations(db);
+		await migrateDb(db);
 		repo = new SqliteRoundsRepo(db);
 	});
 

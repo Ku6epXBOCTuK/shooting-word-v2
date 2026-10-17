@@ -1,0 +1,21 @@
+diff --git a/dist/index.js b/dist/index.js
+index 7907018050a89769603807764ad25ad440065955..b798cbbe05c741eed21ae532fa6f8f39595ec999 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -2,6 +2,7 @@
+ import { EventEmitter } from "events";
+ import { promises as fs } from "fs";
+ import path from "path";
++import { pathToFileURL } from "url";
+ 
+ // src/errors.ts
+ var MigrationError = class extends Error {
+@@ -263,7 +264,7 @@ var Migrator = class extends EventEmitter {
+         const fullPath = path.join(this.migrationsDir, file);
+         let imported;
+         try {
+-          imported = await import(fullPath);
++          imported = await import(pathToFileURL(fullPath).href);
+         } catch (err) {
+           throw new MigrationFileError(`Error loading migration "${file}": ${String(err)}`, err);
+         }

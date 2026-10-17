@@ -1,14 +1,14 @@
 import { DatabaseSync } from "node:sqlite";
 import { beforeEach, describe, expect, it } from "vitest";
-import { runMigrations } from "../migrations.js";
+import { migrateDb } from "../db-test-utils.js";
 import { SqliteRewardIdsRepo } from "./sqlite-adapter.js";
 
 describe("SqliteRewardIdsRepo", () => {
 	let repo: SqliteRewardIdsRepo;
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		const db = new DatabaseSync(":memory:");
-		runMigrations(db);
+		await migrateDb(db);
 		repo = new SqliteRewardIdsRepo(db);
 	});
 

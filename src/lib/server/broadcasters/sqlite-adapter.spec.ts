@@ -1,7 +1,7 @@
 import { DatabaseSync } from "node:sqlite";
 import type { AccessToken } from "@twurple/auth";
 import { describe, expect, it } from "vitest";
-import { runMigrations } from "../migrations.js";
+import { migrateDb } from "../db-test-utils.js";
 import { SqliteBroadcastersRepo } from "./sqlite-adapter.js";
 
 const TOKEN: AccessToken = {
@@ -12,24 +12,24 @@ const TOKEN: AccessToken = {
 	obtainmentTimestamp: 0,
 };
 
-const openRepo = (db = new DatabaseSync(":memory:")) => {
-	runMigrations(db);
+const openRepo = async (db = new DatabaseSync(":memory:")) => {
+	await migrateDb(db);
 	const repo = new SqliteBroadcastersRepo(db);
 	repo.upsert("u1", "alice", null, TOKEN);
 	return { db, repo };
 };
 
 describe("SqliteBroadcastersRepo", () => {
-	it("claims the uuid for the first key and accepts it afterwards", () => {
-		const { repo } = openRepo();
+	it("claims the uuid for the first key and accepts it afterwards", async () => {
+		const { repo } = await openRepo();
 		const uuid = repo.byUserId("u1")?.widgetUuid as string;
 
 		expect(repo.claimWidget(uuid, "key-a")).toBe("first");
 		expect(repo.claimWidget(uuid, "key-a")).toBe("owner");
 	});
 
-	it("rejects a different key once the uuid is claimed", () => {
-		const { repo } = openRepo();
+	it("rejects a different key once the uuid is claimed", async () => {
+		const { repo } = await openRepo();
 		const uuid = repo.byUserId("u1")?.widgetUuid as string;
 
 		repo.claimWidget(uuid, "key-a");
@@ -38,14 +38,14 @@ describe("SqliteBroadcastersRepo", () => {
 		expect(repo.claimWidget(uuid, "key-a")).toBe("owner");
 	});
 
-	it("returns null for an unknown uuid", () => {
-		const { repo } = openRepo();
+	it("returns null for an unknown uuid", async () => {
+		const { repo } = await openRepo();
 
 		expect(repo.claimWidget("nope", "key-a")).toBeNull();
 	});
 
-	it("rotation frees the old pair and claims the new uuid again", () => {
-		const { repo } = openRepo();
+	it("rotation frees the old pair and claims the new uuid again", async () => {
+		const { repo } = await openRepo();
 		const oldUuid = repo.byUserId("u1")?.widgetUuid as string;
 		repo.claimWidget(oldUuid, "key-a");
 

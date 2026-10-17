@@ -1,7 +1,7 @@
 import { DatabaseSync } from "node:sqlite";
 import { describe, expect, it } from "vitest";
 import type { StoredViewer } from "#lib/features/persistence/viewer-store.js";
-import { runMigrations } from "../migrations.js";
+import { migrateDb } from "../db-test-utils.js";
 import { PROFILE_RETENTION_MS, SqliteViewersRepo } from "./sqlite-adapter.js";
 
 const NOW = 1_700_000_000_000;
@@ -25,14 +25,14 @@ const entry = (data: StoredViewer, updatedAt = NOW) => ({
 	updatedAt,
 });
 
-const openRepo = (db = new DatabaseSync(":memory:")) => {
-	runMigrations(db);
+const openRepo = async (db = new DatabaseSync(":memory:")) => {
+	await migrateDb(db);
 	return { db, repo: new SqliteViewersRepo(db, () => NOW) };
 };
 
 describe("SqliteViewersRepo", () => {
-	it("merges by userId and keeps profiles missing from the payload", () => {
-		const { repo } = openRepo();
+	it("merges by userId and keeps profiles missing from the payload", async () => {
+		const { repo } = await openRepo();
 		repo.upsert("b1", [
 			entry(profile()),
 			entry(profile({ userId: "u2", user: "bob", login: "bob" })),
@@ -45,8 +45,8 @@ describe("SqliteViewersRepo", () => {
 		expect(repo.get<StoredViewer>("b1", "u2")?.xp).toBe(5);
 	});
 
-	it("rejects a write with an older version and accepts a newer one", () => {
-		const { repo } = openRepo();
+	it("rejects a write with an older version and accepts a newer one", async () => {
+		const { repo } = await openRepo();
 		repo.upsert("b1", [entry(profile({ xp: 9 }), NOW + 10)]);
 
 		repo.upsert("b1", [entry(profile({ xp: 1 }), NOW)]);
@@ -56,8 +56,8 @@ describe("SqliteViewersRepo", () => {
 		expect(repo.get<StoredViewer>("b1", "u1")?.xp).toBe(2);
 	});
 
-	it("isolates broadcasters", () => {
-		const { repo } = openRepo();
+	it("isolates broadcasters", async () => {
+		const { repo } = await openRepo();
 		repo.upsert("b1", [entry(profile({ xp: 1 }))]);
 		repo.upsert("b2", [entry(profile({ xp: 2 }))]);
 
@@ -66,8 +66,8 @@ describe("SqliteViewersRepo", () => {
 		expect(repo.load("b3")).toEqual([]);
 	});
 
-	it("increments a consumable and creates the profile on demand", () => {
-		const { repo } = openRepo();
+	it("increments a consumable and creates the profile on demand", async () => {
+		const { repo } = await openRepo();
 
 		expect(
 			repo.increment("b1", "u1", "batteries", 1, 5, { user: "Alice" }),
@@ -86,8 +86,8 @@ describe("SqliteViewersRepo", () => {
 		);
 	});
 
-	it("respects the cap", () => {
-		const { repo } = openRepo();
+	it("respects the cap", async () => {
+		const { repo } = await openRepo();
 
 		repo.increment("b1", "u1", "batteries", 1, 1, { user: "alice" });
 		expect(
@@ -95,8 +95,8 @@ describe("SqliteViewersRepo", () => {
 		).toBe(1);
 	});
 
-	it("increment wins over a snapshot with a clock ahead", () => {
-		const { repo } = openRepo();
+	it("increment wins over a snapshot with a clock ahead", async () => {
+		const { repo } = await openRepo();
 		repo.upsert("b1", [entry(profile({ batteries: 1 }), NOW + 60_000)]);
 
 		expect(
@@ -105,9 +105,9 @@ describe("SqliteViewersRepo", () => {
 		expect(repo.get<StoredViewer>("b1", "u1")?.batteries).toBe(2);
 	});
 
-	it("purges bots, broken rows and expired profiles on open", () => {
+	it("purges bots, broken rows and expired profiles on open", async () => {
 		const db = new DatabaseSync(":memory:");
-		const { repo } = openRepo(db);
+		const { repo } = await openRepo(db);
 		repo.upsert("b1", [
 			entry(profile({ userId: "fresh" })),
 			entry(

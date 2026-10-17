@@ -36,6 +36,10 @@
 
 ## Технические задачи
 
+- [ ] форкнуть sqlite-up и починить Windows: `import(absPath)` →
+      `pathToFileURL`, PR в апстрим (последний коммит ~5 мес назад — по сути
+      мёртвый, но готовы мириться); пока живём на pnpm-патче
+      `patches/sqlite-up@0.6.0.patch`
 - [ ] перенести часть dev настроек в награды, и добавить дополнительные поля
       (длительность `doomsday device` и т.д.). дополнительно придумать как
       привязать к награде команду, например награда `Батарея` и команда
@@ -253,10 +257,10 @@
 - [x] аудит статик-билда: eslint-зоны + `scripts/check-static-build.mjs`
 - [x] главная страница с выбором варианта сборки
 - [x] номерация кадров fx (метки `a1`, `b3` + `static/fx/frames.md`)
-- [x] миграционный runner для sqlite: `PRAGMA user_version` + шаги
-      `{ version, name, up(db) }`; вся схема (baseline `initial-schema`) живёт
-      только в `src/lib/server/migrations.ts`, конструкторы репо — без DDL,
-      тесты на `:memory:` с runMigrations
+- [x] миграции sqlite на sqlite-up: схема в `migrations/*.js` (plain JS —
+      рантайм-импорт без TS-лодера), стейт в `schema_migrations`, конструкторы
+      репо без DDL, виндовая загрузка файлов миграций — патч
+      `patches/sqlite-up@0.6.0.patch`
 
 ### Прочее
 

@@ -1,2 +1,4 @@
 allowBuilds:
   esbuild: true
+patchedDependencies:
+  sqlite-up@0.6.0: patches/sqlite-up@0.6.0.patch
