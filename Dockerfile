@@ -7,7 +7,6 @@ ARG APP_COMMIT
 ENV APP_COMMIT=$APP_COMMIT
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY patches ./patches
 RUN pnpm install --frozen-lockfile
 
 COPY . .
@@ -19,7 +18,6 @@ WORKDIR /app
 RUN npm install -g pnpm@12.4.1
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY patches ./patches
 RUN pnpm install --prod --frozen-lockfile
 
 FROM oven/bun:1-slim

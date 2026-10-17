@@ -1,5 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
-import { Migrator } from "sqlite-up";
+import { Migrator } from "@ku6epxboctuk/sqlite-up";
 
 export async function migrateDb(db: DatabaseSync): Promise<void> {
 	const result = await new Migrator({

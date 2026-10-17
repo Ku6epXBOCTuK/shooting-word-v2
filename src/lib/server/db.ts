@@ -3,7 +3,7 @@ import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import process from "node:process";
 import { DatabaseSync } from "node:sqlite";
-import { Migrator } from "sqlite-up";
+import { Migrator } from "@ku6epxboctuk/sqlite-up";
 
 const path = process.env.SQLITE_PATH || "data/app.db";
 mkdirSync(dirname(path), { recursive: true });

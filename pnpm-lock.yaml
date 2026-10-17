@@ -162,13 +162,13 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-patchedDependencies:
-  sqlite-up@0.6.0: 721f49a9cbc6ee23fae251435b297382d1e6e5227a8e41f6e6a2719ea9b52368
-
 importers:
 
   .:
     dependencies:
+      '@ku6epxboctuk/sqlite-up':
+        specifier: ^0.6.1
+        version: 0.6.1
       '@twurple/api':
         specifier: ^8.2.0
         version: 8.2.0(@twurple/auth@8.2.0)
@@ -187,9 +187,6 @@ importers:
       pixi.js:
         specifier: ^8.22.0
         version: 8.22.0
-      sqlite-up:
-        specifier: ^0.6.0
-        version: 0.6.0(patch_hash=721f49a9cbc6ee23fae251435b297382d1e6e5227a8e41f6e6a2719ea9b52368)
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
@@ -403,6 +400,10 @@ packages:
 
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
+
+  '@ku6epxboctuk/sqlite-up@0.6.1':
+    resolution: {integrity: sha512-+IleoV/tCZcXyDT989DFNHw90n3Kj2GA+NlXb7Uv9oygSgZdSACeJ09fSIiY16y5QX77X9wwM9pwPwhWOGRVIw==}
+    engines: {node: '>=24.0.0'}
 
   '@miniplex/bucket@2.0.0':
     resolution: {integrity: sha512-jdAW0vG0tLel0dD0lyQqkQ4g4G9CscbVtenu35jB48fnVK3zmfFmQKIxXHsUvFs4KAN44UESAgaVOroTetFSRw==}
@@ -1306,10 +1307,6 @@ packages:
     resolution: {integrity: sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==}
     engines: {node: '>=0.10.0'}
 
-  sqlite-up@0.6.0:
-    resolution: {integrity: sha512-pFYtxBkiklHdSeRcl1zhb0YBxT+285ZBceydatC9SdRBRHbxhBYb7sFrPELbk9CquvkStrIMp7CYQLYDO81zgg==}
-    engines: {node: '>=24.0.0'}
-
   stackback@0.0.2:
     resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
 
@@ -1755,6 +1752,8 @@ snapshots:
       keyv: 5.6.0
 
   '@keyv/serialize@1.1.1': {}
+
+  '@ku6epxboctuk/sqlite-up@0.6.1': {}
 
   '@miniplex/bucket@2.0.0':
     dependencies:
@@ -2641,8 +2640,6 @@ snapshots:
       totalist: 3.0.1
 
   source-map-js@1.2.2: {}
-
-  sqlite-up@0.6.0(patch_hash=721f49a9cbc6ee23fae251435b297382d1e6e5227a8e41f6e6a2719ea9b52368): {}
 
   stackback@0.0.2: {}
 
