@@ -37,19 +37,7 @@ export class SqliteViewersRepo implements ViewersRepo {
 				PRIMARY KEY (broadcaster_id, user_id)
 			)
 		`);
-		this.migrate();
 		this.purge();
-	}
-
-	// NOTE: backfills the schema of databases created before updated_at existed.
-	private migrate(): void {
-		const columns = this.db.prepare("PRAGMA table_info(viewers)").all() as {
-			name: string;
-		}[];
-		if (columns.some((column) => column.name === "updated_at")) return;
-		this.db.exec(
-			"ALTER TABLE viewers ADD COLUMN updated_at INTEGER NOT NULL DEFAULT 0",
-		);
 	}
 
 	purge(): void {

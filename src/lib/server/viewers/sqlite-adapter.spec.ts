@@ -1,6 +1,7 @@
 import { DatabaseSync } from "node:sqlite";
 import { describe, expect, it } from "vitest";
 import type { StoredViewer } from "#lib/features/persistence/viewer-store.js";
+import { runMigrations } from "../migrations.js";
 import { PROFILE_RETENTION_MS, SqliteViewersRepo } from "./sqlite-adapter.js";
 
 const NOW = 1_700_000_000_000;
@@ -43,6 +44,7 @@ describe("SqliteViewersRepo", () => {
 			"INSERT INTO viewers (broadcaster_id, user_id, data) VALUES (?, ?, ?)",
 		).run("b1", "u1", JSON.stringify(legacy));
 
+		runMigrations(db);
 		const repo = new SqliteViewersRepo(db, () => NOW);
 
 		expect(repo.load("b1")).toEqual([legacy]);

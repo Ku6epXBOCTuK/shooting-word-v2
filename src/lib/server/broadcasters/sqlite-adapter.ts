@@ -36,19 +36,11 @@ export class SqliteBroadcastersRepo implements BroadcastersRepo {
 				user_id TEXT PRIMARY KEY,
 				login TEXT NOT NULL,
 				widget_uuid TEXT NOT NULL UNIQUE,
-				token TEXT NOT NULL
+				token TEXT NOT NULL,
+				display_name TEXT,
+				widget_key TEXT
 			)
 		`);
-
-		const columns = this.db
-			.prepare("PRAGMA table_info(broadcasters)")
-			.all() as { name: string }[];
-		if (!columns.some((column) => column.name === "display_name")) {
-			this.db.exec("ALTER TABLE broadcasters ADD COLUMN display_name TEXT");
-		}
-		if (!columns.some((column) => column.name === "widget_key")) {
-			this.db.exec("ALTER TABLE broadcasters ADD COLUMN widget_key TEXT");
-		}
 	}
 
 	upsert(
