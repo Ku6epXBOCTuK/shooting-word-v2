@@ -7,6 +7,7 @@ ARG APP_COMMIT
 ENV APP_COMMIT=$APP_COMMIT
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY patches ./patches
 RUN pnpm install --frozen-lockfile
 
 COPY . .
