@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.25.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/33b0648e5753c0c5f56059891e2d0d8a28f35a76..0.25.0) - 2026-10-17
+#### Features
+- update http adapter - ([800c6a5](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/800c6a50bb5efd53f17d1bb2c5de923c321e5132)) - Ku6epXBOCTuK
+- move to new repos - ([89efaf2](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/89efaf241dda6f79666ac2650acecd33e2e341ec)) - Ku6epXBOCTuK
+- split storage endpoint - ([58e4155](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/58e4155244a5cd51a94b62292f31ec9b2d7797f1)) - Ku6epXBOCTuK
+- settings and rewards separate tables - ([8df606a](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/8df606abf834696c67c2d243bbd4450032033e8b)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.24.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/914cfe743ac07838981b0c74efd0d8d2f933a4dc..0.24.0) - 2026-10-16
 #### Features
 - add client side widget key flow - ([1b0197b](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/1b0197b4fa0b5817a708d725b0dfeaaec92f3a6a)) - Ku6epXBOCTuK
