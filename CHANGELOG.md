@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.26.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/8f0506ad7aff5c7eaaa20bb6dc5392ec1316d066..0.26.0) - 2026-10-17
+#### Features
+- migrate to sqlite-up package - ([b5cd8fd](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/b5cd8fdf397abef42ab65356c2b0bbe96841dd42)) - Ku6epXBOCTuK
+- update migrations flow from fresh db, update tests - ([48c907e](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/48c907ebeaa8805519cd960ee4d54e70a312e2ab)) - Ku6epXBOCTuK
+- add initial migrations flow - ([8f0506a](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/8f0506ad7aff5c7eaaa20bb6dc5392ec1316d066)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.25.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/33b0648e5753c0c5f56059891e2d0d8a28f35a76..0.25.0) - 2026-10-17
 #### Features
 - update http adapter - ([800c6a5](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/800c6a50bb5efd53f17d1bb2c5de923c321e5132)) - Ku6epXBOCTuK
