@@ -4,6 +4,7 @@ import {
 	ROUND_OUTCOME,
 	type RoundRecord,
 } from "#lib/features/rounds/record.js";
+import { runMigrations } from "../migrations.js";
 import {
 	ROUNDS_KEPT_PER_BROADCASTER,
 	SqliteRoundsRepo,
@@ -33,7 +34,9 @@ describe("SqliteRoundsRepo", () => {
 	let repo: SqliteRoundsRepo;
 
 	beforeEach(() => {
-		repo = new SqliteRoundsRepo(new DatabaseSync(":memory:"));
+		const db = new DatabaseSync(":memory:");
+		runMigrations(db);
+		repo = new SqliteRoundsRepo(db);
 	});
 
 	it("stores and reads a round without losing fields", () => {

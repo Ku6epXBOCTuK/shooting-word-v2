@@ -7,88 +7,86 @@ export interface Migration {
 	up(db: DatabaseSync): void;
 }
 
-// NOTE: Guards on table/column existence keep every step safe on databases
-// where the change already ran before versioning existed, and on fresh ones -
-// repo constructors create it with the full column set.
-const addColumn = (
-	version: number,
-	name: string,
-	table: string,
-	column: string,
-	type: string,
-): Migration => ({
-	version,
-	name,
-	up(db) {
-		const exists = db
-			.prepare(
-				"SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
-			)
-			.get(table);
-		if (!exists) return;
-		const columns = db.prepare(`PRAGMA table_info(${table})`).all() as {
-			name: string;
-		}[];
-		if (columns.some((entry) => entry.name === column)) return;
-		db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
-	},
-});
-
-// NOTE: One-time split of the generic `storage` table into per-entity tables;
-// a missing `storage` table means already migrated.
-const storageSplit: Migration = {
+// NOTE: The single owner of the sqlite schema. Repo constructors never create
+// tables or indexes - using a repo against a database that has not been
+// migrated is a bug, not a self-healing case.
+const initialSchema: Migration = {
 	version: 1,
-	name: "storage-split",
+	name: "initial-schema",
 	up(db) {
-		const hasStorage = db
-			.prepare(
-				"SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'storage'",
+		db.exec(`
+			CREATE TABLE broadcasters (
+				user_id TEXT PRIMARY KEY,
+				login TEXT NOT NULL,
+				widget_uuid TEXT NOT NULL UNIQUE,
+				token TEXT NOT NULL,
+				display_name TEXT,
+				widget_key TEXT
 			)
-			.get();
-		if (!hasStorage) return;
-
-		const keys = db.prepare("SELECT DISTINCT key FROM storage").all() as {
-			key: string;
-		}[];
-		logger.info(
-			`[db] migrating storage keys: ${keys.map((entry) => entry.key).join(", ")}`,
-		);
-
-		db.exec(
-			"CREATE TABLE IF NOT EXISTS settings (broadcaster_id TEXT PRIMARY KEY, data TEXT NOT NULL)",
-		);
-		db.exec(
-			"CREATE TABLE IF NOT EXISTS reward_settings (broadcaster_id TEXT PRIMARY KEY, data TEXT NOT NULL)",
-		);
-		db.exec(
-			"INSERT OR IGNORE INTO settings (broadcaster_id, data) SELECT broadcaster_id, data FROM storage WHERE key = 'settings'",
-		);
-		db.exec(
-			"INSERT OR IGNORE INTO reward_settings (broadcaster_id, data) SELECT broadcaster_id, data FROM storage WHERE key = 'rewards'",
-		);
-		db.exec("DROP TABLE storage");
-		logger.info("[db] storage split into settings / reward_settings");
+		`);
+		db.exec(`
+			CREATE TABLE viewers (
+				broadcaster_id TEXT NOT NULL,
+				user_id TEXT NOT NULL,
+				data TEXT NOT NULL,
+				updated_at INTEGER NOT NULL DEFAULT 0,
+				PRIMARY KEY (broadcaster_id, user_id)
+			)
+		`);
+		db.exec(`
+			CREATE TABLE settings (
+				broadcaster_id TEXT PRIMARY KEY,
+				data TEXT NOT NULL
+			)
+		`);
+		db.exec(`
+			CREATE TABLE reward_settings (
+				broadcaster_id TEXT PRIMARY KEY,
+				data TEXT NOT NULL
+			)
+		`);
+		db.exec(`
+			CREATE TABLE reward_ids (
+				broadcaster_id TEXT NOT NULL,
+				key TEXT NOT NULL,
+				reward_id TEXT NOT NULL,
+				PRIMARY KEY (broadcaster_id, key)
+			)
+		`);
+		db.exec(`
+			CREATE TABLE sessions (
+				token TEXT PRIMARY KEY,
+				broadcaster_id TEXT NOT NULL,
+				expires_at INTEGER NOT NULL
+			)
+		`);
+		db.exec(`
+			CREATE TABLE rounds (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				broadcaster_id TEXT NOT NULL,
+				started_at INTEGER NOT NULL,
+				duration_sec REAL NOT NULL,
+				outcome TEXT NOT NULL,
+				afk INTEGER NOT NULL,
+				viewers INTEGER NOT NULL,
+				deaths INTEGER NOT NULL,
+				revives INTEGER NOT NULL,
+				words_spawned INTEGER NOT NULL,
+				words_expired INTEGER NOT NULL,
+				max_enemies INTEGER NOT NULL,
+				kills INTEGER NOT NULL,
+				misses INTEGER NOT NULL,
+				heals INTEGER NOT NULL,
+				doomsday INTEGER NOT NULL,
+				avg_enemies REAL NOT NULL,
+				avg_hp_fraction REAL NOT NULL
+			)
+		`);
+		db.exec("CREATE INDEX rounds_broadcaster ON rounds (broadcaster_id, id)");
 	},
 };
 
-export const migrations: Migration[] = [
-	storageSplit,
-	addColumn(
-		2,
-		"broadcasters-display-name",
-		"broadcasters",
-		"display_name",
-		"TEXT",
-	),
-	addColumn(3, "broadcasters-widget-key", "broadcasters", "widget_key", "TEXT"),
-	addColumn(
-		4,
-		"viewers-updated-at",
-		"viewers",
-		"updated_at",
-		"INTEGER NOT NULL DEFAULT 0",
-	),
-];
+export const migrations: Migration[] = [initialSchema];
 
 export function runMigrations(
 	db: DatabaseSync,

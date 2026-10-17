@@ -254,8 +254,9 @@
 - [x] главная страница с выбором варианта сборки
 - [x] номерация кадров fx (метки `a1`, `b3` + `static/fx/frames.md`)
 - [x] миграционный runner для sqlite: `PRAGMA user_version` + шаги
-      `{ version, name, up(db) }` в `src/lib/server/migrations.ts`, ad-hoc
-      бэкофилы из конструкторов репо перенесены в него, тесты на `:memory:`
+      `{ version, name, up(db) }`; вся схема (baseline `initial-schema`) живёт
+      только в `src/lib/server/migrations.ts`, конструкторы репо — без DDL,
+      тесты на `:memory:` с runMigrations
 
 ### Прочее
 

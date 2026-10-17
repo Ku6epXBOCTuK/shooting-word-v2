@@ -2,14 +2,7 @@ import type { DatabaseSync } from "node:sqlite";
 import type { SettingsRepo } from "./port.js";
 
 export class SqliteSettingsRepo implements SettingsRepo {
-	constructor(private readonly db: DatabaseSync) {
-		this.db.exec(`
-			CREATE TABLE IF NOT EXISTS settings (
-				broadcaster_id TEXT PRIMARY KEY,
-				data TEXT NOT NULL
-			)
-		`);
-	}
+	constructor(private readonly db: DatabaseSync) {}
 
 	load<T>(broadcasterId: string): T | null {
 		const row = this.db

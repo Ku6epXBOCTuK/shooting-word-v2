@@ -2,14 +2,7 @@ import type { DatabaseSync } from "node:sqlite";
 import type { RewardSettingsRepo } from "./port.js";
 
 export class SqliteRewardSettingsRepo implements RewardSettingsRepo {
-	constructor(private readonly db: DatabaseSync) {
-		this.db.exec(`
-			CREATE TABLE IF NOT EXISTS reward_settings (
-				broadcaster_id TEXT PRIMARY KEY,
-				data TEXT NOT NULL
-			)
-		`);
-	}
+	constructor(private readonly db: DatabaseSync) {}
 
 	load<T>(broadcasterId: string): T | null {
 		const row = this.db

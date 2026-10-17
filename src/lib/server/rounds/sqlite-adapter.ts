@@ -43,33 +43,7 @@ const toRecord = (row: RoundRow): RoundRecord => ({
 });
 
 export class SqliteRoundsRepo implements RoundsRepo {
-	constructor(private readonly db: DatabaseSync) {
-		this.db.exec(`
-			CREATE TABLE IF NOT EXISTS rounds (
-				id INTEGER PRIMARY KEY AUTOINCREMENT,
-				broadcaster_id TEXT NOT NULL,
-				started_at INTEGER NOT NULL,
-				duration_sec REAL NOT NULL,
-				outcome TEXT NOT NULL,
-				afk INTEGER NOT NULL,
-				viewers INTEGER NOT NULL,
-				deaths INTEGER NOT NULL,
-				revives INTEGER NOT NULL,
-				words_spawned INTEGER NOT NULL,
-				words_expired INTEGER NOT NULL,
-				max_enemies INTEGER NOT NULL,
-				kills INTEGER NOT NULL,
-				misses INTEGER NOT NULL,
-				heals INTEGER NOT NULL,
-				doomsday INTEGER NOT NULL,
-				avg_enemies REAL NOT NULL,
-				avg_hp_fraction REAL NOT NULL
-			)
-		`);
-		this.db.exec(
-			"CREATE INDEX IF NOT EXISTS rounds_broadcaster ON rounds (broadcaster_id, id)",
-		);
-	}
+	constructor(private readonly db: DatabaseSync) {}
 
 	add(broadcasterId: string, record: RoundRecord): void {
 		this.db

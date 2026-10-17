@@ -30,18 +30,7 @@ const toBroadcaster = (row: BroadcasterRow): Broadcaster => ({
 });
 
 export class SqliteBroadcastersRepo implements BroadcastersRepo {
-	constructor(private readonly db: DatabaseSync) {
-		this.db.exec(`
-			CREATE TABLE IF NOT EXISTS broadcasters (
-				user_id TEXT PRIMARY KEY,
-				login TEXT NOT NULL,
-				widget_uuid TEXT NOT NULL UNIQUE,
-				token TEXT NOT NULL,
-				display_name TEXT,
-				widget_key TEXT
-			)
-		`);
-	}
+	constructor(private readonly db: DatabaseSync) {}
 
 	upsert(
 		userId: string,

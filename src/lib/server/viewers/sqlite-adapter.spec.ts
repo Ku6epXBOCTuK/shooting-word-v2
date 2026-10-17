@@ -25,33 +25,12 @@ const entry = (data: StoredViewer, updatedAt = NOW) => ({
 	updatedAt,
 });
 
-const openRepo = (db = new DatabaseSync(":memory:")) => ({
-	db,
-	repo: new SqliteViewersRepo(db, () => NOW),
-});
+const openRepo = (db = new DatabaseSync(":memory:")) => {
+	runMigrations(db);
+	return { db, repo: new SqliteViewersRepo(db, () => NOW) };
+};
 
 describe("SqliteViewersRepo", () => {
-	it("migrates the legacy table and keeps its rows readable", () => {
-		const db = new DatabaseSync(":memory:");
-		db.exec(`CREATE TABLE viewers (
-			broadcaster_id TEXT NOT NULL,
-			user_id TEXT NOT NULL,
-			data TEXT NOT NULL,
-			PRIMARY KEY (broadcaster_id, user_id)
-		)`);
-		const legacy = profile({ xp: 7 });
-		db.prepare(
-			"INSERT INTO viewers (broadcaster_id, user_id, data) VALUES (?, ?, ?)",
-		).run("b1", "u1", JSON.stringify(legacy));
-
-		runMigrations(db);
-		const repo = new SqliteViewersRepo(db, () => NOW);
-
-		expect(repo.load("b1")).toEqual([legacy]);
-		repo.upsert("b1", [entry(profile({ xp: 9 }))]);
-		expect(repo.get<StoredViewer>("b1", "u1")?.xp).toBe(9);
-	});
-
 	it("merges by userId and keeps profiles missing from the payload", () => {
 		const { repo } = openRepo();
 		repo.upsert("b1", [

@@ -1,6 +1,7 @@
 import { DatabaseSync } from "node:sqlite";
 import type { AccessToken } from "@twurple/auth";
 import { describe, expect, it } from "vitest";
+import { runMigrations } from "../migrations.js";
 import { SqliteBroadcastersRepo } from "./sqlite-adapter.js";
 
 const TOKEN: AccessToken = {
@@ -12,6 +13,7 @@ const TOKEN: AccessToken = {
 };
 
 const openRepo = (db = new DatabaseSync(":memory:")) => {
+	runMigrations(db);
 	const repo = new SqliteBroadcastersRepo(db);
 	repo.upsert("u1", "alice", null, TOKEN);
 	return { db, repo };

@@ -1,12 +1,15 @@
 import { DatabaseSync } from "node:sqlite";
 import { beforeEach, describe, expect, it } from "vitest";
+import { runMigrations } from "../migrations.js";
 import { SqliteRewardIdsRepo } from "./sqlite-adapter.js";
 
 describe("SqliteRewardIdsRepo", () => {
 	let repo: SqliteRewardIdsRepo;
 
 	beforeEach(() => {
-		repo = new SqliteRewardIdsRepo(new DatabaseSync(":memory:"));
+		const db = new DatabaseSync(":memory:");
+		runMigrations(db);
+		repo = new SqliteRewardIdsRepo(db);
 	});
 
 	it("returns null for missing entry", () => {

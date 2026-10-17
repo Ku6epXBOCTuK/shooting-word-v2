@@ -2,16 +2,7 @@ import type { DatabaseSync } from "node:sqlite";
 import type { RewardIdsRepo } from "./port.js";
 
 export class SqliteRewardIdsRepo implements RewardIdsRepo {
-	constructor(private readonly db: DatabaseSync) {
-		this.db.exec(`
-			CREATE TABLE IF NOT EXISTS reward_ids (
-				broadcaster_id TEXT NOT NULL,
-				key TEXT NOT NULL,
-				reward_id TEXT NOT NULL,
-				PRIMARY KEY (broadcaster_id, key)
-			)
-		`);
-	}
+	constructor(private readonly db: DatabaseSync) {}
 
 	get(broadcasterId: string, key: string): string | null {
 		const row = this.db

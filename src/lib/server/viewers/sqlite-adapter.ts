@@ -28,15 +28,6 @@ export class SqliteViewersRepo implements ViewersRepo {
 		private readonly db: DatabaseSync,
 		private readonly now: () => number = Date.now,
 	) {
-		this.db.exec(`
-			CREATE TABLE IF NOT EXISTS viewers (
-				broadcaster_id TEXT NOT NULL,
-				user_id TEXT NOT NULL,
-				data TEXT NOT NULL,
-				updated_at INTEGER NOT NULL DEFAULT 0,
-				PRIMARY KEY (broadcaster_id, user_id)
-			)
-		`);
 		this.purge();
 	}
 

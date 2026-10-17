@@ -11,15 +11,7 @@ interface SessionRow {
 }
 
 export class SqliteSessionsRepo implements SessionsRepo {
-	constructor(private readonly db: DatabaseSync) {
-		this.db.exec(`
-			CREATE TABLE IF NOT EXISTS sessions (
-				token TEXT PRIMARY KEY,
-				broadcaster_id TEXT NOT NULL,
-				expires_at INTEGER NOT NULL
-			)
-		`);
-	}
+	constructor(private readonly db: DatabaseSync) {}
 
 	create(broadcasterId: string): string {
 		const token = randomUUID();
