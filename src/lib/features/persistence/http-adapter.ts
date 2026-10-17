@@ -6,11 +6,11 @@ const RETRIES = 3;
 const RETRY_DELAY_MS = 500;
 const TERMINAL_STATUSES = new Set([401, 403, 404]);
 
-const STORAGE_ROUTES: Record<string, string> = {
+const STORAGE_ROUTES = {
 	viewers: "/api/viewers",
 	settings: "/api/settings",
 	rewards: "/api/reward-settings",
-};
+} as const;
 
 export class HttpStorageAdapter implements StoragePort {
 	// NOTE: only the latest snapshot is kept: writes never accumulate.
@@ -23,7 +23,7 @@ export class HttpStorageAdapter implements StoragePort {
 	) {}
 
 	private url(key: string): string {
-		const route = STORAGE_ROUTES[key];
+		const route = STORAGE_ROUTES[key as keyof typeof STORAGE_ROUTES];
 		if (!route) throw new Error(`[storage] unknown key: ${key}`);
 		return `${resolve(route)}?uuid=${encodeURIComponent(this.uuid)}`;
 	}
