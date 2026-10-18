@@ -1,4 +1,5 @@
-import { resolve } from "$app/paths";
+import { isHttpError } from "@sveltejs/kit";
+import { reportRound as reportRoundCommand } from "#lib/features/widget/widget.remote.js";
 import { logger } from "#lib/logger.js";
 import type { RoundRecord } from "./record.js";
 
@@ -7,22 +8,11 @@ export function reportRound(
 	record: RoundRecord,
 	key?: string,
 ): void {
-	void fetch(`${resolve("/api/rounds")}?uuid=${encodeURIComponent(uuid)}`, {
-		method: "POST",
-		headers: {
-			"content-type": "application/json",
-			...(key ? { "x-widget-key": key } : {}),
-		},
-		body: JSON.stringify(record),
-	})
-		.then((response) => {
-			if (response.status === 403) {
-				logger.warn("[rounds] report rejected: widget key is not the owner");
-			}
-		})
-		.catch((error: unknown) => {
-			logger.warn(
-				`[rounds] report failed: ${error instanceof Error ? error.message : String(error)}`,
-			);
-		});
+	void reportRoundCommand({ uuid, key, record }).catch((error: unknown) => {
+		logger.warn(
+			isHttpError(error) && error.status === 403
+				? "[rounds] report rejected: widget key is not the owner"
+				: `[rounds] report failed: ${error instanceof Error ? error.message : String(error)}`,
+		);
+	});
 }

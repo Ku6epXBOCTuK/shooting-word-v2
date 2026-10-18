@@ -1,10 +1,13 @@
 import { error } from "@sveltejs/kit";
 import { command, getRequestEvent, query } from "$app/server";
+import { dev } from "$app/env";
 import * as v from "valibot";
 import {
 	isStoredViewer,
 	type StoredViewer,
 } from "#lib/features/persistence/viewer-store.js";
+import { isRoundRecord } from "#lib/features/rounds/record.js";
+import { normalizeSettings } from "#lib/game/settings.js";
 import { logger } from "#lib/logger.js";
 import { broadcasters } from "#lib/server/broadcasters/index.js";
 import {
@@ -13,6 +16,9 @@ import {
 	refundRedemption,
 	subscribeEffects,
 } from "#lib/server/reward-effects.js";
+import { sessionBroadcaster } from "#lib/server/resolve-broadcaster.js";
+import { rounds } from "#lib/server/rounds/index.js";
+import { settings } from "#lib/server/settings/index.js";
 import { SERVER_VERSION } from "#lib/server/version.js";
 import { viewers, type ViewerProfile } from "#lib/server/viewers/index.js";
 import { authorizeWidgetWriter } from "#lib/server/widget-writer.js";
@@ -124,3 +130,44 @@ export const viewersSave = command(viewersSaveArgs, (args) => {
 
 	viewers.upsert(broadcaster.userId, profiles);
 });
+
+export const settingsLoad = command(v.object(widgetRef), ({ uuid, key }) => {
+	const broadcaster = authorizeWidgetWriter(
+		getRequestEvent().cookies,
+		uuid,
+		key ?? null,
+	);
+
+	return normalizeSettings(settings.load(broadcaster.userId), undefined, dev);
+});
+
+const roundArgs = v.object({
+	...widgetRef,
+	record: v.unknown(),
+});
+
+export const reportRound = command(roundArgs, (args) => {
+	const broadcaster = authorizeWidgetWriter(
+		getRequestEvent().cookies,
+		args.uuid,
+		args.key ?? null,
+	);
+
+	if (!isRoundRecord(args.record)) {
+		logger.warn("[rounds] rejected malformed round record");
+		error(400, "malformed round record");
+	}
+
+	rounds.add(broadcaster.userId, args.record);
+});
+
+export const widgetLogin = command(
+	v.object({ uuid: v.string() }),
+	({ uuid }) => {
+		const broadcaster =
+			sessionBroadcaster(getRequestEvent().cookies) ??
+			(uuid ? broadcasters.byUuid(uuid) : null);
+
+		return broadcaster ? { login: broadcaster.login } : null;
+	},
+);

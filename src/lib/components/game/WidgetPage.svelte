@@ -1,16 +1,18 @@
 <script lang="ts">
-	import { loadServerSettings } from "#lib/features/persistence/index.js";
 	import {
 		claimWidget,
 		getOrCreateWidgetKey,
 	} from "#lib/features/widget/key.js";
+	import {
+		settingsLoad,
+		widgetLogin,
+	} from "#lib/features/widget/widget.remote.js";
 	import {
 		defaultSettings,
 		parseSettings,
 		type GameSettings,
 	} from "#lib/game/settings.js";
 	import { dev } from "$app/env";
-	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import { onMount } from "svelte";
 	import GameWidget from "./GameWidget.svelte";
@@ -40,21 +42,22 @@
 			key = getOrCreateWidgetKey(uuid);
 		}
 
-		const serverSettings = uuid ? await loadServerSettings(uuid) : null;
+		let serverSettings: GameSettings | null = null;
+		if (uuid && key) {
+			serverSettings = await settingsLoad({ uuid, key }).catch(() => null);
+		}
 		settings = parseSettings(
 			page.url.searchParams,
 			serverSettings ?? defaultSettings(),
 			dev,
 		);
 		try {
-			const response = await fetch(
-				`${resolve("/api/broadcaster")}?uuid=${encodeURIComponent(uuid)}`,
-			);
-			if (!response.ok) {
+			const session = await widgetLogin({ uuid });
+			if (!session) {
 				blocked = "notFound";
 				return;
 			}
-			login = ((await response.json()) as { login: string }).login;
+			login = session.login;
 		} catch {
 			blocked = "unavailable";
 		}
