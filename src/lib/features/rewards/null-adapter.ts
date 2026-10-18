@@ -1,6 +1,5 @@
 import type {
 	AppRewardStatus,
-	RewardsImportResult,
 	RewardsManageResult,
 	RewardsPort,
 	RewardsStatus,
@@ -10,11 +9,6 @@ const NOT_SUPPORTED: RewardsManageResult = {
 	ok: false,
 	created: [],
 	deleted: 0,
-	reason: "rewards are not supported in this build",
-};
-
-const NOT_SUPPORTED_IMPORT: RewardsImportResult = {
-	ok: false,
 	reason: "rewards are not supported in this build",
 };
 
@@ -28,10 +22,6 @@ export class NullRewardsAdapter implements RewardsPort {
 
 	async listAppRewards(): Promise<AppRewardStatus[]> {
 		return [];
-	}
-
-	async createRewards(): Promise<RewardsManageResult> {
-		return NOT_SUPPORTED;
 	}
 
 	async updateAll(): Promise<RewardsManageResult> {
@@ -52,9 +42,5 @@ export class NullRewardsAdapter implements RewardsPort {
 
 	async toggleReward(): Promise<RewardsManageResult> {
 		return NOT_SUPPORTED;
-	}
-
-	async importReward(): Promise<RewardsImportResult> {
-		return NOT_SUPPORTED_IMPORT;
 	}
 }

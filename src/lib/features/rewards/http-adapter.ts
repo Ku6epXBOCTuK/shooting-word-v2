@@ -1,7 +1,7 @@
 import { resolve } from "$app/paths";
 import type {
 	AppRewardStatus,
-	RewardsImportResult,
+	RewardValues,
 	RewardsManageResult,
 	RewardsPort,
 	RewardsStatus,
@@ -51,8 +51,12 @@ export class HttpRewardsAdapter implements RewardsPort {
 		return this.manage({ action: "update-all" }, uuid);
 	}
 
-	async update(key: string, uuid?: string): Promise<RewardsManageResult> {
-		return this.manage({ action: "update", key }, uuid);
+	async update(
+		key: string,
+		values: RewardValues,
+		uuid?: string,
+	): Promise<RewardsManageResult> {
+		return this.manage({ action: "update", key, values }, uuid);
 	}
 
 	async deleteReward(
@@ -76,14 +80,5 @@ export class HttpRewardsAdapter implements RewardsPort {
 		uuid?: string,
 	): Promise<RewardsManageResult> {
 		return this.manage({ action: "toggle", key, enabled }, uuid);
-	}
-
-	async importReward(key: string, uuid?: string): Promise<RewardsImportResult> {
-		const response = await fetch(this.url(uuid), {
-			method: "POST",
-			headers: { "content-type": "application/json" },
-			body: JSON.stringify({ action: "import", key }),
-		});
-		return (await response.json()) as RewardsImportResult;
 	}
 }

@@ -6,21 +6,17 @@ import type { RewardsPort } from "./port.js";
 export { REWARD_CONFIGS } from "./config.js";
 export type { RewardConfig } from "./config.js";
 export type {
-	RewardsImportResult,
+	AppRewardStatus,
+	RewardValues,
 	RewardsManageResult,
 	RewardsPort,
 	RewardsStatus,
 } from "./port.js";
 export {
-	defaultRewards,
-	effectiveRewards,
+	defaultRewardValues,
 	effectiveTitle,
-	normalizeRewards,
+	normalizeValues,
 	REWARDS_SCHEMA,
-	stripDevTitle,
-	type EffectiveReward,
-	type RewardOverrides,
-	type RewardSettings,
 } from "./settings.js";
 
 export const rewards: RewardsPort = REWARDS_ENABLED

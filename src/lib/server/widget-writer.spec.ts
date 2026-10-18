@@ -32,7 +32,7 @@ vi.mock("./broadcasters/index.js", () => ({
 
 const cookies = {} as never;
 const request = (key?: string) =>
-	new Request("http://localhost/api/reward-settings?uuid=w1", {
+	new Request("http://localhost/api/settings?uuid=w1", {
 		method: "PUT",
 		headers: key ? { "x-widget-key": key } : {},
 	});

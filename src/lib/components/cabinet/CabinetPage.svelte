@@ -73,7 +73,6 @@
 					<RewardsCard
 						rewardsAuthorized={session.rewardsAuthorized}
 						appRewards={session.appRewards}
-						rewards={session.rewards}
 					/>
 				</div>
 			{/if}

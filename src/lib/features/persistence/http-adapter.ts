@@ -9,7 +9,6 @@ const TERMINAL_STATUSES = new Set([401, 403, 404]);
 const STORAGE_ROUTES = {
 	viewers: "/api/viewers",
 	settings: "/api/settings",
-	rewards: "/api/reward-settings",
 } as const;
 
 export class HttpStorageAdapter implements StoragePort {

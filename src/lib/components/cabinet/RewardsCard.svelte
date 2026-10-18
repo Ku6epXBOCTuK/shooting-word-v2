@@ -2,9 +2,7 @@
 	import {
 		deleteAllRewards,
 		deleteReward,
-		importReward,
 		listAppRewards,
-		saveRewards,
 		toggleReward,
 		updateAllRewards,
 		updateReward,
@@ -13,16 +11,13 @@
 	import Button from "#lib/components/ui/Button.svelte";
 	import Icon from "#lib/components/ui/Icon.svelte";
 	import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
-	import type { AppRewardStatus } from "#lib/features/rewards/port.js";
 	import type {
-		RewardOverrides,
-		RewardSettings,
-	} from "#lib/features/rewards/settings.js";
+		AppRewardStatus,
+		RewardValues,
+	} from "#lib/features/rewards/port.js";
 	import { REWARDS_ENABLED } from "#lib/features/variant.js";
-	import type { SettingValue } from "#lib/game/settings.js";
 	import { untrack } from "svelte";
 	import GiftIcon from "~icons/lucide/gift";
-	import SaveIcon from "~icons/lucide/save";
 	import SlidersIcon from "~icons/lucide/sliders-horizontal";
 	import TrashIcon from "~icons/lucide/trash-2";
 	import RewardsEditor from "./RewardsEditor.svelte";
@@ -30,65 +25,57 @@
 	interface Props {
 		rewardsAuthorized: boolean;
 		appRewards: AppRewardStatus[];
-		rewards: RewardSettings;
 	}
 
-	let { rewardsAuthorized, appRewards, rewards }: Props = $props();
+	let { rewardsAuthorized, appRewards }: Props = $props();
 
 	let statuses = $state(untrack(() => appRewards));
-	let rewardSettings = $state<RewardSettings>(untrack(() => rewards));
 	let busy = $state(false);
 	let result = $state<string | null>(null);
 	let pendingDelete = $state<{ key: string | null; title: string } | null>(
 		null,
 	);
 
-	const onFieldChange = (
-		key: string,
-		field: keyof RewardOverrides,
-		value: SettingValue,
-	) => {
-		const current = rewardSettings[key as keyof RewardSettings] ?? {};
-		rewardSettings = {
-			...rewardSettings,
-			[key]: { ...current, [field]: value },
-		};
+	const refresh = async () => {
+		statuses = await listAppRewards();
 	};
 
-	const onImport = async (key: string) => {
+	const onSaveReward = async (key: string, values: RewardValues) => {
+		const wasCreated = statuses.find((item) => item.key === key)?.exists;
 		busy = true;
 		result = null;
 
-		const res = await importReward(key);
-		if (!res.ok || !res.overrides) {
-			result = res.reason ?? "Не удалось забрать значения из Twitch";
-			busy = false;
-			return;
-		}
-
-		rewardSettings = {
-			...rewardSettings,
-			[key]: { ...res.overrides },
-		};
-		const saved = await saveRewards(rewardSettings);
-		statuses = await listAppRewards();
-		result = saved
-			? "Значения забраны из Twitch и сохранены"
-			: "Значения забраны, но не сохранены";
+		const ok = await updateReward(key, values);
+		result = ok
+			? wasCreated
+				? "Награда обновлена на Twitch"
+				: "Награда создана на Twitch"
+			: "Не удалось сохранить награду";
+		await refresh();
 		busy = false;
 	};
 
-	const onSaveReward = async (key: string) => {
+	const onToggle = async (key: string, enabled: boolean) => {
 		busy = true;
 		result = null;
 
-		const saved = await saveRewards(rewardSettings);
-		const pushed = saved ? await updateReward(key) : false;
-		result =
-			saved && pushed
-				? "Награда сохранена и обновлена"
-				: "Не удалось сохранить награду";
-		statuses = await listAppRewards();
+		const ok = await toggleReward(key, enabled);
+		result = ok
+			? enabled
+				? "Награда включена"
+				: "Награда выключена"
+			: "Не удалось переключить награду";
+		await refresh();
+		busy = false;
+	};
+
+	const onUpdateAll = async () => {
+		busy = true;
+		result = null;
+
+		const ok = await updateAllRewards();
+		result = ok ? "Награды созданы на Twitch" : "Не удалось создать награды";
+		await refresh();
 		busy = false;
 	};
 
@@ -122,44 +109,7 @@
 				? "Награды удалены, баллы за невыполненные активации возвращены"
 				: "Награды удалены, баллы за невыполненные активации списаны"
 			: "Не удалось удалить награды";
-		statuses = await listAppRewards();
-		busy = false;
-	};
-
-	const onUpdateAll = async () => {
-		busy = true;
-		result = null;
-
-		const ok = await updateAllRewards();
-		result = ok ? "Награды обновлены" : "Не удалось обновить награды";
-		statuses = await listAppRewards();
-		busy = false;
-	};
-
-	const onSave = async () => {
-		busy = true;
-		result = null;
-
-		const ok = await saveRewards(rewardSettings);
-		result = ok
-			? "Настройки наград сохранены"
-			: "Не удалось сохранить настройки наград";
-		busy = false;
-	};
-
-	const onToggle = async (key: string, enabled: boolean) => {
-		busy = true;
-		result = null;
-
-		const ok = await toggleReward(key, enabled);
-		if (ok) {
-			statuses = statuses.map((item) =>
-				item.key === key ? { ...item, exists: true, enabled } : item,
-			);
-			result = enabled ? "Награда включена" : "Награда выключена";
-		} else {
-			result = "не удалось переключить награду";
-		}
+		await refresh();
 		busy = false;
 	};
 </script>
@@ -178,11 +128,11 @@
 					<div class="rewards-bulk">
 						<Button disabled={busy} onclick={onUpdateAll}>
 							<Icon as={GiftIcon} />
-							Создать все награды
+							Создать все
 						</Button>
 						<Button disabled={busy} onclick={requestDeleteAll}>
 							<Icon as={TrashIcon} />
-							Удалить все награды
+							Удалить все
 						</Button>
 					</div>
 				{/if}
@@ -191,23 +141,24 @@
 			{#if rewardsAuthorized}
 				<RewardsEditor
 					{statuses}
-					{rewards}
 					{busy}
 					ontoggle={onToggle}
 					onSave={onSaveReward}
 					onDelete={requestDelete}
-					{onFieldChange}
-					{onImport}
 				/>
 			{/if}
 		</div>
 
+		{#snippet bottom()}
+			{#if result}
+				<p class="result">{result}</p>
+			{/if}
+		{/snippet}
+
 		{#if pendingDelete}
 			<div class="dialog-backdrop">
 				<div class="dialog" role="dialog" aria-modal="true">
-					<h4 class="dialog-title">
-						Удалить {pendingDelete.title}?
-					</h4>
+					<h4 class="dialog-title">Удалить {pendingDelete.title}?</h4>
 					<p class="dialog-text">
 						Что сделать с баллами за невыполненные активации? При удалении
 						награды Twitch иначе спишет баллы автоматически.
@@ -224,18 +175,6 @@
 				</div>
 			</div>
 		{/if}
-
-		{#snippet bottom()}
-			<div class="bottom-row">
-				<Button variant="pro" disabled={busy} onclick={onSave}>
-					<Icon as={SaveIcon} />
-					Сохранить
-				</Button>
-				{#if result}
-					<p class="result">{result}</p>
-				{/if}
-			</div>
-		{/snippet}
 	</LaunchCard>
 {/if}
 
@@ -271,14 +210,8 @@
 		border: 1px solid rgba(255, 255, 255, 0.18);
 	}
 
-	.bottom-row {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-		align-items: flex-start;
-	}
-
 	.result {
+		margin: 0;
 		color: var(--cyan);
 		font-size: 15px;
 		font-weight: 700;

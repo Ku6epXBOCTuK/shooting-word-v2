@@ -3,6 +3,13 @@ export interface RewardsStatus {
 	reason?: string;
 }
 
+export interface RewardValues {
+	title: string;
+	description: string;
+	cost: number;
+	cooldown: number;
+}
+
 export interface RewardsManageResult {
 	ok: boolean;
 	created: string[];
@@ -16,25 +23,18 @@ export interface AppRewardStatus {
 	key: string;
 	exists: boolean;
 	enabled: boolean;
-	diverged?: boolean;
-}
-
-export interface RewardsImportResult {
-	ok: boolean;
-	overrides?: {
-		title?: string;
-		description?: string;
-		cost?: number;
-		cooldown?: number;
-	};
-	reason?: string;
+	live?: RewardValues;
 }
 
 export interface RewardsPort {
 	status(uuid?: string): Promise<RewardsStatus>;
 	listAppRewards(uuid?: string): Promise<AppRewardStatus[]>;
 	updateAll(uuid?: string): Promise<RewardsManageResult>;
-	update(key: string, uuid?: string): Promise<RewardsManageResult>;
+	update(
+		key: string,
+		values: RewardValues,
+		uuid?: string,
+	): Promise<RewardsManageResult>;
 	deleteReward(
 		key: string,
 		refund: boolean,
@@ -49,5 +49,4 @@ export interface RewardsPort {
 		enabled: boolean,
 		uuid?: string,
 	): Promise<RewardsManageResult>;
-	importReward(key: string, uuid?: string): Promise<RewardsImportResult>;
 }

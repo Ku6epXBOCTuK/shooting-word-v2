@@ -4,7 +4,8 @@ import {
 	type SettingValue,
 } from "#lib/game/settings.js";
 import { dev } from "$app/env";
-import { REWARD_CONFIGS, type REWARD_KEYS } from "./config.js";
+import { REWARD_CONFIGS } from "./config.js";
+import type { RewardValues } from "./port.js";
 
 export const REWARDS_SCHEMA = [
 	{
@@ -51,102 +52,51 @@ export const REWARDS_SCHEMA = [
 	},
 ] as const satisfies SettingDef[];
 
-export interface RewardOverrides {
-	title?: string;
-	description?: string;
-	cost?: number;
-	cooldown?: number;
-}
-
-export type RewardSettings = Partial<Record<REWARD_KEYS, RewardOverrides>>;
-
-export function defaultRewards(): Record<REWARD_KEYS, RewardOverrides> {
-	const result = {} as Record<REWARD_KEYS, RewardOverrides>;
-	for (const config of REWARD_CONFIGS) {
-		result[config.key as REWARD_KEYS] = {
-			title: config.title,
-			description: config.description,
-			cost: config.cost,
-			cooldown: config.cooldown,
-		};
-	}
-	return result;
-}
-
-export function normalizeRewards(raw: unknown): RewardSettings {
-	const result: RewardSettings = {};
-	if (typeof raw !== "object" || raw === null) return result;
-
-	const source = raw as Record<string, unknown>;
-	for (const config of REWARD_CONFIGS) {
-		const entry = source[config.key];
-		if (typeof entry !== "object" || entry === null) continue;
-		const fields = entry as Record<string, unknown>;
-
-		const override: RewardOverrides = {};
-		for (const def of REWARDS_SCHEMA) {
-			const value = fields[def.key];
-			if (value === undefined) continue;
-			const valid = validateStored(value, def);
-			if (valid !== undefined) {
-				(override as Record<string, SettingValue>)[def.key] = valid;
-			}
-		}
-		if (Object.keys(override).length > 0) {
-			result[config.key as REWARD_KEYS] = override;
-		}
-	}
-	return result;
-}
-
-export interface EffectiveReward {
-	key: string;
-	title: string;
-	description: string;
-	cost: number;
-	cooldown: number;
-}
-
 const DEV_TITLE_PREFIX = "Dev: ";
 
 export function effectiveTitle(title: string): string {
 	return dev ? `${DEV_TITLE_PREFIX}${title}` : title;
 }
 
-export function stripDevTitle(title: string): string {
-	return title.startsWith(DEV_TITLE_PREFIX)
-		? title.slice(DEV_TITLE_PREFIX.length)
-		: title;
+export function defaultRewardValues(key: string): RewardValues {
+	const config = REWARD_CONFIGS.find((item) => item.key === key);
+	if (!config) {
+		throw new Error(`unknown reward key: ${key}`);
+	}
+
+	return {
+		title: effectiveTitle(config.title),
+		description: config.description,
+		cost: config.cost,
+		cooldown: config.cooldown,
+	};
 }
 
-export function effectiveRewards(rewards: RewardSettings): EffectiveReward[] {
-	return REWARD_CONFIGS.map((config) => {
-		const override = rewards[config.key as REWARD_KEYS] ?? {};
-		return {
-			key: config.key,
-			title: effectiveTitle(override.title ?? config.title),
-			cost: override.cost ?? config.cost,
-			description: override.description ?? config.description,
-			cooldown: override.cooldown ?? config.cooldown,
-		};
-	});
-}
+export function normalizeValues(raw: unknown): RewardValues | null {
+	if (typeof raw !== "object" || raw === null) return null;
 
-export interface LiveReward {
-	title: string;
-	cost: number;
-	prompt: string | null | undefined;
-	globalCooldown: number | null | undefined;
-}
+	const source = raw as Record<string, unknown>;
+	const values: Record<string, SettingValue> = {};
 
-export function isDiverged(
-	effective: EffectiveReward,
-	live: LiveReward,
-): boolean {
-	return (
-		live.title !== effective.title ||
-		live.cost !== effective.cost ||
-		(live.prompt ?? "") !== effective.description ||
-		(live.globalCooldown ?? 0) !== effective.cooldown
-	);
+	for (const def of REWARDS_SCHEMA) {
+		const value = source[def.key];
+		if (value === undefined) return null;
+
+		const valid = validateStored(value, def);
+		if (valid !== undefined) {
+			values[def.key] = valid;
+			continue;
+		}
+
+		// NOTE: an empty prompt is a valid reward state on Twitch, while the
+		// shared string validator rejects empty strings.
+		if (def.key === "description" && value === "") {
+			values[def.key] = "";
+			continue;
+		}
+
+		return null;
+	}
+
+	return values as unknown as RewardValues;
 }

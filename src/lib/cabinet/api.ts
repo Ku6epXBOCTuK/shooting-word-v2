@@ -1,12 +1,8 @@
 import { rewards } from "#lib/features/rewards/index.js";
 import type {
 	AppRewardStatus,
-	RewardsImportResult,
+	RewardValues,
 } from "#lib/features/rewards/port.js";
-import {
-	normalizeRewards,
-	type RewardSettings,
-} from "#lib/features/rewards/settings.js";
 import { REWARDS_ENABLED } from "#lib/features/variant.js";
 import {
 	defaultSettings,
@@ -24,7 +20,6 @@ export interface CabinetSession {
 	rewardsStatus: string | null;
 	appRewards: AppRewardStatus[];
 	settings: GameSettings;
-	rewards: RewardSettings;
 }
 
 export async function loadSession(): Promise<CabinetSession | null> {
@@ -62,7 +57,6 @@ export async function loadSession(): Promise<CabinetSession | null> {
 		rewardsStatus,
 		appRewards,
 		settings: await loadSettings(),
-		rewards: await loadRewards(),
 	};
 }
 
@@ -89,29 +83,6 @@ export async function saveSettings(settings: GameSettings): Promise<boolean> {
 	}
 }
 
-export async function loadRewards(): Promise<RewardSettings> {
-	try {
-		const response = await fetch(resolve("/api/reward-settings"));
-		if (!response.ok) return {};
-		return normalizeRewards(await response.json());
-	} catch {
-		return {};
-	}
-}
-
-export async function saveRewards(rewards: RewardSettings): Promise<boolean> {
-	try {
-		const response = await fetch(resolve("/api/reward-settings"), {
-			method: "PUT",
-			headers: { "content-type": "application/json" },
-			body: JSON.stringify(rewards),
-		});
-		return response.ok;
-	} catch {
-		return false;
-	}
-}
-
 export async function rotateWidgetUuid(): Promise<string | null> {
 	const response = await fetch(resolve("/api/broadcaster"), {
 		method: "POST",
@@ -127,12 +98,11 @@ export async function updateAllRewards(): Promise<boolean> {
 	return result.ok;
 }
 
-export async function importReward(key: string): Promise<RewardsImportResult> {
-	return rewards.importReward(key);
-}
-
-export async function updateReward(key: string): Promise<boolean> {
-	const result = await rewards.update(key);
+export async function updateReward(
+	key: string,
+	values: RewardValues,
+): Promise<boolean> {
+	const result = await rewards.update(key, values);
 	return result.ok;
 }
 

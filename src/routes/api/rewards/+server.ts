@@ -1,20 +1,18 @@
 import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
 import type {
 	AppRewardStatus,
+	RewardValues,
 	RewardsManageResult,
 } from "#lib/features/rewards/port.js";
 import {
-	effectiveRewards,
-	isDiverged,
-	normalizeRewards,
-	stripDevTitle,
+	defaultRewardValues,
+	normalizeValues,
 } from "#lib/features/rewards/settings.js";
 import { logger } from "#lib/logger.js";
 import { resolveBroadcaster } from "#lib/server/resolve-broadcaster.js";
 import { rewardIds } from "#lib/server/reward-ids/index.js";
 import { planRewardPrune } from "#lib/server/reward-ids/prune.js";
 import { deleteRewardWithRefund } from "#lib/server/reward-delete.js";
-import { rewardSettings } from "#lib/server/reward-settings/index.js";
 import { getApiClient } from "#lib/server/twitch-auth.js";
 import type { Cookies } from "@sveltejs/kit";
 import type { ApiClient, HelixCustomReward } from "@twurple/api";
@@ -29,9 +27,7 @@ async function resolveContext(cookies: Cookies, url: URL) {
 	const api = await getApiClient(broadcaster);
 	if (!api) return null;
 
-	const rewards = normalizeRewards(rewardSettings.load(broadcaster.userId));
-
-	return { api, userId: broadcaster.userId, rewards };
+	return { api, userId: broadcaster.userId };
 }
 
 function matchReward(
@@ -46,6 +42,13 @@ function matchReward(
 		existing.find((item) => item.title === title)
 	);
 }
+
+const liveValues = (reward: HelixCustomReward): RewardValues => ({
+	title: reward.title,
+	description: reward.prompt ?? "",
+	cost: reward.cost,
+	cooldown: reward.globalCooldown ?? 0,
+});
 
 const NOT_AUTHORIZED = {
 	available: false,
@@ -105,29 +108,19 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 		const removed = await pruneOrphanRewards(context);
 		const data = all.filter(({ id }) => !removed.has(id));
 
-		const effRewards = effectiveRewards(context.rewards);
 		const appRewards: AppRewardStatus[] = REWARD_CONFIGS.map((config) => {
-			const effective = effRewards.find((item) => item.key === config.key);
 			const match = matchReward(
 				data,
 				context.userId,
 				config.key,
-				effective?.title ?? config.title,
+				defaultRewardValues(config.key).title,
 			);
-			const diverged =
-				match !== undefined &&
-				effective !== undefined &&
-				isDiverged(effective, {
-					title: match.title,
-					cost: match.cost,
-					prompt: match.prompt,
-					globalCooldown: match.globalCooldown,
-				});
+
 			return {
 				key: config.key,
 				exists: Boolean(match),
 				enabled: match?.isEnabled ?? false,
-				diverged,
+				live: match ? liveValues(match) : undefined,
 			};
 		});
 
@@ -155,6 +148,13 @@ const cooldownData = (cooldown: number) =>
 		? { isGlobalCooldownEnabled: true, globalCooldownSeconds: cooldown }
 		: { isGlobalCooldownEnabled: false };
 
+const rewardData = (values: RewardValues) => ({
+	title: values.title,
+	cost: values.cost,
+	prompt: values.description,
+	...cooldownData(values.cooldown),
+});
+
 export const POST: RequestHandler = async ({ request, url, cookies }) => {
 	const context = await resolveContext(cookies, url);
 
@@ -169,6 +169,7 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 		key?: string;
 		enabled?: boolean;
 		refund?: boolean;
+		values?: unknown;
 	};
 	const { action } = body;
 
@@ -181,18 +182,17 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 
 		if (action === "toggle") {
 			const enabled = body.enabled === true;
-			const reward = effectiveRewards(context.rewards).find(
-				(item) => item.key === body.key,
-			);
-			if (!reward) {
+			const config = REWARD_CONFIGS.find((item) => item.key === body.key);
+			if (!config) {
 				return Response.json(FAILURE("unknown reward key"), { status: 400 });
 			}
 
+			const values = defaultRewardValues(config.key);
 			const existingReward = matchReward(
 				existing,
 				context.userId,
-				reward.key,
-				reward.title,
+				config.key,
+				values.title,
 			);
 
 			if (existingReward) {
@@ -201,17 +201,14 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 					existingReward.id,
 					{ isEnabled: enabled },
 				);
-				rewardIds.set(context.userId, reward.key, existingReward.id);
+				rewardIds.set(context.userId, config.key, existingReward.id);
 			} else {
 				const createdReward =
 					await context.api.channelPoints.createCustomReward(context.userId, {
-						title: reward.title,
-						cost: reward.cost,
-						prompt: reward.description,
-						...cooldownData(reward.cooldown),
+						...rewardData(values),
 						isEnabled: enabled,
 					});
-				rewardIds.set(context.userId, reward.key, createdReward.id);
+				rewardIds.set(context.userId, config.key, createdReward.id);
 			}
 
 			return Response.json({ ok: true, created: [], updated: [], deleted: 0 });
@@ -221,133 +218,86 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 			const created: string[] = [];
 			const updated: string[] = [];
 
-			for (const reward of effectiveRewards(context.rewards)) {
+			for (const config of REWARD_CONFIGS) {
+				const values = defaultRewardValues(config.key);
 				const existingReward = matchReward(
 					existing,
 					context.userId,
-					reward.key,
-					reward.title,
+					config.key,
+					values.title,
 				);
 
 				if (existingReward) {
 					await context.api.channelPoints.updateCustomReward(
 						context.userId,
 						existingReward.id,
-						{
-							title: reward.title,
-							cost: reward.cost,
-							prompt: reward.description,
-							...cooldownData(reward.cooldown),
-						},
+						rewardData(values),
 					);
-					rewardIds.set(context.userId, reward.key, existingReward.id);
-					updated.push(reward.title);
+					rewardIds.set(context.userId, config.key, existingReward.id);
+					updated.push(values.title);
 					continue;
 				}
 
 				const createdReward =
-					await context.api.channelPoints.createCustomReward(context.userId, {
-						title: reward.title,
-						cost: reward.cost,
-						prompt: reward.description,
-						...cooldownData(reward.cooldown),
-					});
-				rewardIds.set(context.userId, reward.key, createdReward.id);
-				created.push(reward.title);
+					await context.api.channelPoints.createCustomReward(
+						context.userId,
+						rewardData(values),
+					);
+				rewardIds.set(context.userId, config.key, createdReward.id);
+				created.push(values.title);
 			}
 
 			return Response.json({ ok: true, created, updated, deleted: 0 });
 		}
+
 		if (action === "update") {
 			const key = body.key;
 			if (!key) {
 				return Response.json(FAILURE("missing `key`"), { status: 400 });
 			}
-			const reward = effectiveRewards(context.rewards).find(
-				(item) => item.key === key,
-			);
-			if (!reward) {
+			if (!REWARD_CONFIGS.some((item) => item.key === key)) {
 				return Response.json(FAILURE("unknown reward key"), { status: 400 });
 			}
 
-			const existingReward = matchReward(
-				existing,
-				context.userId,
-				reward.key,
-				reward.title,
-			);
-
-			if (existingReward) {
-				await context.api.channelPoints.updateCustomReward(
-					context.userId,
-					existingReward.id,
-					{
-						title: reward.title,
-						cost: reward.cost,
-						prompt: reward.description,
-						...cooldownData(reward.cooldown),
-					},
-				);
-				rewardIds.set(context.userId, reward.key, existingReward.id);
-				return Response.json({
-					ok: true,
-					created: [],
-					updated: [reward.title],
-					deleted: 0,
+			const values = normalizeValues(body.values);
+			if (!values) {
+				return Response.json(FAILURE("invalid reward values"), {
+					status: 400,
 				});
-			}
-
-			const createdReward = await context.api.channelPoints.createCustomReward(
-				context.userId,
-				{
-					title: reward.title,
-					cost: reward.cost,
-					prompt: reward.description,
-					...cooldownData(reward.cooldown),
-				},
-			);
-			rewardIds.set(context.userId, reward.key, createdReward.id);
-			return Response.json({
-				ok: true,
-				created: [reward.title],
-				updated: [],
-				deleted: 0,
-			});
-		}
-
-		if (action === "import") {
-			const key = body.key;
-			if (!key) {
-				return Response.json(FAILURE("missing `key`"), { status: 400 });
-			}
-			const effective = effectiveRewards(context.rewards).find(
-				(item) => item.key === key,
-			);
-			if (!effective) {
-				return Response.json(FAILURE("unknown reward key"), { status: 400 });
 			}
 
 			const existingReward = matchReward(
 				existing,
 				context.userId,
 				key,
-				effective.title,
+				values.title,
 			);
-			if (!existingReward) {
+
+			if (existingReward) {
+				await context.api.channelPoints.updateCustomReward(
+					context.userId,
+					existingReward.id,
+					rewardData(values),
+				);
+				rewardIds.set(context.userId, key, existingReward.id);
 				return Response.json({
-					ok: false,
-					reason: "reward not created on Twitch yet",
+					ok: true,
+					created: [],
+					updated: [values.title],
+					deleted: 0,
 				});
 			}
 
+			const createdReward = await context.api.channelPoints.createCustomReward(
+				context.userId,
+				rewardData(values),
+			);
+			rewardIds.set(context.userId, key, createdReward.id);
 			return Response.json({
 				ok: true,
-				overrides: {
-					title: stripDevTitle(existingReward.title),
-					description: existingReward.prompt ?? "",
-					cost: existingReward.cost,
-					cooldown: existingReward.globalCooldown ?? 0,
-				},
+				created: [values.title],
+				updated: [],
+				deleted: 0,
 			});
 		}
 
@@ -355,18 +305,16 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 			const refund = body.refund === true;
 
 			if (body.key) {
-				const effective = effectiveRewards(context.rewards).find(
-					(item) => item.key === body.key,
-				);
-				if (!effective) {
+				const config = REWARD_CONFIGS.find((item) => item.key === body.key);
+				if (!config) {
 					return Response.json(FAILURE("unknown reward key"), { status: 400 });
 				}
 
 				const target = matchReward(
 					existing,
 					context.userId,
-					body.key,
-					effective.title,
+					config.key,
+					defaultRewardValues(config.key).title,
 				);
 				if (!target) {
 					return Response.json({
@@ -383,7 +331,7 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 					target.id,
 					refund,
 				);
-				rewardIds.remove(context.userId, body.key);
+				rewardIds.remove(context.userId, config.key);
 
 				return Response.json({
 					ok: true,

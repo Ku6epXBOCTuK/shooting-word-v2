@@ -1,7 +1,3 @@
-import {
-	normalizeRewards,
-	type RewardSettings,
-} from "#lib/features/rewards/settings.js";
 import { normalizeSettings, type GameSettings } from "#lib/game/settings.js";
 import { dev } from "$app/env";
 import { REWARDS_ENABLED } from "../variant.js";
@@ -34,12 +30,4 @@ export async function loadServerSettings(
 	if (!REWARDS_ENABLED) return null;
 	const raw = await new HttpStorageAdapter(uuid).load("settings");
 	return raw ? normalizeSettings(raw, undefined, dev) : null;
-}
-
-export async function loadServerRewards(
-	uuid: string,
-): Promise<RewardSettings | null> {
-	if (!REWARDS_ENABLED) return null;
-	const raw = await new HttpStorageAdapter(uuid).load("rewards");
-	return raw ? normalizeRewards(raw) : null;
 }
