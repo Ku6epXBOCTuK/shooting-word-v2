@@ -4,13 +4,12 @@ import type {
 	RewardValues,
 } from "#lib/features/rewards/port.js";
 import { REWARDS_ENABLED } from "#lib/features/variant.js";
+import type { GameSettings } from "#lib/game/settings.js";
 import {
-	defaultSettings,
-	normalizeSettings,
-	type GameSettings,
-} from "#lib/game/settings.js";
-import { dev } from "$app/env";
-import { resolve } from "$app/paths";
+	cabinetSession,
+	rotateWidgetUuid as rotateWidgetUuidCommand,
+	saveSettings as saveSettingsCommand,
+} from "./cabinet.remote.js";
 
 export interface CabinetSession {
 	login: string;
@@ -25,14 +24,8 @@ export interface CabinetSession {
 export async function loadSession(): Promise<CabinetSession | null> {
 	if (!REWARDS_ENABLED) return null;
 
-	const response = await fetch(resolve("/api/broadcaster"));
-	if (!response.ok) return null;
-
-	const data = (await response.json()) as {
-		login: string;
-		displayName?: string | null;
-		widgetUuid?: string;
-	};
+	const data = await cabinetSession().catch(() => null);
+	if (!data) return null;
 
 	let rewardsAuthorized = false;
 	let rewardsStatus: string | null = null;
@@ -52,45 +45,30 @@ export async function loadSession(): Promise<CabinetSession | null> {
 	return {
 		login: data.login,
 		displayName: data.displayName ?? data.login,
-		widgetUuid: data.widgetUuid ?? null,
+		widgetUuid: data.widgetUuid,
 		rewardsAuthorized,
 		rewardsStatus,
 		appRewards,
-		settings: await loadSettings(),
+		settings: data.settings,
 	};
 }
 
-export async function loadSettings(): Promise<GameSettings> {
+export async function saveSettings(next: GameSettings): Promise<boolean> {
 	try {
-		const response = await fetch(resolve("/api/settings"));
-		if (!response.ok) return defaultSettings();
-		return normalizeSettings(await response.json(), undefined, dev);
-	} catch {
-		return defaultSettings();
-	}
-}
-
-export async function saveSettings(settings: GameSettings): Promise<boolean> {
-	try {
-		const response = await fetch(resolve("/api/settings"), {
-			method: "PUT",
-			headers: { "content-type": "application/json" },
-			body: JSON.stringify(settings),
-		});
-		return response.ok;
+		await saveSettingsCommand(next);
+		return true;
 	} catch {
 		return false;
 	}
 }
 
 export async function rotateWidgetUuid(): Promise<string | null> {
-	const response = await fetch(resolve("/api/broadcaster"), {
-		method: "POST",
-	});
-	if (!response.ok) return null;
-
-	const data = (await response.json()) as { widgetUuid: string };
-	return data.widgetUuid;
+	try {
+		const data = await rotateWidgetUuidCommand();
+		return data.widgetUuid;
+	} catch {
+		return null;
+	}
 }
 
 export async function updateAllRewards(): Promise<boolean> {
