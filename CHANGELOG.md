@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.27.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/c2100028bdd28ab1f3c3a48f0bf8774991cc136d..0.27.0) - 2026-10-18
+#### Features
+- add help marquee - ([34c13f1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/34c13f1a56f060b2704b616a99d229c2215cd98a)) - Ku6epXBOCTuK
+- drop database migration - ([8d6d7c3](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/8d6d7c31874f87268275c2ba26474b8fbba2d034)) - Ku6epXBOCTuK
+- update rewards flow - delete\import\create - ([7756548](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/775654850a284edc33949488c51883d571b1747f)) - Ku6epXBOCTuK
+- delete reward with refund flow - ([240efaa](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/240efaa23769d24e37908d4e826368602d1358d5)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.26.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/8f0506ad7aff5c7eaaa20bb6dc5392ec1316d066..0.26.0) - 2026-10-17
 #### Features
 - migrate to sqlite-up package - ([b5cd8fd](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/b5cd8fdf397abef42ab65356c2b0bbe96841dd42)) - Ku6epXBOCTuK
