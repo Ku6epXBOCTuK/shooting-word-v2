@@ -206,6 +206,33 @@ export function createGameCore(
 		}
 	};
 
+	type TimedComponent = "shield" | "overcharge" | "armorCoating";
+
+	const applyTimedReward = <C extends TimedComponent>(
+		component: C,
+		rewardKey: string,
+		make: (expiresAt: number) => NonNullable<Entity[C]>,
+	) => {
+		return (entries: { userId: string; expiresAt: number }[]) => {
+			const map = new Map(
+				entries.map((entry) => [entry.userId, entry.expiresAt]),
+			);
+
+			for (const entity of viewers) {
+				const expiresAt = map.get(entity.viewer.userId);
+				if (expiresAt === undefined) continue;
+
+				const current = entity[component];
+				if (!current) {
+					world.addComponent(entity, component, make(expiresAt));
+					reactToReward(rewardKey, entity.position);
+				} else if (current.expiresAt < expiresAt) {
+					current.expiresAt = expiresAt;
+				}
+			}
+		};
+	};
+
 	return {
 		world,
 
@@ -237,72 +264,23 @@ export function createGameCore(
 			ctx.viewersDirty = true;
 		},
 
-		applyShields: (shields: { userId: string; expiresAt: number }[]) => {
-			const map = new Map(
-				shields.map((shield) => [shield.userId, shield.expiresAt]),
-			);
+		applyShields: applyTimedReward(
+			"shield",
+			SHIELD_REWARD.key,
+			(expiresAt) => ({ expiresAt, hp: SHIELD_MAX_HP }),
+		),
 
-			for (const entity of viewers) {
-				const expiresAt = map.get(entity.viewer.userId);
-				if (expiresAt === undefined) continue;
+		applyOvercharges: applyTimedReward(
+			"overcharge",
+			OVERCHARGE_REWARD.key,
+			(expiresAt) => ({ expiresAt }),
+		),
 
-				if (!entity.shield) {
-					world.addComponent(entity, "shield", {
-						expiresAt,
-						hp: SHIELD_MAX_HP,
-					});
-					reactToReward(SHIELD_REWARD.key, entity.position);
-				} else if (entity.shield.expiresAt < expiresAt) {
-					entity.shield.expiresAt = expiresAt;
-				}
-			}
-		},
-
-		applyOvercharges: (
-			overcharges: { userId: string; expiresAt: number }[],
-		) => {
-			const map = new Map(
-				overcharges.map((overcharge) => [
-					overcharge.userId,
-					overcharge.expiresAt,
-				]),
-			);
-
-			for (const entity of viewers) {
-				const expiresAt = map.get(entity.viewer.userId);
-				if (expiresAt === undefined) continue;
-
-				if (!entity.overcharge) {
-					world.addComponent(entity, "overcharge", { expiresAt });
-					reactToReward(OVERCHARGE_REWARD.key, entity.position);
-				} else if (entity.overcharge.expiresAt < expiresAt) {
-					entity.overcharge.expiresAt = expiresAt;
-				}
-			}
-		},
-
-		applyArmorCoating: (
-			armorCoatings: { userId: string; expiresAt: number }[],
-		) => {
-			const map = new Map(
-				armorCoatings.map((armorCoating) => [
-					armorCoating.userId,
-					armorCoating.expiresAt,
-				]),
-			);
-
-			for (const entity of viewers) {
-				const expiresAt = map.get(entity.viewer.userId);
-				if (expiresAt === undefined) continue;
-
-				if (!entity.armorCoating) {
-					world.addComponent(entity, "armorCoating", { expiresAt });
-					reactToReward(ARMOR_COATING_REWARD.key, entity.position);
-				} else if (entity.armorCoating.expiresAt < expiresAt) {
-					entity.armorCoating.expiresAt = expiresAt;
-				}
-			}
-		},
+		applyArmorCoating: applyTimedReward(
+			"armorCoating",
+			ARMOR_COATING_REWARD.key,
+			(expiresAt) => ({ expiresAt }),
+		),
 
 		grantBatteries: (userIds: string[]) => {
 			let changed = false;
