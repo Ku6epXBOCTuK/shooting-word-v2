@@ -10,9 +10,11 @@ import type {
 	EffectsMessage,
 	RewardEffect,
 } from "#lib/features/rewards/effects.js";
-import { effectsStream } from "#lib/features/widget/widget.remote.js";
+import {
+	effectsStream,
+	rejectEffect,
+} from "#lib/features/widget/widget.remote.js";
 import type { bootstrapGame } from "#lib/game/bootstrap.js";
-import { resolve } from "$app/paths";
 import { shouldReload } from "./version.js";
 
 type GameApi = Awaited<ReturnType<typeof bootstrapGame>>;
@@ -115,21 +117,15 @@ export function startEffectsStream(
 ): () => void {
 	const reject = (effect: RewardEffect) => {
 		if (!effect.redemptionId || !effect.rewardId) return;
-		void fetch(
-			`${resolve("/api/effects/reject")}?uuid=${encodeURIComponent(uuid)}`,
-			{
-				method: "POST",
-				headers: {
-					"content-type": "application/json",
-					...(key ? { "x-widget-key": key } : {}),
-				},
-				body: JSON.stringify({
-					redemptionId: effect.redemptionId,
-					rewardId: effect.rewardId,
-					reason: "ship destroyed or doomsday already active",
-				}),
-			},
-		);
+		void rejectEffect({
+			uuid,
+			key,
+			redemptionId: effect.redemptionId,
+			rewardId: effect.rewardId,
+			reason: "ship destroyed or doomsday already active",
+		}).catch(() => {
+			// NOTE: fire-and-forget; a failed reject leaves the redemption as is
+		});
 	};
 	const iterator = effectsStream({ uuid })[Symbol.asyncIterator]();
 

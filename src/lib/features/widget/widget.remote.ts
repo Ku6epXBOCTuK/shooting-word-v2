@@ -1,13 +1,16 @@
 import { error } from "@sveltejs/kit";
-import { query } from "$app/server";
+import { command, getRequestEvent, query } from "$app/server";
 import * as v from "valibot";
+import { logger } from "#lib/logger.js";
 import { broadcasters } from "#lib/server/broadcasters/index.js";
 import {
 	ensureRewardEffects,
 	getRewardEffects,
+	refundRedemption,
 	subscribeEffects,
 } from "#lib/server/reward-effects.js";
 import { SERVER_VERSION } from "#lib/server/version.js";
+import { authorizeWidgetWriter } from "#lib/server/widget-writer.js";
 
 const streamArgs = v.object({ uuid: v.string() });
 
@@ -45,4 +48,32 @@ export const effectsStream = query.live(streamArgs, async function* ({ uuid }) {
 	} finally {
 		unsubscribe();
 	}
+});
+
+const rejectArgs = v.object({
+	uuid: v.string(),
+	key: v.optional(v.string()),
+	redemptionId: v.string(),
+	rewardId: v.string(),
+	reason: v.string(),
+});
+
+export const rejectEffect = command(rejectArgs, async (args) => {
+	const broadcaster = authorizeWidgetWriter(
+		getRequestEvent().cookies,
+		args.uuid,
+		args.key ?? null,
+	);
+
+	const refunded = await refundRedemption(
+		broadcaster,
+		args.rewardId,
+		args.redemptionId,
+		args.reason,
+	);
+	logger.info(
+		`[effects] widget rejected redemption ${args.redemptionId}: ${args.reason} (${broadcaster.login})`,
+	);
+
+	return { refunded };
 });

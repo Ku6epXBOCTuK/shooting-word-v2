@@ -1,7 +1,7 @@
 import { isHttpError } from "@sveltejs/kit";
 import { describe, expect, it, vi } from "vitest";
 import type { Broadcaster } from "./broadcasters/index.js";
-import { requireWidgetWriter } from "./widget-writer.js";
+import { authorizeWidgetWriter, requireWidgetWriter } from "./widget-writer.js";
 
 const broadcaster: Broadcaster = {
 	userId: "u1",
@@ -39,15 +39,18 @@ const event = (target: string, key?: string) => ({
 	}),
 });
 
-const rejection = (target: string, key?: string) => {
+const thrownFrom = (fn: () => unknown) => {
 	try {
-		requireWidgetWriter(event(target, key));
+		fn();
 	} catch (thrown) {
 		if (isHttpError(thrown)) return thrown;
 		throw thrown;
 	}
-	throw new Error("requireWidgetWriter did not throw");
+	throw new Error("no error was thrown");
 };
+
+const rejection = (target: string, key?: string) =>
+	thrownFrom(() => requireWidgetWriter(event(target, key)));
 
 describe("requireWidgetWriter", () => {
 	it("lets the cabinet session through without a key", () => {
@@ -97,6 +100,22 @@ describe("requireWidgetWriter", () => {
 		claim.mockReturnValueOnce(null);
 
 		expect(rejection("/api/settings?uuid=w1", "key-a")).toMatchObject({
+			status: 404,
+		});
+	});
+});
+
+describe("authorizeWidgetWriter", () => {
+	it("accepts a uuid and key passed as arguments", () => {
+		claim.mockReturnValueOnce({ claim: "owner", broadcaster });
+
+		expect(authorizeWidgetWriter({} as never, "w1", "key-a")).toBe(broadcaster);
+	});
+
+	it("rejects a missing uuid", () => {
+		expect(
+			thrownFrom(() => authorizeWidgetWriter({} as never, null, null)),
+		).toMatchObject({
 			status: 404,
 		});
 	});

@@ -10,13 +10,24 @@ export const WIDGET_KEY_HEADER = "x-widget-key";
 export function requireWidgetWriter(
 	event: Pick<RequestEvent, "cookies" | "url" | "request">,
 ): Broadcaster {
-	const session = sessionBroadcaster(event.cookies);
+	return authorizeWidgetWriter(
+		event.cookies,
+		event.url.searchParams.get("uuid"),
+		event.request.headers.get(WIDGET_KEY_HEADER),
+	);
+}
+
+// NOTE: remote commands cannot read the request url, so the uuid and the key
+// arrive as arguments (POST body, never a query param).
+export function authorizeWidgetWriter(
+	cookies: RequestEvent["cookies"],
+	uuid: string | null,
+	key: string | null,
+): Broadcaster {
+	const session = sessionBroadcaster(cookies);
 	if (session) return session;
 
-	const uuid = event.url.searchParams.get("uuid");
 	if (!uuid) throw error(404, "unknown widget");
-
-	const key = event.request.headers.get(WIDGET_KEY_HEADER);
 	if (!key) {
 		logger.warn(`[widget] keyless request rejected: uuid=${uuid}`);
 		throw error(403, "widget key required");
