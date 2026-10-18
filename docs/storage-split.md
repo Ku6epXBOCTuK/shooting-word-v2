@@ -1,6 +1,10 @@
 ﻿# План: расщепление `/api/storage/[key]` по сущностям
 
-Статус: **черновик на ревью, не выполнено.**
+Статус: **разделение выполнено.** Позже REST-эндпоинты `/api/settings`,
+`/api/viewers`, `/api/rounds`, `/api/broadcaster` заменены remote-функциями
+(`src/lib/cabinet/cabinet.remote.ts`,
+`src/lib/features/widget/widget.remote.ts`), а `HttpStorageAdapter` удалён;
+таблицы и шаги ниже — исторический план.
 
 ## Зачем
 

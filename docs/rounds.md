@@ -8,9 +8,9 @@ sqlite одним «снимком», по каналу. Данных пока �
 
 Система `round-log` (группа `session`) накапливает счётчики, пока фаза
 `PLAYING`, и на переходе `PLAYING` → следующая фаза отдаёт `RoundRecord` через
-`ctx.onRoundEnd`. Виджет (`GameWidget.svelte`) отправляет его в
-`POST /api/rounds?uuid=` — только в полной версии (`REWARDS_ENABLED` + uuid), в
-статической сборке отправки нет.
+`ctx.onRoundEnd`. Виджет (`GameWidget.svelte`) отправляет его remote-командой
+`reportRound` (`src/lib/features/widget/widget.remote.ts`) — только в полной
+версии (`REWARDS_ENABLED` + uuid), в статической сборке отправки нет.
 
 Раунды с `durationSec <= 0` не пишутся (зашли и сразу вышли).
 
@@ -57,13 +57,12 @@ sqlite одним «снимком», по каналу. Данных пока �
 ## Как читать
 
 ```sh
-curl "http://<host>:3000/api/rounds?uuid=<uuid>&limit=50" | jq
+sqlite3 data/app.db "select * from rounds order by id desc limit 50"
 ```
 
-`limit` по умолчанию 50, максимум 200; ответ — последние N раундов, от новых к
-старым. Канал определяется по `uuid` или по cookie-сессии кабинета, чужой uuid
-даёт 404. Напрямую в sqlite — та же таблица `rounds`, индекс по
-`(broadcaster_id, id)`.
+Чтения по HTTP нет: раунды пишутся виджетом и читаются напрямую из sqlite —
+таблица `rounds`, индекс по `(broadcaster_id, id)`, до 1000 раундов на канал.
+Канал определяется по `broadcaster_id`.
 
 ## Что с этим делают
 

@@ -25,7 +25,7 @@
       `viewers`, `settings` и `rewards`)? выглядит усложнением - сперва
       обращаемся к одному API, а затем там выясняем через switch что именно
       пришло
-- [ ] сложная логика в `HttpStorageAdapter::put`, `ViewerStore::fetch`,
+- [ ] сложная логика в `QueuedStoragePort::save`, `ViewerStore::fetch`,
       переехать на `neverthrow`, `safe-fetch`, `effect-ts`?
 - [ ] рефакторинг createGameCore - слишком много кода в методах, может вынести
 - [ ] `const factoryCtx: RenderContext = render` - почему у нас вообще рендер и
