@@ -1,6 +1,6 @@
 import { logger } from "#lib/logger.js";
 import { resolve } from "$app/paths";
-import type { StoragePort } from "./port.js";
+import { QueuedStoragePort } from "./queued-port.js";
 
 const RETRIES = 3;
 const RETRY_DELAY_MS = 500;
@@ -11,15 +11,13 @@ const STORAGE_ROUTES = {
 	settings: "/api/settings",
 } as const;
 
-export class HttpStorageAdapter implements StoragePort {
-	// NOTE: only the latest snapshot is kept: writes never accumulate.
-	private queued: { key: string; value: unknown } | null = null;
-	private chain: Promise<void> = Promise.resolve();
-
+export class HttpStorageAdapter extends QueuedStoragePort {
 	constructor(
 		private readonly uuid: string,
 		private readonly key?: string,
-	) {}
+	) {
+		super();
+	}
 
 	private url(key: string): string {
 		const route = STORAGE_ROUTES[key as keyof typeof STORAGE_ROUTES];
@@ -31,7 +29,7 @@ export class HttpStorageAdapter implements StoragePort {
 		return this.key ? { "x-widget-key": this.key } : {};
 	}
 
-	async load(key: string): Promise<unknown> {
+	protected async read(key: string): Promise<unknown> {
 		try {
 			const response = await fetch(this.url(key));
 			if (!response.ok) return null;
@@ -41,19 +39,7 @@ export class HttpStorageAdapter implements StoragePort {
 		}
 	}
 
-	// NOTE: writes go through one chain, each awaiting the previous one, so snapshots
-	// can never reach the server out of order. Errors are retried, not swallowed.
-	save(key: string, value: unknown): Promise<void> {
-		this.queued = { key, value };
-		this.chain = this.chain.then(() => {
-			const job = this.queued;
-			this.queued = null;
-			return job ? this.put(job.key, job.value) : Promise.resolve();
-		});
-		return this.chain;
-	}
-
-	private async put(key: string, value: unknown): Promise<void> {
+	protected async write(key: string, value: unknown): Promise<void> {
 		for (let attempt = 1; attempt <= RETRIES; attempt++) {
 			try {
 				const response = await fetch(this.url(key), {

@@ -1,4 +1,7 @@
-import { createViewerStore } from "#lib/features/persistence/index.js";
+import {
+	createViewerStore,
+	type StorageTransport,
+} from "#lib/features/persistence/index.js";
 import type { RoundRecord } from "#lib/features/rounds/record.js";
 import { Text, TextStyle, type Application, type Ticker } from "pixi.js";
 import { loadAssets } from "./assets.js";
@@ -17,6 +20,7 @@ export async function bootstrapGame(
 	settings: GameSettings = defaultSettings(),
 	hooks: BootstrapHooks = {},
 	key?: string,
+	transport?: StorageTransport,
 ) {
 	const assets = await loadAssets();
 
@@ -37,7 +41,7 @@ export async function bootstrapGame(
 		{
 			screen: app.screen,
 			settings,
-			viewerStore: createViewerStore(uuid, key),
+			viewerStore: createViewerStore(uuid, key, transport),
 			onRoundEnd: hooks.onRoundEnd,
 			measureText,
 		},

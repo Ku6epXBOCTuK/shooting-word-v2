@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { startChatFlow } from "#lib/chat/flow.js";
 	import { startEffectsStream } from "#lib/features/effects/stream.js";
+	import { RemoteStorageAdapter } from "#lib/features/persistence/remote-adapter.js";
 	import { reportRound } from "#lib/features/rounds/reporter.js";
 	import { REWARDS_ENABLED } from "#lib/features/variant.js";
 	import { bootstrapGame } from "#lib/game/index.js";
@@ -43,7 +44,13 @@
 	});
 
 	function pixiOverlayReady(app: Application) {
-		void bootstrapGame(app, uuid, settings, roundHooks, key).then(
+		const transport =
+			REWARDS_ENABLED && uuid
+				? (id: string, widgetKey?: string) =>
+						new RemoteStorageAdapter(id, widgetKey)
+				: undefined;
+
+		void bootstrapGame(app, uuid, settings, roundHooks, key, transport).then(
 			(instance) => {
 				game = instance;
 				if (REWARDS_ENABLED && uuid) {

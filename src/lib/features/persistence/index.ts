@@ -3,9 +3,10 @@ import { dev } from "$app/env";
 import { REWARDS_ENABLED } from "../variant.js";
 import { HttpStorageAdapter } from "./http-adapter.js";
 import { LocalStorageAdapter } from "./local-storage-adapter.js";
+import type { StorageTransport } from "./port.js";
 import { ViewerStore } from "./viewer-store.js";
 
-export type { StoragePort } from "./port.js";
+export type { StoragePort, StorageTransport } from "./port.js";
 export {
 	CONSUMABLE_FIELDS,
 	mergeProfile,
@@ -17,9 +18,15 @@ export type {
 	StoredViewer,
 } from "./viewer-store.js";
 
-export function createViewerStore(uuid?: string, key?: string): ViewerStore {
+export function createViewerStore(
+	uuid?: string,
+	key?: string,
+	transport?: StorageTransport,
+): ViewerStore {
 	if (REWARDS_ENABLED && uuid) {
-		return new ViewerStore(new HttpStorageAdapter(uuid, key));
+		return new ViewerStore(
+			transport ? transport(uuid, key) : new HttpStorageAdapter(uuid, key),
+		);
 	}
 	return new ViewerStore(new LocalStorageAdapter());
 }
