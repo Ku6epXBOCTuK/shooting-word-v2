@@ -1,9 +1,9 @@
+import type { EffectPush } from "#lib/features/rewards/effects.js";
 import { broadcasters } from "#lib/server/broadcasters/index.js";
 import {
 	ensureRewardEffects,
 	getRewardEffects,
 	subscribeEffects,
-	type EffectPush,
 } from "#lib/server/reward-effects.js";
 import { SERVER_VERSION } from "#lib/server/version.js";
 import type { RequestHandler } from "./$types";

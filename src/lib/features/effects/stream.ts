@@ -5,46 +5,34 @@ import {
 	DOOMSDAY_REWARD,
 	REVIVE_REWARD,
 	TIME_STOP_REWARD,
-	type ActiveOvercharge,
-	type ActiveArmorCoating,
-	type ActiveShield,
 } from "#lib/features/rewards/config.js";
+import type {
+	EffectsMessage,
+	RewardEffect,
+} from "#lib/features/rewards/effects.js";
+import type { bootstrapGame } from "#lib/game/bootstrap.js";
 import { resolve } from "$app/paths";
 import { shouldReload } from "./version.js";
 
-interface RewardEffect {
-	key: string | null;
-	userId: string;
-	userName: string;
-	redemptionId?: string;
-	rewardId?: string;
-	counts?: Partial<Record<"batteries" | "revives" | "beacons", number>>;
-}
+type GameApi = Awaited<ReturnType<typeof bootstrapGame>>;
 
-interface EffectsResponse {
-	shields: ActiveShield[];
-	overcharges?: ActiveOvercharge[];
-	armorCoatings?: ActiveArmorCoating[];
-	effects: RewardEffect[];
-	version?: string;
-}
-
-interface EffectsGame {
-	joinViewer(identity: { userId: string; user: string; login: string }): void;
-	applyShields(shields: ActiveShield[]): void;
-	applyOvercharges(overcharges: ActiveOvercharge[]): void;
-	applyArmorCoating(armorCoatings: ActiveArmorCoating[]): void;
-	grantBatteries(userIds: string[]): void;
-	grantRevives(userIds: string[]): void;
-	grantBeacons(userIds: string[]): void;
-	applyConsumables(entries: ConsumableSync[]): void;
-	doomsday(userId: string): boolean;
-	timeStop(): void;
-}
+type EffectsGame = Pick<
+	GameApi,
+	| "joinViewer"
+	| "applyShields"
+	| "applyOvercharges"
+	| "applyArmorCoating"
+	| "grantBatteries"
+	| "grantRevives"
+	| "grantBeacons"
+	| "applyConsumables"
+	| "doomsday"
+	| "timeStop"
+>;
 
 export function applyEffects(
 	game: EffectsGame,
-	response: EffectsResponse,
+	response: EffectsMessage,
 	reject?: (effect: RewardEffect) => void,
 ): void {
 	for (const shield of response.shields) {
@@ -147,7 +135,7 @@ export function startEffectsStream(
 	);
 	source.onmessage = (message: MessageEvent<string>) => {
 		try {
-			const response = JSON.parse(message.data) as EffectsResponse;
+			const response = JSON.parse(message.data) as EffectsMessage;
 			if (shouldReload(response.version, __APP_COMMIT__)) {
 				location.reload();
 				return;

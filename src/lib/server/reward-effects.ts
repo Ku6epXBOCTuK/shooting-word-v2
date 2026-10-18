@@ -18,6 +18,10 @@ import {
 	type ActiveOvercharge,
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
+import type {
+	EffectPush,
+	RewardEffect,
+} from "#lib/features/rewards/effects.js";
 import {
 	BEACON_MAX,
 	REVIVE_MAX,
@@ -35,23 +39,6 @@ import { rewardIds } from "./reward-ids/index.js";
 import { settings as settingsRepo } from "./settings/index.js";
 import { getApiClient } from "./twitch-auth.js";
 import { viewers } from "./viewers/index.js";
-
-export interface RewardEffect {
-	key: string | null;
-	userId: string;
-	userName: string;
-	rewardTitle: string;
-	redemptionId: string;
-	rewardId: string;
-	counts?: Partial<Record<ConsumableField, number>>;
-}
-
-export interface EffectPush {
-	shields: ActiveShield[];
-	overcharges: ActiveOvercharge[];
-	armorCoatings: ActiveArmorCoating[];
-	effects: RewardEffect[];
-}
 
 export type EffectSubscriber = (push: EffectPush) => void;
 
@@ -122,12 +109,7 @@ function keyForRewardId(
 	return null;
 }
 
-export function getRewardEffects(broadcasterId: string): {
-	shields: ActiveShield[];
-	overcharges: ActiveOvercharge[];
-	armorCoatings: ActiveArmorCoating[];
-	effects: RewardEffect[];
-} {
+export function getRewardEffects(broadcasterId: string): EffectPush {
 	const now = Date.now();
 	const activeShields: ActiveShield[] = [];
 	const activeOvercharges: ActiveOvercharge[] = [];
