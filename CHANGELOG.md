@@ -2,6 +2,24 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [0.28.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/d1eea69965f3639b91a155a5e254d1700384eaa5..0.28.0) - 2026-10-18
+#### Features
+- add retry\timeout\log for remote functions - ([5decc8d](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/5decc8dcac0d3021a50af5ded3af09ebd53dfbbc)) - Ku6epXBOCTuK
+- move widget to remote functions - ([8565f5f](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/8565f5fcb48be673dcd58a733f2d860868685a0c)) - Ku6epXBOCTuK
+- move save settings, rotat uuid to remote functions - ([96965e9](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/96965e9bd432eb7b30a36ecfb6860b697b8eaff0)) - Ku6epXBOCTuK
+- viewers storage port via remote functions - ([01183f3](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/01183f3730c8682908618bf53fa4adb597169a7e)) - Ku6epXBOCTuK
+- widget reject effect flow - ([7e2109e](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/7e2109e1930258a37d82d8af7176490db8687ab5)) - Ku6epXBOCTuK
+- move widget stream effects to remote\generator - ([1de5a97](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/1de5a97a99ba6d491f8c916855f7888e3b189a28)) - Ku6epXBOCTuK
+#### Bug Fixes
+- better types for timed components - ([6341458](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/6341458e71489ab4ba10314a66e5a193c2c792cb)) - Ku6epXBOCTuK
+#### Refactoring
+- split stored viewer - ([1282fe6](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/1282fe663ebd7dffa2224b5919c7b265d6bb325d)) - Ku6epXBOCTuK
+- widget writer - ([60b497b](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/60b497bcc352c741d840261ddcfa75e33cd8890f)) - Ku6epXBOCTuK
+- single interface - ([0ab1bad](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/0ab1bad0af895391f9188779e44d2beb7ae9902d)) - Ku6epXBOCTuK
+- rename field name - ([9f271e9](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/9f271e9170cb9a5874280fbd7b144f010d476d89)) - Ku6epXBOCTuK
+
+- - -
+
 ## [0.27.0](https://github.com/Ku6epXBOCTuK/shooting-word-v2/compare/c2100028bdd28ab1f3c3a48f0bf8774991cc136d..0.27.0) - 2026-10-18
 #### Features
 - add help marquee - ([34c13f1](https://github.com/Ku6epXBOCTuK/shooting-word-v2/commit/34c13f1a56f060b2704b616a99d229c2215cd98a)) - Ku6epXBOCTuK
