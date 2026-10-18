@@ -10,6 +10,7 @@ import type {
 	EffectsMessage,
 	RewardEffect,
 } from "#lib/features/rewards/effects.js";
+import { effectsStream } from "#lib/features/widget/widget.remote.js";
 import type { bootstrapGame } from "#lib/game/bootstrap.js";
 import { resolve } from "$app/paths";
 import { shouldReload } from "./version.js";
@@ -130,20 +131,26 @@ export function startEffectsStream(
 			},
 		);
 	};
-	const source = new EventSource(
-		`${resolve("/api/effects/stream")}?uuid=${encodeURIComponent(uuid)}`,
-	);
-	source.onmessage = (message: MessageEvent<string>) => {
+	const iterator = effectsStream({ uuid })[Symbol.asyncIterator]();
+
+	void (async () => {
 		try {
-			const response = JSON.parse(message.data) as EffectsMessage;
-			if (shouldReload(response.version, __APP_COMMIT__)) {
-				location.reload();
-				return;
+			while (true) {
+				const next = await iterator.next();
+				if (next.done) return;
+				if (shouldReload(next.value.version, __APP_COMMIT__)) {
+					location.reload();
+					return;
+				}
+				applyEffects(game, next.value, reject);
 			}
-			applyEffects(game, response, reject);
 		} catch {
-			// NOTE: required comment for empty block
+			// NOTE: transport errors are transient and reconnected by the
+			// framework; a terminal error (unknown widget) leaves nothing to apply
 		}
+	})();
+
+	return () => {
+		void iterator.return?.();
 	};
-	return () => source.close();
 }

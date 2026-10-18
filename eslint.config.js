@@ -43,6 +43,7 @@ export default defineConfig(
 			"src/routes/auth/**",
 			"**/+server.ts",
 			"**/*.server.ts",
+			"**/*.remote.ts",
 			"**/*.spec.ts",
 			"**/*.test.ts",
 		],
