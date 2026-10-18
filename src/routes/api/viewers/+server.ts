@@ -1,8 +1,8 @@
-import type { StoredViewer } from "#lib/features/persistence/index.js";
+import { isStoredViewer } from "#lib/features/persistence/viewer-store.js";
 import { logger } from "#lib/logger.js";
 import { resolveBroadcaster } from "#lib/server/resolve-broadcaster.js";
-import { requireWidgetWriter } from "#lib/server/widget-writer.js";
 import { viewers, type ViewerProfile } from "#lib/server/viewers/index.js";
+import { requireWidgetWriter } from "#lib/server/widget-writer.js";
 import type { RequestHandler } from "./$types";
 
 export const prerender = false;
@@ -38,13 +38,11 @@ export const PUT: RequestHandler = async (event) => {
 	const now = Date.now();
 	const profiles: ViewerProfile[] = [];
 	for (const entry of body) {
-		if (typeof entry !== "object" || entry === null) continue;
-		const viewer = entry as Partial<StoredViewer>;
-		if (typeof viewer.userId !== "string") continue;
+		if (!isStoredViewer(entry)) continue;
 		profiles.push({
-			userId: viewer.userId,
-			data: viewer,
-			updatedAt: typeof viewer.updatedAt === "number" ? viewer.updatedAt : now,
+			userId: entry.userId,
+			data: entry,
+			updatedAt: entry.updatedAt ?? now,
 		});
 	}
 

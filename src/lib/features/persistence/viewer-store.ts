@@ -23,7 +23,7 @@ export interface ConsumableSync {
 	beacons?: number;
 }
 
-function isStoredViewer(value: unknown): value is StoredViewer {
+export function isStoredViewer(value: unknown): value is StoredViewer {
 	if (typeof value !== "object" || value === null) return false;
 	const viewer = value as Record<string, unknown>;
 	return (
