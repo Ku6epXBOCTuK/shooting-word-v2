@@ -5,6 +5,8 @@ export const FOCAL = Z_NEAR;
 export const FONT_SIZE = 28;
 export const VIEWER_LABEL_FONT_SIZE = 12;
 
+export const TICKER_HEIGHT = 24;
+
 export const WORD_TTL = 30;
 
 export const MIN_FLY_SPEED = 500;
@@ -51,7 +53,7 @@ export function pressureMaxEnemies(aliveViewers: number): number {
 export const VIEWER_WIDTH = 24;
 export const VIEWER_HEIGHT = 32;
 export const VIEWER_SCALE = 2;
-export const VIEWER_GROUND_MARGIN = 16;
+export const VIEWER_GROUND_MARGIN = 16 + TICKER_HEIGHT;
 export const VIEWER_PLATE_PADDING = 6;
 export const WALK_EDGE_MARGIN = 8;
 export const VIEWER_BASE_HP = 10;
@@ -71,7 +73,7 @@ export const WALK_MAX_TURN_TIME = 4;
 
 export const VIEWER_TIMEOUT_MS = 12 * 60 * 60 * 1000;
 
-export const ENEMY_BOTTOM_MARGIN = 90;
+export const ENEMY_BOTTOM_MARGIN = 90 + TICKER_HEIGHT;
 
 export const BULLET_SPEED = 700;
 export const BULLET_RADIUS = 4;

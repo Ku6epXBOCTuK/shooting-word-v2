@@ -7,6 +7,7 @@
 	import type { GameSettings } from "#lib/game/settings.js";
 	import type { Application } from "pixi.js";
 	import { onMount } from "svelte";
+	import CommandTicker from "./CommandTicker.svelte";
 	import PixiOverlay from "./PixiOverlay.svelte";
 
 	interface Props {
@@ -54,3 +55,4 @@
 </script>
 
 <PixiOverlay onReady={pixiOverlayReady} />
+<CommandTicker />
