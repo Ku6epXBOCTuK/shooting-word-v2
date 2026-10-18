@@ -24,6 +24,6 @@ export const AURA_KINDS = [
 
 export type AuraKind = (typeof AURA_KINDS)[number];
 
-export const COATING_KINDS = ["ricochetium"] as const;
+export const COATING_KINDS = ["armorCoating"] as const;
 
 export type CoatingKind = (typeof COATING_KINDS)[number];

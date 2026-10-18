@@ -1,8 +1,8 @@
 import {
 	ARMED_FUSE_MS,
+	ARMOR_COATING_DAMAGE_CHANCE_FACTOR,
 	ENEMY_SHOT_HIT_DISTANCE,
 	ENEMY_SHOT_SPEED,
-	RICOCHETIUM_DAMAGE_CHANCE_FACTOR,
 } from "../config.js";
 import type { Entity } from "../types.js";
 import type { SystemFactory } from "./types.js";
@@ -33,8 +33,8 @@ export const createEnemyFireSystem: SystemFactory = (ctx) => {
 
 			const target = pickTarget();
 			if (target) {
-				const chance = target.ricochetium
-					? ctx.settings.enemyDamageChance * RICOCHETIUM_DAMAGE_CHANCE_FACTOR
+				const chance = target.armorCoating
+					? ctx.settings.enemyDamageChance * ARMOR_COATING_DAMAGE_CHANCE_FACTOR
 					: ctx.settings.enemyDamageChance;
 				const damage = ctx.rng() < chance ? 1 : 0;
 				ctx.world.add({

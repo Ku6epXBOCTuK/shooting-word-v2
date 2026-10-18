@@ -24,7 +24,7 @@ describe("vfx registry", () => {
 	});
 
 	test("все зарегистрированные покрытия известны сцене", () => {
-		expect(REGISTERED_COATING_KINDS).toContain("ricochetium");
+		expect(REGISTERED_COATING_KINDS).toContain("armorCoating");
 		expect(
 			REGISTERED_COATING_KINDS.filter(
 				(kind) => !ALL_COATING_KINDS.includes(kind as never),

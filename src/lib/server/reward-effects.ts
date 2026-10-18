@@ -3,19 +3,19 @@ import type {
 	StoredViewer,
 } from "#lib/features/persistence/index.js";
 import {
+	ARMOR_COATING_DURATION_MS,
+	ARMOR_COATING_REWARD,
 	BATTERY_REWARD,
 	BEACON_REWARD,
 	OVERCHARGE_DURATION_MS,
 	OVERCHARGE_REWARD,
 	REVIVE_REWARD,
 	REWARD_CONFIGS,
-	RICOCHETIUM_DURATION_MS,
-	RICOCHETIUM_REWARD,
 	SHIELD_DURATION_MS,
 	SHIELD_REWARD,
 	TIME_STOP_REWARD,
+	type ActiveArmorCoating,
 	type ActiveOvercharge,
-	type ActiveRicochetium,
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
 import {
@@ -49,7 +49,7 @@ export interface RewardEffect {
 export interface EffectPush {
 	shields: ActiveShield[];
 	overcharges: ActiveOvercharge[];
-	ricochetiums: ActiveRicochetium[];
+	armorCoatings: ActiveArmorCoating[];
 	effects: RewardEffect[];
 }
 
@@ -58,7 +58,7 @@ export type EffectSubscriber = (push: EffectPush) => void;
 const globalScope = globalThis as typeof globalThis & {
 	__effectShields?: Map<string, Map<string, ActiveShield>>;
 	__effectOvercharges?: Map<string, Map<string, ActiveOvercharge>>;
-	__effectRicochetiums?: Map<string, Map<string, ActiveRicochetium>>;
+	__effectArmorCoatings?: Map<string, Map<string, ActiveArmorCoating>>;
 	__effectQueue?: Map<string, RewardEffect[]>;
 	__effectsRegistered?: Set<string>;
 	__effectSubscribers?: Map<string, Set<EffectSubscriber>>;
@@ -67,7 +67,7 @@ const globalScope = globalThis as typeof globalThis & {
 
 const shields = (globalScope.__effectShields ??= new Map());
 const overcharges = (globalScope.__effectOvercharges ??= new Map());
-const ricochetiums = (globalScope.__effectRicochetiums ??= new Map());
+const armorCoatings = (globalScope.__effectArmorCoatings ??= new Map());
 const queues = (globalScope.__effectQueue ??= new Map());
 const registered = (globalScope.__effectsRegistered ??= new Set());
 const subscribers = (globalScope.__effectSubscribers ??= new Map());
@@ -125,13 +125,13 @@ function keyForRewardId(
 export function getRewardEffects(broadcasterId: string): {
 	shields: ActiveShield[];
 	overcharges: ActiveOvercharge[];
-	ricochetiums: ActiveRicochetium[];
+	armorCoatings: ActiveArmorCoating[];
 	effects: RewardEffect[];
 } {
 	const now = Date.now();
 	const activeShields: ActiveShield[] = [];
 	const activeOvercharges: ActiveOvercharge[] = [];
-	const activeRicochetiums: ActiveRicochetium[] = [];
+	const activeArmorCoatings: ActiveArmorCoating[] = [];
 
 	const shieldMap = shields.get(broadcasterId);
 	if (shieldMap) {
@@ -155,13 +155,13 @@ export function getRewardEffects(broadcasterId: string): {
 		}
 	}
 
-	const ricochetiumMap = ricochetiums.get(broadcasterId);
-	if (ricochetiumMap) {
-		for (const [userId, ricochetium] of ricochetiumMap) {
-			if (ricochetium.expiresAt > now) {
-				activeRicochetiums.push(ricochetium);
+	const armorCoatingMap = armorCoatings.get(broadcasterId);
+	if (armorCoatingMap) {
+		for (const [userId, armorCoating] of armorCoatingMap) {
+			if (armorCoating.expiresAt > now) {
+				activeArmorCoatings.push(armorCoating);
 			} else {
-				ricochetiumMap.delete(userId);
+				armorCoatingMap.delete(userId);
 			}
 		}
 	}
@@ -172,7 +172,7 @@ export function getRewardEffects(broadcasterId: string): {
 	return {
 		shields: activeShields,
 		overcharges: activeOvercharges,
-		ricochetiums: activeRicochetiums,
+		armorCoatings: activeArmorCoatings,
 		effects,
 	};
 }
@@ -266,7 +266,7 @@ function queueEffect(
 		notifySubscribers(broadcaster.userId, {
 			shields: [],
 			overcharges: [],
-			ricochetiums: [],
+			armorCoatings: [],
 			effects: [effect],
 		});
 	} else {
@@ -304,7 +304,7 @@ interface CheckContext {
 	effectActive(key: string): boolean;
 	shieldActive(): boolean;
 	overchargeActive(): boolean;
-	ricochetiumActive(): boolean;
+	armorCoatingActive(): boolean;
 }
 
 interface GrantContext {
@@ -322,7 +322,7 @@ interface GrantContext {
 	): number;
 	pushShield(shield: ActiveShield): void;
 	pushOvercharge(overcharge: ActiveOvercharge): void;
-	pushRicochetium(ricochetium: ActiveRicochetium): void;
+	pushArmorCoating(armorCoating: ActiveArmorCoating): void;
 	markActive(key: string, ttlMs: number): void;
 }
 
@@ -396,14 +396,14 @@ const REWARD_HANDLERS: Record<string, RewardHandler> = {
 				expiresAt: Date.now() + OVERCHARGE_DURATION_MS,
 			}),
 	},
-	[RICOCHETIUM_REWARD.key]: {
+	[ARMOR_COATING_REWARD.key]: {
 		check: (ctx) =>
-			ctx.ricochetiumActive() ? "ricochetium already active" : null,
+			ctx.armorCoatingActive() ? "armorCoating already active" : null,
 		grant: (ctx, event) =>
-			ctx.pushRicochetium({
+			ctx.pushArmorCoating({
 				userId: event.userId,
 				userName: event.userName,
-				expiresAt: Date.now() + RICOCHETIUM_DURATION_MS,
+				expiresAt: Date.now() + ARMOR_COATING_DURATION_MS,
 			}),
 	},
 };
@@ -433,11 +433,11 @@ async function handleRedemption(
 			const overcharge = overcharges.get(broadcaster.userId)?.get(event.userId);
 			return overcharge !== undefined && overcharge.expiresAt > Date.now();
 		},
-		ricochetiumActive: () => {
-			const ricochetium = ricochetiums
+		armorCoatingActive: () => {
+			const armorCoating = armorCoatings
 				.get(broadcaster.userId)
 				?.get(event.userId);
-			return ricochetium !== undefined && ricochetium.expiresAt > Date.now();
+			return armorCoating !== undefined && armorCoating.expiresAt > Date.now();
 		},
 	};
 
@@ -478,7 +478,7 @@ async function handleRedemption(
 			notifySubscribers(broadcaster.userId, {
 				shields: [shield],
 				overcharges: [],
-				ricochetiums: [],
+				armorCoatings: [],
 				effects: [],
 			});
 			logger.info(
@@ -495,28 +495,28 @@ async function handleRedemption(
 			notifySubscribers(broadcaster.userId, {
 				shields: [],
 				overcharges: [overcharge],
-				ricochetiums: [],
+				armorCoatings: [],
 				effects: [],
 			});
 			logger.info(
 				`[effects] ${overcharge.userName} got overcharge for ${OVERCHARGE_DURATION_MS / 60_000} min (${broadcaster.login})`,
 			);
 		},
-		pushRicochetium: (ricochetium) => {
-			let ricochetiumMap = ricochetiums.get(broadcaster.userId);
-			if (!ricochetiumMap) {
-				ricochetiumMap = new Map();
-				ricochetiums.set(broadcaster.userId, ricochetiumMap);
+		pushArmorCoating: (armorCoating) => {
+			let armorCoatingMap = armorCoatings.get(broadcaster.userId);
+			if (!armorCoatingMap) {
+				armorCoatingMap = new Map();
+				armorCoatings.set(broadcaster.userId, armorCoatingMap);
 			}
-			ricochetiumMap.set(ricochetium.userId, ricochetium);
+			armorCoatingMap.set(armorCoating.userId, armorCoating);
 			notifySubscribers(broadcaster.userId, {
 				shields: [],
 				overcharges: [],
-				ricochetiums: [ricochetium],
+				armorCoatings: [armorCoating],
 				effects: [],
 			});
 			logger.info(
-				`[effects] ${ricochetium.userName} got ricochetium for ${RICOCHETIUM_DURATION_MS / 60_000} min (${broadcaster.login})`,
+				`[effects] ${armorCoating.userName} got armorCoating for ${ARMOR_COATING_DURATION_MS / 60_000} min (${broadcaster.login})`,
 			);
 		},
 		markActive: (effectKey, ttlMs) => {

@@ -33,7 +33,7 @@ const AURAS: { [K in keyof AuraStates]?: AuraFactory<K> } = {
 };
 
 const COATINGS: Partial<Record<CoatingKind, (o?: VfxOptions) => VfxFilter>> = {
-	ricochetium: () => createMetalShimmer(),
+	armorCoating: () => createMetalShimmer(),
 };
 
 export function createAura<K extends keyof AuraStates>(

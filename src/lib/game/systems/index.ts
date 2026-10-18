@@ -16,7 +16,7 @@ import { createMeasureSystem } from "./measure.js";
 import { createShieldSystem } from "./shield.js";
 import { createShieldRegenSystem } from "./shield-regen.js";
 import { createOverchargeSystem } from "./overcharge.js";
-import { createRicochetiumSystem } from "./ricochetium.js";
+import { createArmorCoatingSystem } from "./armor-coating.js";
 import { createRespawnSchedulerSystem } from "./respawn-scheduler.js";
 import { createRespawnSystem } from "./respawn.js";
 import { createReviveSystem } from "./revive.js";
@@ -85,7 +85,7 @@ export function logicGroups(): SystemGroup[] {
 				createShieldSystem,
 				createShieldRegenSystem,
 				createOverchargeSystem,
-				createRicochetiumSystem,
+				createArmorCoatingSystem,
 				createRespawnSchedulerSystem,
 				createRespawnSystem,
 				createReviveSystem,

@@ -82,7 +82,7 @@ export const BULLET_SCALE = 2;
 
 export const ENEMY_SHOT_SPEED = 400;
 export const ENEMY_SHOT_DAMAGE_CHANCE = 0.5;
-export const RICOCHETIUM_DAMAGE_CHANCE_FACTOR = 0.5;
+export const ARMOR_COATING_DAMAGE_CHANCE_FACTOR = 0.5;
 export const ENEMY_SHOT_HIT_DISTANCE = 20;
 
 export const ARMED_FUSE_MS = 1000;

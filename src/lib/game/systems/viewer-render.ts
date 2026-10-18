@@ -229,9 +229,9 @@ export const createViewerRenderSystem: RenderSystemFactory = (ctx) => {
 
 			syncEffects(entity, ship, visible);
 
-			if (entity.ricochetium && visible) {
+			if (entity.armorCoating && visible) {
 				if (!shimmers.has(entity) && shimmers.size < METAL_SHIMMER_MAX_SHIPS) {
-					const shimmer = createCoating("ricochetium");
+					const shimmer = createCoating("armorCoating");
 					if (shimmer) {
 						shimmers.set(entity, shimmer);
 						ctx.vfx.filter(ship, shimmer);

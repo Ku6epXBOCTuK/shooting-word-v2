@@ -39,7 +39,7 @@ describe("визуал наград", () => {
 
 	test("по ключу находится визуал нужной награды", () => {
 		expect(rewardVisual("shield")?.kind).toBe("aura");
-		expect(rewardVisual("ricochetium")?.kind).toBe("coating");
+		expect(rewardVisual("armorCoating")?.kind).toBe("coating");
 		expect(rewardVisual("battery")?.kind).toBe("reaction");
 		expect(rewardVisual("nope")).toBeUndefined();
 	});

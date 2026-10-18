@@ -7,8 +7,9 @@ export const SHIELD_DURATION_MS = SHIELD_DURATION_MINUTES * 60 * 1000;
 export const OVERCHARGE_DURATION_MINUTES = 30;
 export const OVERCHARGE_DURATION_MS = OVERCHARGE_DURATION_MINUTES * 60 * 1000;
 
-export const RICOCHETIUM_DURATION_MINUTES = 30;
-export const RICOCHETIUM_DURATION_MS = RICOCHETIUM_DURATION_MINUTES * 60 * 1000;
+export const ARMOR_COATING_DURATION_MINUTES = 30;
+export const ARMOR_COATING_DURATION_MS =
+	ARMOR_COATING_DURATION_MINUTES * 60 * 1000;
 
 export type RewardVisual =
 	| {
@@ -129,15 +130,15 @@ export const OVERCHARGE_REWARD = {
 	},
 } as const satisfies RewardConfig;
 
-export const RICOCHETIUM_REWARD = {
-	key: "ricochetium",
+export const ARMOR_COATING_REWARD = {
+	key: "armorCoating",
 	title: "Обмазка из рикошетиума",
-	description: `${RICOCHETIUM_DURATION_MINUTES} минут вражеские снаряды вдвое реже наносят урон твоему кораблю`,
+	description: `${ARMOR_COATING_DURATION_MINUTES} минут вражеские снаряды вдвое реже наносят урон твоему кораблю`,
 	cost: 300,
 	cooldown: 0,
 	visual: {
 		kind: "coating",
-		coating: "ricochetium",
+		coating: "armorCoating",
 		reaction: "reward",
 		color: 0x9fd8ff,
 	},
@@ -151,7 +152,7 @@ export const REWARD_CONFIGS = [
 	DOOMSDAY_REWARD,
 	TIME_STOP_REWARD,
 	OVERCHARGE_REWARD,
-	RICOCHETIUM_REWARD,
+	ARMOR_COATING_REWARD,
 ] as const satisfies readonly RewardConfig[];
 
 export type REWARD_KEYS = (typeof REWARD_CONFIGS)[number]["key"];
@@ -171,4 +172,4 @@ export interface ActiveShield {
 }
 
 export type ActiveOvercharge = ActiveShield;
-export type ActiveRicochetium = ActiveShield;
+export type ActiveArmorCoating = ActiveShield;

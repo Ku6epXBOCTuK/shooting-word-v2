@@ -95,7 +95,7 @@ export interface Overcharge {
 	expiresAt: number;
 }
 
-export interface Ricochetium {
+export interface ArmorCoating {
 	expiresAt: number;
 }
 
@@ -181,7 +181,7 @@ export interface EntityComponents {
 	hp: Hitpoints;
 	shield: Shield;
 	overcharge: Overcharge;
-	ricochetium: Ricochetium;
+	armorCoating: ArmorCoating;
 	hitBy: HitBy;
 	session: Session;
 	roundStats: RoundStats;

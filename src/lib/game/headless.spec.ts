@@ -325,7 +325,7 @@ test("overcharge shoots every unique word of the message until expiry", () => {
 	game.dispose();
 });
 
-test("ricochetium halves enemy damage chance until expiry", () => {
+test("armor coating halves enemy damage chance until expiry", () => {
 	const settings = defaultSettings();
 	settings.viewerBaseHp = 1000;
 
@@ -335,7 +335,7 @@ test("ricochetium halves enemy damage chance until expiry", () => {
 		const game = createHeadlessGame({ now: () => now, rng, settings });
 		game.joinViewer({ userId: "u1", user: "alice", login: "alice" });
 		if (coated) {
-			game.applyRicochetiums([{ userId: "u1", expiresAt: now + 300_000 }]);
+			game.applyArmorCoating([{ userId: "u1", expiresAt: now + 300_000 }]);
 		}
 		game.startGame();
 
@@ -351,11 +351,11 @@ test("ricochetium halves enemy damage chance until expiry", () => {
 			now += 100;
 			game.step(0.1);
 			if (i === 100) {
-				coatedDuringRun = [...game.world.with("ricochetium")].length;
+				coatedDuringRun = [...game.world.with("armorCoating")].length;
 			}
 		}
 
-		const coatedLeft = [...game.world.with("ricochetium")].length;
+		const coatedLeft = [...game.world.with("armorCoating")].length;
 		game.dispose();
 		return { shots, hits, coatedDuringRun, coatedLeft };
 	};
@@ -440,12 +440,12 @@ test("round reset revives the fleet but keeps buffs and progress", () => {
 	game.grantBeacons(["u1"]);
 	game.applyShields([{ userId: "u1", expiresAt: now + 600_000 }]);
 	game.applyOvercharges([{ userId: "u1", expiresAt: now + 120_000 }]);
-	game.applyRicochetiums([{ userId: "u1", expiresAt: now + 300_000 }]);
+	game.applyArmorCoating([{ userId: "u1", expiresAt: now + 300_000 }]);
 
 	const before = alice.position.x;
 	const shieldUntil = now + 600_000;
 	const overchargeUntil = now + 120_000;
-	const ricochetiumUntil = now + 300_000;
+	const armorCoatingUntil = now + 300_000;
 	game.startGame();
 	tick(1);
 
@@ -459,7 +459,7 @@ test("round reset revives the fleet but keeps buffs and progress", () => {
 	expect(after.beacons).toBe(1);
 	expect(after.shield?.expiresAt).toBe(shieldUntil);
 	expect(after.overcharge?.expiresAt).toBe(overchargeUntil);
-	expect(after.ricochetium?.expiresAt).toBe(ricochetiumUntil);
+	expect(after.armorCoating?.expiresAt).toBe(armorCoatingUntil);
 	expect(after.position.x).not.toBe(before);
 
 	game.dispose();

@@ -16,7 +16,7 @@
 	let { effects, skin }: Props = $props();
 
 	let shieldEnabled = $derived(effects["shield"] ?? false);
-	let armorCoatingEnabled = $derived(effects["ricochetium"] ?? false);
+	let armorCoatingEnabled = $derived(effects["armorCoating"] ?? false);
 	let overchargeEnabled = $derived(effects["overcharge"] ?? false);
 
 	const SCALE = 10;
@@ -165,7 +165,7 @@
 		if (!layer || !current) return;
 		if (!armorCoatingEnabled) return;
 
-		const coating = createCoating("ricochetium");
+		const coating = createCoating("armorCoating");
 		if (!coating) return;
 		layer.filter(current, coating);
 

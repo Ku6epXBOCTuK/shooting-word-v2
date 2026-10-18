@@ -6,13 +6,13 @@ import type {
 	ViewerStore,
 } from "#lib/features/persistence/viewer-store.js";
 import {
+	ARMOR_COATING_REWARD,
 	BATTERY_REWARD,
 	BEACON_REWARD,
 	DOOMSDAY_REWARD,
 	OVERCHARGE_REWARD,
 	REVIVE_REWARD,
 	rewardVisual,
-	RICOCHETIUM_REWARD,
 	SHIELD_REWARD,
 	TIME_STOP_REWARD,
 } from "#lib/features/rewards/config.js";
@@ -281,13 +281,13 @@ export function createGameCore(
 			}
 		},
 
-		applyRicochetiums: (
-			ricochetiums: { userId: string; expiresAt: number }[],
+		applyArmorCoating: (
+			armorCoatings: { userId: string; expiresAt: number }[],
 		) => {
 			const map = new Map(
-				ricochetiums.map((ricochetium) => [
-					ricochetium.userId,
-					ricochetium.expiresAt,
+				armorCoatings.map((armorCoating) => [
+					armorCoating.userId,
+					armorCoating.expiresAt,
 				]),
 			);
 
@@ -295,11 +295,11 @@ export function createGameCore(
 				const expiresAt = map.get(entity.viewer.userId);
 				if (expiresAt === undefined) continue;
 
-				if (!entity.ricochetium) {
-					world.addComponent(entity, "ricochetium", { expiresAt });
-					reactToReward(RICOCHETIUM_REWARD.key, entity.position);
-				} else if (entity.ricochetium.expiresAt < expiresAt) {
-					entity.ricochetium.expiresAt = expiresAt;
+				if (!entity.armorCoating) {
+					world.addComponent(entity, "armorCoating", { expiresAt });
+					reactToReward(ARMOR_COATING_REWARD.key, entity.position);
+				} else if (entity.armorCoating.expiresAt < expiresAt) {
+					entity.armorCoating.expiresAt = expiresAt;
 				}
 			}
 		},

@@ -6,7 +6,7 @@ import {
 	REVIVE_REWARD,
 	TIME_STOP_REWARD,
 	type ActiveOvercharge,
-	type ActiveRicochetium,
+	type ActiveArmorCoating,
 	type ActiveShield,
 } from "#lib/features/rewards/config.js";
 import { resolve } from "$app/paths";
@@ -24,7 +24,7 @@ interface RewardEffect {
 interface EffectsResponse {
 	shields: ActiveShield[];
 	overcharges?: ActiveOvercharge[];
-	ricochetiums?: ActiveRicochetium[];
+	armorCoatings?: ActiveArmorCoating[];
 	effects: RewardEffect[];
 	version?: string;
 }
@@ -33,7 +33,7 @@ interface EffectsGame {
 	joinViewer(identity: { userId: string; user: string; login: string }): void;
 	applyShields(shields: ActiveShield[]): void;
 	applyOvercharges(overcharges: ActiveOvercharge[]): void;
-	applyRicochetiums(ricochetiums: ActiveRicochetium[]): void;
+	applyArmorCoating(armorCoatings: ActiveArmorCoating[]): void;
 	grantBatteries(userIds: string[]): void;
 	grantRevives(userIds: string[]): void;
 	grantBeacons(userIds: string[]): void;
@@ -65,14 +65,14 @@ export function applyEffects(
 	}
 	game.applyOvercharges(response.overcharges ?? []);
 
-	for (const ricochetium of response.ricochetiums ?? []) {
+	for (const armorCoating of response.armorCoatings ?? []) {
 		game.joinViewer({
-			userId: ricochetium.userId,
-			user: ricochetium.userName,
-			login: ricochetium.userName,
+			userId: armorCoating.userId,
+			user: armorCoating.userName,
+			login: armorCoating.userName,
 		});
 	}
-	game.applyRicochetiums(response.ricochetiums ?? []);
+	game.applyArmorCoating(response.armorCoatings ?? []);
 
 	for (const effect of response.effects) {
 		game.joinViewer({
