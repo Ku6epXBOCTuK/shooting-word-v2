@@ -1,6 +1,7 @@
 <script lang="ts">
 	import {
 		deleteAllRewards,
+		deleteReward,
 		importReward,
 		listAppRewards,
 		saveRewards,
@@ -11,6 +12,7 @@
 	import LaunchCard from "#lib/components/LaunchCard.svelte";
 	import Button from "#lib/components/ui/Button.svelte";
 	import Icon from "#lib/components/ui/Icon.svelte";
+	import { REWARD_CONFIGS } from "#lib/features/rewards/config.js";
 	import type { AppRewardStatus } from "#lib/features/rewards/port.js";
 	import type {
 		RewardOverrides,
@@ -37,6 +39,9 @@
 	let rewardSettings = $state<RewardSettings>(untrack(() => rewards));
 	let busy = $state(false);
 	let result = $state<string | null>(null);
+	let pendingDelete = $state<{ key: string | null; title: string } | null>(
+		null,
+	);
 
 	const onFieldChange = (
 		key: string,
@@ -87,14 +92,37 @@
 		busy = false;
 	};
 
-	const onDeleteAll = async () => {
+	const requestDeleteAll = () => {
+		pendingDelete = { key: null, title: "все награды приложения" };
+	};
+
+	const requestDelete = (key: string) => {
+		const config = REWARD_CONFIGS.find((item) => item.key === key);
+		pendingDelete = { key, title: config?.title ?? key };
+	};
+
+	const closeDelete = () => {
+		pendingDelete = null;
+	};
+
+	const confirmDelete = async (refund: boolean) => {
+		const target = pendingDelete;
+		if (!target) return;
+
+		pendingDelete = null;
 		busy = true;
 		result = null;
 
-		const ok = await deleteAllRewards();
-		if (!ok) {
-			result = "не удалось удалить награды";
-		}
+		const ok = target.key
+			? await deleteReward(target.key, refund)
+			: await deleteAllRewards(refund);
+
+		result = ok
+			? refund
+				? "Награды удалены, баллы за невыполненные активации возвращены"
+				: "Награды удалены, баллы за невыполненные активации списаны"
+			: "Не удалось удалить награды";
+		statuses = await listAppRewards();
 		busy = false;
 	};
 
@@ -152,7 +180,7 @@
 							<Icon as={GiftIcon} />
 							Создать все награды
 						</Button>
-						<Button disabled={busy} onclick={onDeleteAll}>
+						<Button disabled={busy} onclick={requestDeleteAll}>
 							<Icon as={TrashIcon} />
 							Удалить все награды
 						</Button>
@@ -167,11 +195,35 @@
 					{busy}
 					ontoggle={onToggle}
 					onSave={onSaveReward}
+					onDelete={requestDelete}
 					{onFieldChange}
 					{onImport}
 				/>
 			{/if}
 		</div>
+
+		{#if pendingDelete}
+			<div class="dialog-backdrop">
+				<div class="dialog" role="dialog" aria-modal="true">
+					<h4 class="dialog-title">
+						Удалить {pendingDelete.title}?
+					</h4>
+					<p class="dialog-text">
+						Что сделать с баллами за невыполненные активации? При удалении
+						награды Twitch иначе спишет баллы автоматически.
+					</p>
+					<div class="dialog-actions">
+						<Button disabled={busy} onclick={() => confirmDelete(true)}>
+							Вернуть баллы
+						</Button>
+						<Button disabled={busy} onclick={() => confirmDelete(false)}>
+							Списать баллы
+						</Button>
+						<Button disabled={busy} onclick={closeDelete}>Отмена</Button>
+					</div>
+				</div>
+			</div>
+		{/if}
 
 		{#snippet bottom()}
 			<div class="bottom-row">
@@ -230,5 +282,49 @@
 		color: var(--cyan);
 		font-size: 15px;
 		font-weight: 700;
+	}
+
+	.dialog-backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: 40;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 20px;
+		background: rgba(4, 6, 10, 0.72);
+	}
+
+	.dialog {
+		width: min(460px, 100%);
+		border: 1px solid color-mix(in srgb, var(--cyan) 40%, transparent);
+		background: #0b0d12;
+		padding: 20px;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.dialog-title {
+		font-size: 17px;
+		font-weight: 700;
+	}
+
+	.dialog-text {
+		color: var(--muted);
+		font-size: 14px;
+		line-height: 1.5;
+	}
+
+	.dialog-actions {
+		display: flex;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+
+	.dialog-actions :global(.button) {
+		padding: 10px 12px;
+		font-size: 13px;
+		border: 1px solid rgba(255, 255, 255, 0.18);
 	}
 </style>

@@ -13,6 +13,7 @@ import { logger } from "#lib/logger.js";
 import { resolveBroadcaster } from "#lib/server/resolve-broadcaster.js";
 import { rewardIds } from "#lib/server/reward-ids/index.js";
 import { planRewardPrune } from "#lib/server/reward-ids/prune.js";
+import { deleteRewardWithRefund } from "#lib/server/reward-delete.js";
 import { rewardSettings } from "#lib/server/reward-settings/index.js";
 import { getApiClient } from "#lib/server/twitch-auth.js";
 import type { Cookies } from "@sveltejs/kit";
@@ -167,6 +168,7 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 		action?: string;
 		key?: string;
 		enabled?: boolean;
+		refund?: boolean;
 	};
 	const { action } = body;
 
@@ -350,15 +352,59 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 		}
 
 		if (action === "delete") {
+			const refund = body.refund === true;
+
+			if (body.key) {
+				const effective = effectiveRewards(context.rewards).find(
+					(item) => item.key === body.key,
+				);
+				if (!effective) {
+					return Response.json(FAILURE("unknown reward key"), { status: 400 });
+				}
+
+				const target = matchReward(
+					existing,
+					context.userId,
+					body.key,
+					effective.title,
+				);
+				if (!target) {
+					return Response.json({
+						ok: false,
+						created: [],
+						deleted: 0,
+						reason: "reward not created on Twitch yet",
+					});
+				}
+
+				const refunded = await deleteRewardWithRefund(
+					context.api,
+					context.userId,
+					target.id,
+					refund,
+				);
+				rewardIds.remove(context.userId, body.key);
+
+				return Response.json({
+					ok: true,
+					created: [],
+					deleted: 1,
+					refunded,
+				});
+			}
+
 			const manageable = await context.api.channelPoints.getCustomRewards(
 				context.userId,
 				true,
 			);
 
+			let refunded = 0;
 			for (const reward of manageable) {
-				await context.api.channelPoints.deleteCustomReward(
+				refunded += await deleteRewardWithRefund(
+					context.api,
 					context.userId,
 					reward.id,
+					refund,
 				);
 			}
 
@@ -368,6 +414,7 @@ export const POST: RequestHandler = async ({ request, url, cookies }) => {
 				ok: true,
 				created: [],
 				deleted: manageable.length,
+				refunded,
 			});
 		}
 

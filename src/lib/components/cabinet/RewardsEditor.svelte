@@ -14,6 +14,7 @@
 	import SaveIcon from "~icons/lucide/notebook-pen";
 	import EditIcon from "~icons/lucide/pencil";
 	import ToggleIcon from "~icons/lucide/power";
+	import TrashIcon from "~icons/lucide/trash-2";
 
 	type RewardConfig = (typeof REWARD_CONFIGS)[number];
 
@@ -23,6 +24,7 @@
 		busy: boolean;
 		ontoggle: (key: string, enabled: boolean) => void;
 		onSave: (key: string) => void;
+		onDelete: (key: string) => void;
 		onImport: (key: string) => void;
 		onFieldChange: (
 			key: string,
@@ -37,6 +39,7 @@
 		busy,
 		ontoggle,
 		onSave,
+		onDelete,
 		onImport,
 		onFieldChange,
 	}: Props = $props();
@@ -113,6 +116,13 @@
 					>
 						<Icon as={EditIcon} />
 						Редактировать
+					</Button>
+					<Button
+						disabled={busy || !status.exists}
+						onclick={() => onDelete(reward.key)}
+					>
+						<Icon as={TrashIcon} />
+						Удалить
 					</Button>
 				</div>
 			</div>

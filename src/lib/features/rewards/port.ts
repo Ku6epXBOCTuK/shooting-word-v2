@@ -8,6 +8,7 @@ export interface RewardsManageResult {
 	created: string[];
 	updated?: string[];
 	deleted: number;
+	refunded?: number;
 	reason?: string;
 }
 
@@ -34,7 +35,15 @@ export interface RewardsPort {
 	listAppRewards(uuid?: string): Promise<AppRewardStatus[]>;
 	updateAll(uuid?: string): Promise<RewardsManageResult>;
 	update(key: string, uuid?: string): Promise<RewardsManageResult>;
-	deleteAllRewards(uuid?: string): Promise<RewardsManageResult>;
+	deleteReward(
+		key: string,
+		refund: boolean,
+		uuid?: string,
+	): Promise<RewardsManageResult>;
+	deleteAllRewards(
+		refund: boolean,
+		uuid?: string,
+	): Promise<RewardsManageResult>;
 	toggleReward(
 		key: string,
 		enabled: boolean,

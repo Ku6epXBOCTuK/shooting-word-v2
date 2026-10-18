@@ -152,7 +152,15 @@ export async function listAppRewards(): Promise<AppRewardStatus[]> {
 	}
 }
 
-export async function deleteAllRewards(): Promise<boolean> {
-	const result = await rewards.deleteAllRewards();
+export async function deleteReward(
+	key: string,
+	refund: boolean,
+): Promise<boolean> {
+	const result = await rewards.deleteReward(key, refund);
+	return result.ok;
+}
+
+export async function deleteAllRewards(refund: boolean): Promise<boolean> {
+	const result = await rewards.deleteAllRewards(refund);
 	return result.ok;
 }
