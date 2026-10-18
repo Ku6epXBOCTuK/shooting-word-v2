@@ -15,6 +15,8 @@ import {
 	rejectEffect,
 } from "#lib/features/widget/widget.remote.js";
 import type { bootstrapGame } from "#lib/game/bootstrap.js";
+import { withRetry } from "#lib/features/remote/retry.js";
+import { logger } from "#lib/logger.js";
 import { shouldReload } from "./version.js";
 
 type GameApi = Awaited<ReturnType<typeof bootstrapGame>>;
@@ -117,32 +119,45 @@ export function startEffectsStream(
 ): () => void {
 	const reject = (effect: RewardEffect) => {
 		if (!effect.redemptionId || !effect.rewardId) return;
-		void rejectEffect({
-			uuid,
-			key,
-			redemptionId: effect.redemptionId,
-			rewardId: effect.rewardId,
-			reason: "ship destroyed or doomsday already active",
-		}).catch(() => {
+		logger.warn(
+			`[effects] ${effect.key ?? "effect"} refused for ${effect.userId}, refunding`,
+		);
+		void withRetry(() =>
+			rejectEffect({
+				uuid,
+				key,
+				redemptionId: effect.redemptionId,
+				rewardId: effect.rewardId,
+				reason: "ship destroyed or doomsday already active",
+			}),
+		).catch(() => {
 			// NOTE: fire-and-forget; a failed reject leaves the redemption as is
 		});
 	};
 	const iterator = effectsStream({ uuid })[Symbol.asyncIterator]();
+	let connected = false;
 
 	void (async () => {
 		try {
 			while (true) {
 				const next = await iterator.next();
 				if (next.done) return;
+				if (!connected) {
+					connected = true;
+					logger.info("[effects] live stream connected");
+				}
 				if (shouldReload(next.value.version, __APP_COMMIT__)) {
 					location.reload();
 					return;
 				}
 				applyEffects(game, next.value, reject);
 			}
-		} catch {
-			// NOTE: transport errors are transient and reconnected by the
-			// framework; a terminal error (unknown widget) leaves nothing to apply
+		} catch (error) {
+			// NOTE: the framework retries transient transport failures inside the
+			// iterator, so a rejection here is terminal (unknown widget, stale deploy)
+			logger.warn(
+				`[effects] live stream stopped: ${error instanceof Error ? error.message : String(error)}`,
+			);
 		}
 	})();
 

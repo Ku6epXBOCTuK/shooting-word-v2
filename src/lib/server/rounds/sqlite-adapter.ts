@@ -87,6 +87,7 @@ export class SqliteRoundsRepo implements RoundsRepo {
 				FROM rounds WHERE broadcaster_id = ? ORDER BY id DESC LIMIT ?`,
 			)
 			.all(broadcasterId, limit) as unknown as RoundRow[];
+
 		return rows.map(toRecord);
 	}
 

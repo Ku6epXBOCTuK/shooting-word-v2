@@ -1,3 +1,4 @@
+import { withRetry } from "#lib/features/remote/retry.js";
 import { rewards } from "#lib/features/rewards/index.js";
 import type {
 	AppRewardStatus,
@@ -55,7 +56,7 @@ export async function loadSession(): Promise<CabinetSession | null> {
 
 export async function saveSettings(next: GameSettings): Promise<boolean> {
 	try {
-		await saveSettingsCommand(next);
+		await withRetry(() => saveSettingsCommand(next));
 		return true;
 	} catch {
 		return false;

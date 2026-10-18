@@ -7,6 +7,7 @@ import {
 	type StoredViewer,
 } from "#lib/features/persistence/viewer-store.js";
 import { isRoundRecord } from "#lib/features/rounds/record.js";
+import type { RewardEffect } from "#lib/features/rewards/effects.js";
 import { normalizeSettings } from "#lib/game/settings.js";
 import { logger } from "#lib/logger.js";
 import { broadcasters } from "#lib/server/broadcasters/index.js";
@@ -38,16 +39,24 @@ export const effectsStream = query.live(streamArgs, async function* ({ uuid }) {
 
 	let dirty = false;
 	let notify: (() => void) | null = null;
+	const pending: RewardEffect[] = [];
 
-	const unsubscribe = subscribeEffects(broadcaster.userId, () => {
+	// NOTE: one-shot rewards (doomsday, time stop) only travel in the pushed
+	// payload while a subscriber is connected - the queue is used only when
+	// nobody listens, so both channels have to be drained into one snapshot.
+	const unsubscribe = subscribeEffects(broadcaster.userId, (push) => {
+		pending.push(...push.effects);
 		dirty = true;
 		notify?.();
 	});
 
-	const snapshot = () => ({
-		...getRewardEffects(broadcaster.userId),
-		version: SERVER_VERSION,
-	});
+	const snapshot = () => {
+		const drained = getRewardEffects(broadcaster.userId);
+		const effects = [...drained.effects, ...pending];
+		pending.length = 0;
+
+		return { ...drained, effects, version: SERVER_VERSION };
+	};
 
 	try {
 		yield snapshot();

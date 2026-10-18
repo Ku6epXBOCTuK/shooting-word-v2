@@ -1,3 +1,4 @@
+import { withRetry } from "#lib/features/remote/retry.js";
 import {
 	viewersLoad,
 	viewersSave,
@@ -21,11 +22,13 @@ export class RemoteStorageAdapter extends QueuedStoragePort {
 
 	protected async write(key: string, value: unknown): Promise<void> {
 		this.assertKey(key);
-		await viewersSave({
-			uuid: this.uuid,
-			key: this.key,
-			viewers: value as unknown[],
-		});
+		await withRetry(() =>
+			viewersSave({
+				uuid: this.uuid,
+				key: this.key,
+				viewers: value as unknown[],
+			}),
+		);
 	}
 
 	private assertKey(key: string): void {
