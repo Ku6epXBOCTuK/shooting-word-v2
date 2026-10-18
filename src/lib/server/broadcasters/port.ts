@@ -10,6 +10,11 @@ export interface Broadcaster {
 
 export type WidgetClaim = "first" | "owner" | "duplicate";
 
+export interface WidgetClaimResult {
+	claim: WidgetClaim;
+	broadcaster: Broadcaster;
+}
+
 export interface BroadcastersRepo {
 	upsert(
 		userId: string,
@@ -20,7 +25,7 @@ export interface BroadcastersRepo {
 	byUserId(userId: string): Broadcaster | null;
 	byUuid(widgetUuid: string): Broadcaster | null;
 	updateToken(userId: string, token: AccessToken): void;
-	claimWidget(widgetUuid: string, key: string): WidgetClaim | null;
+	claimWidget(widgetUuid: string, key: string): WidgetClaimResult | null;
 	rotateUuid(userId: string): string;
 	remove(userId: string): void;
 }

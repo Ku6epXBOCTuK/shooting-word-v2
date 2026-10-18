@@ -37,9 +37,9 @@ export const POST: RequestHandler = async ({ request }) => {
 		return Response.json({ error: "unknown widget" }, { status: 404 });
 	}
 
-	if (result === "duplicate") {
+	if (result.claim === "duplicate") {
 		logger.warn(`[widget] duplicate claim rejected: uuid=${uuid}`);
 	}
 
-	return Response.json({ status: result });
+	return Response.json({ status: result.claim });
 };

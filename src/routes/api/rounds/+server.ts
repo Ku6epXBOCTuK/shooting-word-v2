@@ -25,14 +25,12 @@ export const GET: RequestHandler = ({ url, cookies }) => {
 	return Response.json(rounds.recent(broadcaster.userId, readLimit(url)));
 };
 
-export const POST: RequestHandler = async ({ url, cookies, request }) => {
-	const access = requireWidgetWriter(cookies, url, request);
-	if (access instanceof Response) return access;
-	const broadcaster = access;
+export const POST: RequestHandler = async (event) => {
+	const broadcaster = requireWidgetWriter(event);
 
 	let body: unknown;
 	try {
-		body = await request.json();
+		body = await event.request.json();
 	} catch (error) {
 		logger.warn(
 			`[rounds] bad json body: ${error instanceof Error ? error.message : String(error)}`,

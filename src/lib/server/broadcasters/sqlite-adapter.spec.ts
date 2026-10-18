@@ -24,8 +24,11 @@ describe("SqliteBroadcastersRepo", () => {
 		const { repo } = await openRepo();
 		const uuid = repo.byUserId("u1")?.widgetUuid as string;
 
-		expect(repo.claimWidget(uuid, "key-a")).toBe("first");
-		expect(repo.claimWidget(uuid, "key-a")).toBe("owner");
+		expect(repo.claimWidget(uuid, "key-a")).toEqual({
+			claim: "first",
+			broadcaster: repo.byUserId("u1"),
+		});
+		expect(repo.claimWidget(uuid, "key-a")?.claim).toBe("owner");
 	});
 
 	it("rejects a different key once the uuid is claimed", async () => {
@@ -34,8 +37,8 @@ describe("SqliteBroadcastersRepo", () => {
 
 		repo.claimWidget(uuid, "key-a");
 
-		expect(repo.claimWidget(uuid, "key-b")).toBe("duplicate");
-		expect(repo.claimWidget(uuid, "key-a")).toBe("owner");
+		expect(repo.claimWidget(uuid, "key-b")?.claim).toBe("duplicate");
+		expect(repo.claimWidget(uuid, "key-a")?.claim).toBe("owner");
 	});
 
 	it("returns null for an unknown uuid", async () => {
@@ -53,6 +56,6 @@ describe("SqliteBroadcastersRepo", () => {
 
 		expect(newUuid).not.toBe(oldUuid);
 		expect(repo.claimWidget(oldUuid, "key-a")).toBeNull();
-		expect(repo.claimWidget(newUuid, "key-b")).toBe("first");
+		expect(repo.claimWidget(newUuid, "key-b")?.claim).toBe("first");
 	});
 });

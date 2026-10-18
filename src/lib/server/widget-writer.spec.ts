@@ -1,3 +1,4 @@
+import { isHttpError } from "@sveltejs/kit";
 import { describe, expect, it, vi } from "vitest";
 import type { Broadcaster } from "./broadcasters/index.js";
 import { requireWidgetWriter } from "./widget-writer.js";
@@ -26,82 +27,77 @@ vi.mock("./resolve-broadcaster.js", () => ({
 vi.mock("./broadcasters/index.js", () => ({
 	broadcasters: {
 		claimWidget: (uuid: string, key: string) => claim(uuid, key),
-		byUuid: () => broadcaster,
 	},
 }));
 
-const cookies = {} as never;
-const request = (key?: string) =>
-	new Request("http://localhost/api/settings?uuid=w1", {
+const event = (target: string, key?: string) => ({
+	cookies: {} as never,
+	url: new URL(`http://localhost${target}`),
+	request: new Request(`http://localhost${target}`, {
 		method: "PUT",
 		headers: key ? { "x-widget-key": key } : {},
-	});
+	}),
+});
+
+const rejection = (target: string, key?: string) => {
+	try {
+		requireWidgetWriter(event(target, key));
+	} catch (thrown) {
+		if (isHttpError(thrown)) return thrown;
+		throw thrown;
+	}
+	throw new Error("requireWidgetWriter did not throw");
+};
 
 describe("requireWidgetWriter", () => {
 	it("lets the cabinet session through without a key", () => {
 		session.mockReturnValueOnce(broadcaster);
 
-		const result = requireWidgetWriter(
-			cookies,
-			new URL(request().url),
-			request(),
-		);
+		const result = requireWidgetWriter(event("/api/settings?uuid=w1"));
 
 		expect(result).toBe(broadcaster);
 		expect(claim).not.toHaveBeenCalled();
 	});
 
+	it("rejects a write without a uuid", () => {
+		session.mockReturnValueOnce(null);
+
+		expect(rejection("/api/settings")).toMatchObject({
+			status: 404,
+			body: { message: "unknown widget" },
+		});
+	});
+
 	it("rejects a write without a key", () => {
 		session.mockReturnValueOnce(null);
 
-		const result = requireWidgetWriter(
-			cookies,
-			new URL(request().url),
-			request(),
-		);
-
-		expect(result).toBeInstanceOf(Response);
-		expect((result as Response).status).toBe(403);
+		expect(rejection("/api/settings?uuid=w1")).toMatchObject({ status: 403 });
 	});
 
 	it("accepts the owner key and returns the broadcaster", () => {
 		session.mockReturnValueOnce(null);
-		claim.mockReturnValueOnce("owner");
+		claim.mockReturnValueOnce({ claim: "owner", broadcaster });
 
-		const result = requireWidgetWriter(
-			cookies,
-			new URL(request("key-a").url),
-			request("key-a"),
-		);
+		const result = requireWidgetWriter(event("/api/settings?uuid=w1", "key-a"));
 
 		expect(result).toBe(broadcaster);
 	});
 
 	it("rejects a foreign key", () => {
 		session.mockReturnValueOnce(null);
-		claim.mockReturnValueOnce("duplicate");
+		claim.mockReturnValueOnce({ claim: "duplicate", broadcaster });
 
-		const result = requireWidgetWriter(
-			cookies,
-			new URL(request("key-b").url),
-			request("key-b"),
-		);
-
-		expect(result).toBeInstanceOf(Response);
-		expect((result as Response).status).toBe(403);
+		expect(rejection("/api/settings?uuid=w1", "key-b")).toMatchObject({
+			status: 403,
+		});
 	});
 
-	it("returns 404 when the uuid is unknown", () => {
+	it("rejects an unknown uuid", () => {
 		session.mockReturnValueOnce(null);
 		claim.mockReturnValueOnce(null);
 
-		const result = requireWidgetWriter(
-			cookies,
-			new URL(request("key-a").url),
-			request("key-a"),
-		);
-
-		expect(result).toBeInstanceOf(Response);
-		expect((result as Response).status).toBe(404);
+		expect(rejection("/api/settings?uuid=w1", "key-a")).toMatchObject({
+			status: 404,
+		});
 	});
 });

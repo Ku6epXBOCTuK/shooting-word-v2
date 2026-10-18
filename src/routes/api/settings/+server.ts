@@ -28,12 +28,10 @@ async function readJson(request: Request): Promise<unknown | null> {
 	}
 }
 
-export const PUT: RequestHandler = async ({ url, cookies, request }) => {
-	const access = requireWidgetWriter(cookies, url, request);
-	if (access instanceof Response) return access;
-	const broadcaster = access;
+export const PUT: RequestHandler = async (event) => {
+	const broadcaster = requireWidgetWriter(event);
 
-	const body = await readJson(request);
+	const body = await readJson(event.request);
 	if (typeof body !== "object" || body === null || Array.isArray(body)) {
 		return Response.json(null, { status: 400 });
 	}

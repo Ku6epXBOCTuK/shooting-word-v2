@@ -11,14 +11,12 @@ interface RejectBody {
 	reason?: unknown;
 }
 
-export const POST: RequestHandler = async ({ cookies, url, request }) => {
-	const access = requireWidgetWriter(cookies, url, request);
-	if (access instanceof Response) return access;
-	const broadcaster = access;
+export const POST: RequestHandler = async (event) => {
+	const broadcaster = requireWidgetWriter(event);
 
 	let body: RejectBody;
 	try {
-		body = (await request.json()) as RejectBody;
+		body = (await event.request.json()) as RejectBody;
 	} catch {
 		return Response.json(null, { status: 400 });
 	}

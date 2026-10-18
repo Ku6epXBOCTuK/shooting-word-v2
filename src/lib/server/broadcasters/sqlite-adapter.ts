@@ -1,7 +1,11 @@
 import type { AccessToken } from "@twurple/auth";
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import type { DatabaseSync } from "node:sqlite";
-import type { Broadcaster, BroadcastersRepo, WidgetClaim } from "./port.js";
+import type {
+	Broadcaster,
+	BroadcastersRepo,
+	WidgetClaimResult,
+} from "./port.js";
 
 const hashWidgetKey = (key: string): string =>
 	createHash("sha256").update(key).digest("hex");
@@ -77,22 +81,24 @@ export class SqliteBroadcastersRepo implements BroadcastersRepo {
 			.run(JSON.stringify(token), userId);
 	}
 
-	claimWidget(widgetUuid: string, key: string): WidgetClaim | null {
+	claimWidget(widgetUuid: string, key: string): WidgetClaimResult | null {
 		const row = this.db
-			.prepare("SELECT widget_key FROM broadcasters WHERE widget_uuid = ?")
-			.get(widgetUuid) as { widget_key: string | null } | undefined;
-		if (row) {
-			if (row.widget_key === null) {
-				this.db
-					.prepare(
-						"UPDATE broadcasters SET widget_key = ? WHERE widget_uuid = ?",
-					)
-					.run(hashWidgetKey(key), widgetUuid);
-				return "first";
-			}
-			return keysMatch(row.widget_key, key) ? "owner" : "duplicate";
+			.prepare("SELECT * FROM broadcasters WHERE widget_uuid = ?")
+			.get(widgetUuid) as BroadcasterRow | undefined;
+		if (!row) return null;
+
+		const broadcaster = toBroadcaster(row);
+		if (row.widget_key === null) {
+			this.db
+				.prepare("UPDATE broadcasters SET widget_key = ? WHERE widget_uuid = ?")
+				.run(hashWidgetKey(key), widgetUuid);
+			return { claim: "first", broadcaster };
 		}
-		return null;
+
+		return {
+			claim: keysMatch(row.widget_key, key) ? "owner" : "duplicate",
+			broadcaster,
+		};
 	}
 
 	rotateUuid(userId: string): string {
